@@ -1,0 +1,19 @@
+# These are the default settings for the OPS simulation.
+# If you want to use your own settings, copy this file to your home directory
+# and name it ".opsSettings" (~/.opsSettings). The settings from there
+# will be preferred over the ones in this file
+#
+# @author Jens Dede (jd@comnets.uni-bremen.de)
+# @date 01-November 2016
+#
+
+OPS_MODEL_NAME=ops-simu
+
+# Set to false and adapt INET_PATH if you prefer using your own inet checkout
+INET_BUILD=true
+INET_PATH=modules/inet/src
+INET_LIB=$INET_PATH
+INET_NED=$INET_PATH
+
+OMNET_INI_FILE=simulations/omnetpp-herald.ini
+OMNET_OUTPUT_DIR=./out/
