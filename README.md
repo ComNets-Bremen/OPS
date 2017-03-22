@@ -1,9 +1,11 @@
 # OPS
-Opportunistic Protocol Simulator
-
-
-A simulation model in OMNeT++ to simulate networks and nodes that employ the
-Organic Data Dissemination (ODD) model to perform opportunistic communications.
+The Opportunistic Protocol Simulator (OPS, pronounced as oops!!!) is a set of 
+simulation models in OMNeT++ to simulate opportunistic networks. It has a 
+modular architecture where different protocols relevant to opportunistic networks 
+can be developed and plugged in. The details of current models available 
+are given in the following sections. The immediately following section is a
+tl;dr for anyone who wishes to get it up and running without going through 
+all the explanations.    
 
 tl;dr
 -----
@@ -23,29 +25,21 @@ For Linux or MacOS:
 Introduction
 ------------
 
-The number of computing devices of the IoT are expected to grow exponentially.
-To address the communication needs of the IoT, research is being done to
-develop new networking architectures and to extend existing architectures. An
-area that lacks attention in these efforts is the emphasis on utilisation of
-omnipresent local data. There are a number of issues (e.g., underutilisation of
-local resources and dependence on cloud based data) that need to be addressed
-to exploit the benefits of utilising local data.
+The number of computing devices of the Internet of Things (IoT) are expected 
+to grow exponentially. To address the communication needs of the IoT, research 
+is being done to develop new networking architectures and to extend existing 
+architectures. 
 
-The Sustainable Communication Networks group (ComNets) at the University of
-Bremen has identified a novel data dissemination model, called the
-Organic Data Dissemination (ODD) model to utilise the omni-present data around
-us, where devices deployed with the ODD model are able to operate even without
-the existence of networking infrastructure. The realisation of the ODD model
-requires innovations in many different area including the areas of
-opportunistic communications, naming of information, direct peer-to-peer
-communications and reinforcement learning.
+Opportunistic Networking is an architecture that is currently being considered for
+communications in the IoT. The Sustainable Communication Networks group (ComNets) 
+at the University of Bremen has developed a simulator called the Opportunistic 
+Protocol Simulator (OPS) to evaluate protocols and mechanisms for opportunistic 
+networks in the context of the IoT.
 
-This software, the OPS is an OMNeT++ based simulator to simulate nodes
-(networks) deployed with the ODD model.
-
-The detailed description of the ODD model is presented in the paper
-[A Novel Data Dissemination Model for Organic Data Flows](http://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18),
-published at the 2015 MONAMI conference.
+This repository contains the OMNeT++ based models of OPS. OPS consist of nodes, 
+each of which implements a protocol stack with the functionality required to 
+perform opportunistic networking. This release of the models consist of
+models relevant to each protocol layer.
 
 
 Prerequisites
@@ -80,7 +74,7 @@ When building the `INET Framework`, make sure to build and use the `release` ver
 Caveats
 -------
 
-Though OMNeT++ models are possible to be executed in MS Windows, the scripts
+Though OMNeT++ models are possible to be executed in Microsoft Windows, the scripts
 provided here are only meant for Unix based systems (Mac OS X, Linux, etc.).
 
 
@@ -125,7 +119,7 @@ At the moment, the simulation uses the following parameters:
 Building the Model
 ------------------
 
-1. Run `bootstrap.sh` to build the Inet if you are not using your own version.
+1. Run `bootstrap.sh` to build the INET if you are not using your own version.
 
 2. Run the `ops-makefile-setup.sh` script. This will result in the creation of
 the Makefiles in all the relevant folders.
@@ -222,8 +216,7 @@ to the specific layer as listed below.
    - `KBruitApp` - Generates data and feedback randomly
    - `KHeraldApp` - Generates data from a given list and generates feedback for this
      data randomly
-   - `KPromoteApp` - Generates data (only) in a given interval or using an exponential
-     distribution
+   - `KPromoteApp` - Generates data as constant, uniformly distributed or exponentially distributed traffic
 
 2. Opportunistic Networking Layer - Performs the forwarding of data and feedback according
    to the forwarding strategy employed. Current implementations are,
@@ -290,6 +283,12 @@ input to compute these stat values (i.e., using the `-i` switch) and the optiona
 simulation time to consider (i.e., using the `-m` switch). As output, this script creates
 text files with the computed stats.
 
+- `s04-contact-times.py` - This script generates the stats related to contact times (number
+of contacts and average contact time). The script requires the log file created in 
+`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch),
+total simulation time (-s), simulation period (i.e., the range as -p) and the time resolution
+to consider for a unit of communications (-r). The -s, -p and -r are given in seconds.
+
 
 Support
 -------
@@ -299,6 +298,7 @@ If you have any questions or comments, please write to,
   - Asanga Udugama (adu@comnets.uni-bremen.de),
   - Jens Dede (jd@comnets.uni-bremen.de) or
   - Anna Foerster (anna.foerster@comnets.uni-bremen.de)
+  - Anas bin Muslim (anas1@uni-bremen.de)
 
 
 
