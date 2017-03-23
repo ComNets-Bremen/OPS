@@ -48,9 +48,9 @@ Prerequisites
 OPS requires the following software to be installed and operational
 in the systems on which it is run.
 
-### OMNeT++ 5.0 or above
+### OMNeT++ 5.0 
 
-OMNeT++ 5.0 or any new version must be installed and the PATH variable must be
+OMNeT++ 5.0 version must be installed and the PATH variable must be
 set to run all the binaries of OMNeT++.
 
 e.g.,
@@ -58,7 +58,7 @@ e.g.,
 `export PATH=/Users/adu/Development/omnet/omnetpp-5.0/bin:$PATH (on a Mac OS X)`
 
 
-### INET 3.2.4 or above
+### INET 3.4.0
 
 OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate mobility and checks out an own version of INET where running `./bootstrap.sh`.
 As downloading and compiling INET takes a while, you might prefer using your
@@ -290,8 +290,30 @@ total simulation time (-s), simulation period (i.e., the range as -p) and the ti
 to consider for a unit of communications (-r). The -s, -p and -r are given in seconds.
 
 
-Support
--------
+FAQs
+----
+
+Here are some answers to very commonly asked questions.
+
+1. Why do I get the following error when I run `./ops-simu-run.sh -m cmdenv`?
+
+`<!> Error: Cannot open output redirection file ...log2.txt`
+
+Was the `simulations/out` created?
+
+2. The output shown on the terminal does not point to any errors, but why does the simulation end quickly?
+
+Check the log created in `simulations/out`. It may give hints to where the problem is.
+
+3. The simulation uses other models or other parameters instead of what I set. Why is that?
+
+Was the `.opsSettings` file created in home directory? If it was created, is it pointing to
+another `omnetpp.ini` file
+
+
+
+Question or Comments
+--------------------
 
 If you have any questions or comments, please write to,
 
