@@ -15,7 +15,7 @@
 #include <list>
 #include <string>
 
-#include "KKeetchiMsg_m.h"
+#include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
 
 #if OMNETPP_VERSION >= 0x500

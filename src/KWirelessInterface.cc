@@ -146,6 +146,8 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 				string nodeAddress = nodeInfo->nodeModule->par("ownAddress").stringValue();
 				neighListMsg->setNeighbourNameList(neighCount, nodeAddress.c_str());
 			
+			    EV_INFO << KWIRELESSINTERFACE_SIMMODULEINFO << " :: Neigbourhood Info :: " << ownMACAddress << " :: " << nodeAddress << " :: " << nodeInfo->nodeModule->getFullName() << "\n";
+
 				neighCount++;
 				iteratorNeighNodeInfo++;
 			}
