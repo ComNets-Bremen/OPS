@@ -1,3 +1,0 @@
-[submodule "modules/inet"]
-	path = modules/inet
-	url = https://github.com/inet-framework/inet.git
