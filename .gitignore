@@ -1,0 +1,50 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Auto generated data
+Makefile
+.tkenvrc
+simulations/Makefile
+simulations/keetchi-simu
+simulations/out/
+src/KInternalMsg_m.cc
+src/KInternalMsg_m.h
+src/KKeetchiMsg_m.cc
+src/KKeetchiMsg_m.h
+src/Makefile
+src/out/
+out/gcc-release/
+keetchi-simu
+
+out
+simulations/results/
+
+# Misc
+*.swp
+.cmdenv-log
