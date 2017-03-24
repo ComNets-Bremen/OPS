@@ -334,7 +334,7 @@ Check the log created in `simulations/out`. It may give hints to where the probl
 3. The simulation uses other models or other parameters instead of what I set. Why is that?
 
 Was the `.opsSettings` file created in home directory? If it was created, is it pointing to
-another `.ini` file? If not `.opsSettings` was not created, then it uses the `.ini` file in
+another `.ini` file? If `.opsSettings` was not created, then it uses the `.ini` file in
 `settings.default`. The actual `.ini` used is shown when running `./ops-simu-run.sh` script. 
 
 
