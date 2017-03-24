@@ -54,10 +54,12 @@ done
 
 case "$modeval" in
     cmdenv)
+        echo "./$OPS_MODEL_NAME -u Cmdenv -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l INET --result-dir=$OMNET_OUTPUT_DIR"
         ./$OPS_MODEL_NAME -u Cmdenv -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l INET --result-dir=$OMNET_OUTPUT_DIR
         ;;
 
     tkenv)
+        echo "./$OPS_MODEL_NAME -u Tkenv -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l INET --result-dir=$OMNET_OUTPUT_DIR"
         ./$OPS_MODEL_NAME -u Tkenv -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l INET --result-dir=$OMNET_OUTPUT_DIR
         ;;
 

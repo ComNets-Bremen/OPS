@@ -4,7 +4,7 @@ simulation models in OMNeT++ to simulate opportunistic networks. It has a
 modular architecture where different protocols relevant to opportunistic networks 
 can be developed and plugged in. The details of current models available 
 are given in the following sections. The immediately following section is a
-tl;dr for anyone who wishes to get it up and running without going through 
+`tl;dr` for anyone who wishes to get it up and running without going through 
 all the explanations.    
 
 tl;dr
@@ -290,6 +290,32 @@ total simulation time (-s), simulation period (i.e., the range as -p) and the ti
 to consider for a unit of communications (-r). The -s, -p and -r are given in seconds.
 
 
+SWIM Mobility Model
+-------------------
+
+OPS can be configured to use any INET based mobility model. The Small Worlds in Motion (SWIM) 
+mobility model is one such mobility model that was developed by our research group. If you 
+wish to use this mobility model, follow the following steps.
+
+1. Download the OMNeT++ INET SWIM mobility model from following Github repository.
+ 
+`https://github.com/ComNets-Bremen/SWIMMobility.git`
+
+2. Place the downloaded files in the following folder of local INET copy which was created 
+when the `bootstrap.sh` was run.
+
+`./modules/inet/src/inet/mobility/single/`
+
+3. Recompile the INET in the following manner
+
+- `cd modules/inet`
+- `make clean`
+- `make makefiles`
+- `make MODE=release`
+
+4. Set parameters in `.ini` file in `simulations/` folder to use the SWIM mobility model.
+
+
 FAQs
 ----
 
@@ -308,7 +334,8 @@ Check the log created in `simulations/out`. It may give hints to where the probl
 3. The simulation uses other models or other parameters instead of what I set. Why is that?
 
 Was the `.opsSettings` file created in home directory? If it was created, is it pointing to
-another `omnetpp.ini` file
+another `.ini` file? If not `.opsSettings` was not created, then it uses the `.ini` file in
+`settings.default`. The actual `.ini` used is shown when running `./ops-simu-run.sh` script. 
 
 
 
@@ -317,8 +344,8 @@ Question or Comments
 
 If you have any questions or comments, please write to,
 
-  - Asanga Udugama (adu@comnets.uni-bremen.de),
-  - Jens Dede (jd@comnets.uni-bremen.de) or
+  - Asanga Udugama (adu@comnets.uni-bremen.de)
+  - Jens Dede (jd@comnets.uni-bremen.de)
   - Anna Foerster (anna.foerster@comnets.uni-bremen.de)
   - Anas bin Muslim (anas1@uni-bremen.de)
 

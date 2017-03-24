@@ -15,5 +15,5 @@ INET_PATH=modules/inet/src
 INET_LIB=$INET_PATH
 INET_NED=$INET_PATH
 
-OMNET_INI_FILE=simulations/omnetpp-herald.ini
+OMNET_INI_FILE=simulations/omnetpp-promote-expon.ini
 OMNET_OUTPUT_DIR=./out/
