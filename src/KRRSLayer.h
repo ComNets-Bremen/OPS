@@ -64,6 +64,7 @@ class KRRSLayer: public cSimpleModule
             
 		};
 		
+        string broadcastMACAddress;
 		
 		list<AppInfo*> registeredAppList;
 		list<CacheEntry*> cacheList;

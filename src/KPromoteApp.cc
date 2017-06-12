@@ -23,49 +23,50 @@ void KPromoteApp::initialize(int stage)
         dataPayloadSizeInBytes = par("dataPayloadSizeInBytes");
         dataPacketSizeInBytes = par("dataPacketSizeInBytes");
         usedRNG = par("usedRNG");
-		expectedNodeTypes = par("expectedNodeTypes").stringValue();
+        expectedNodeTypes = par("expectedNodeTypes").stringValue();
+        destinationOriented = par("destinationOriented");
 
     } else if (stage == 1) {
 
         // make list of all node names in network
-		for (int id = 0; id <= getSimulation()->getLastComponentId(); id++) {
-			cModule *unknownModule = getSimulation()->getModule(id);
-			if (unknownModule == NULL) {
-				continue;
-			}
-			
-			// has to be a node type module given in expectedNodeTypes parameter
-			if(strstr(expectedNodeTypes.c_str(), unknownModule->getModuleType()->getName()) == NULL) {
-				continue;
-			}
-            
+        for (int id = 0; id <= getSimulation()->getLastComponentId(); id++) {
+            cModule *unknownModule = getSimulation()->getModule(id);
+            if (unknownModule == NULL) {
+                continue;
+            }
+
+            // has to be a node type module given in expectedNodeTypes parameter
+            if(strstr(expectedNodeTypes.c_str(), unknownModule->getModuleType()->getName()) == NULL) {
+                continue;
+            }
+
             // don't save own node name
             if(getParentModule() == unknownModule) {
                 continue;
             }
-            
+
             string *nodeName = new string(unknownModule->getFullName());
-            
+
             // list should only contain nodes that have the KPromoteApp deployed
             int promoteAppDeployed = unknownModule->par("promoteAppDeployed");
             if(promoteAppDeployed != 1) {
                 continue;
             }
-            
+
             // // temp hack to prevent data being generated to fixed nodes
             // if(strstr(nodeName->c_str(), "fixedNode") != NULL) {
             //     continue;
             // }
-            
+
             nodeNameList.push_back(nodeName);
-		}
-		
+        }
+
         // cout << "mobile node size: " <<  nodeNameList.size() << "\n";
-        
+
         if(nodeNameList.size() == 0) {
             EV_FATAL << KPROMOTEAPP_SIMMODULEINFO << "No other nodes in the network \n";
         }
-        
+
     } else if (stage == 2) {
 
         // create and setup app registration trigger
@@ -97,7 +98,7 @@ void KPromoteApp::handleMessage(cMessage *msg)
     // check message
     if (msg->isSelfMessage() && msg->getKind() == 92) {
         // send app registration message the forwarding  layer
-        
+
         KRegisterAppMsg *regAppMsg = new KRegisterAppMsg("Promote App Registration");
         regAppMsg->setAppName("Promote");
         regAppMsg->setPrefixName("/promote");
@@ -105,21 +106,16 @@ void KPromoteApp::handleMessage(cMessage *msg)
         send(regAppMsg, "lowerLayerOut");
 
         EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Generated App Registration" << "\n";
-		
+
     } else if (msg->isSelfMessage() && msg->getKind() == 93) {
         // timeout for data (notification) send event occured
         // so, generate a data message
-		char dummyPayloadContent[64], dataName[64], msgName[64];
+        char dummyPayloadContent[64], dataName[64], msgName[64];
 
         sprintf(dataName, "/promote/item-%05d-%05d", nodeIndex, lastGeneratedNotificationID);
         sprintf(msgName, "D item-%05d-%05d", nodeIndex, lastGeneratedNotificationID);
         sprintf(dummyPayloadContent, "Details of item-%05d-%05d", nodeIndex, lastGeneratedNotificationID);
 
-        int randomNodeIndex = intuniform(0, (nodeNameList.size() - 1), usedRNG);
-        list<string*>::iterator it = nodeNameList.begin();
-        advance(it, randomNodeIndex);
-        string *nodeName = *it;
-        
         KDataMsg *dataMsg = new KDataMsg(msgName);
 
         dataMsg->setSourceAddress("");
@@ -130,14 +126,26 @@ void KPromoteApp::handleMessage(cMessage *msg)
         dataMsg->setDummyPayloadContent(dummyPayloadContent);
         dataMsg->setByteLength(dataPacketSizeInBytes);
         dataMsg->setRealPacketSize(dataPacketSizeInBytes);
-		dataMsg->setMsgType(0);
-		dataMsg->setValidUntilTime(simTime().dbl() + notificationValidDuration);
-        dataMsg->setFinalDestinationNodeName(nodeName->c_str());
+        dataMsg->setMsgType(0);
+        dataMsg->setValidUntilTime(simTime().dbl() + notificationValidDuration);
+        dataMsg->setOriginatorNodeName(getParentModule()->getFullName());
+        if (destinationOriented) {
+            dataMsg->setDestinationOriented(true);
+            int randomNodeIndex = intuniform(0, (nodeNameList.size() - 1), usedRNG);
+            list<string*>::iterator it = nodeNameList.begin();
+            advance(it, randomNodeIndex);
+            string *nodeName = *it;
+            dataMsg->setFinalDestinationNodeName(nodeName->c_str());
+
+        } else {
+            dataMsg->setDestinationOriented(false);
+            
+        }
 
         send(dataMsg, "lowerLayerOut");
 
-        EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Generated Data :: " << dataMsg->getDataName() << " :: At Source :: " 
-            << *nodeName << " \n";
+        EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Generated Data :: " << dataMsg->getDataName() << " :: At Source :: "
+            << getParentModule()->getFullName() << " \n";
 
         // setup next data generation trigger
         lastGeneratedNotificationID++;
@@ -149,23 +157,23 @@ void KPromoteApp::handleMessage(cMessage *msg)
         } else {
             nextNotificationGenTime = simTime().dbl() + notificationGenInterval;
         }
-        
+
         // cout << "curr sim time: " << simTime().dbl() << " - next gen time: " << nextNotificationGenTime
         //               << " - time diff: " << (nextNotificationGenTime - simTime().dbl()) << "\n";
-        
+
         scheduleAt(nextNotificationGenTime, msg);
 
     } else if (dynamic_cast<KDataMsg*>(msg) != NULL) {
 
         // message received from outside so, process received data message
-        KDataMsg *dataMsg = check_and_cast<KDataMsg *>(msg);        
+        KDataMsg *dataMsg = check_and_cast<KDataMsg *>(msg);
 
         if(strstr(getParentModule()->getFullName(), dataMsg->getFinalDestinationNodeName()) != NULL) {
-        
-            EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Received Data :: " << dataMsg->getDataName() << " :: At Destination :: " 
+
+            EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Received Data :: " << dataMsg->getDataName() << " :: At Destination :: "
                 << dataMsg->getFinalDestinationNodeName() << " \n";
         }
-		
+
         delete msg;
 
     } else {
@@ -177,11 +185,11 @@ void KPromoteApp::handleMessage(cMessage *msg)
 
 void KPromoteApp::finish()
 {
-	delete appRegistrationEvent;
-	
-	// remove data generation event
-	cancelEvent(dataTimeoutEvent);
+    delete appRegistrationEvent;
+
+    // remove data generation event
+    cancelEvent(dataTimeoutEvent);
     delete dataTimeoutEvent;
-	
+
 }
 

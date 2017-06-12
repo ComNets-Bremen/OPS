@@ -122,7 +122,8 @@ Building the Model
 1. Run `bootstrap.sh` to build the INET if you are not using your own version.
 
 2. Run the `ops-makefile-setup.sh` script. This will result in the creation of
-the Makefiles in all the relevant folders.
+the Makefiles in all the relevant folders, pulling the dependents linked in the 
+`./modules/` folder and building these dependents. 
 
 3. Run make from the root folder of OPS.
 
@@ -222,8 +223,12 @@ to the specific layer as listed below.
    to the forwarding strategy employed. Current implementations are,
 
    - `KRRSLayer` - Implements a simple forwarding strategy based on the Randomised
-     Rumor Spreading (RRS) algorithm
-
+     Rumor Spreading (RRS) algorithm which randomly selects a data item to broadcast
+     to a node's neighbourhood
+   - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described 
+     in the publication `Epidemic Routing for Partially-Connected Ad Hoc Networks` by
+     A. Vahdat and D. Becker
+ 
 3. Link Adaptation Layer - Tasked with converting packets sent by the Opportunistic
    Networking Layer to the specific link technology used (at Link Layer). Currently
    implemented has a simple pass-through layer.
@@ -241,6 +246,7 @@ to the specific layer as listed below.
    supported by the `INET framework`.
 
 
+
 Simulation Parameters
 ---------------------
 
@@ -250,8 +256,13 @@ consider.
 
 - `numNodes` - The number of nodes in the network
 - `wirelessRange` - The wireless coverage range. The default is 100 meters
+- `forwardingLayer` - The forwarding layer to use
+- `mobilityType` - The mobility model used to move the nodes 
 
-Check the sample .ini files in `simulations/` folder to see all the parameters.
+There are many more parameters that need to be set according to the scenario to be simulated. Most 
+of these parameters have default values. Check the sample .ini files in `simulations/` folder to 
+see what parameters are usually set to run a simulation.
+
 
 
 Parsers
@@ -289,6 +300,9 @@ of contacts and average contact time). The script requires the log file created 
 total simulation time (-s), simulation period (i.e., the range as -p) and the time resolution
 to consider for a unit of communications (-r). The -s, -p and -r are given in seconds.
 
+You can develop your own parsers in Python or any other language (e.g., Google's GO language).
+
+
 
 SWIM Mobility Model
 -------------------
@@ -316,6 +330,19 @@ when the `bootstrap.sh` was run.
 4. Set parameters in `.ini` file in `simulations/` folder to use the SWIM mobility model.
 
 
+
+BonnMotion Mobility Model
+-------------------------
+
+Another mobility model that we have used extensively is the Bonn Motion model. This model
+(wich is available in INET) requires a trace to move nodes in a network. The trace files
+are generated using a tool provided by the authors of the Bonn Motion model. The tool can
+be requested to generate traces based on synthetic mobility models (e.g., Random Way Point
+mobility model) or from an actual mobility trace (e.g., San Fransisco Taxi trace at 
+www.crawdad.com).
+
+
+
 FAQs
 ----
 
@@ -337,10 +364,46 @@ Was the `.opsSettings` file created in home directory? If it was created, is it 
 another `.ini` file? If `.opsSettings` was not created, then it uses the `.ini` file in
 `settings.default`. The actual `.ini` used is shown when running `./ops-simu-run.sh` script. 
 
+4. Must the given OMNeT and INET versions be used?
+
+We have developed, tested and run the OPS models using only the given versions of OMNeT and INET. You are
+on your own if you decide to use other versions. Having said that, we like to mention - you are encouraged 
+to try out newer versions and tell us if there are problems. Even better - if you can find fixes for these
+problems and inform us, we will be very glad to publish them and acknowledge you.
+
+5. Can OPS be installed and run in Microsoft Windows environments?
+
+NO, OPS can not be installed and run in MS Windows environments. Of course OMNeT and any model developed 
+for OMNeT can be run on MS Windows, but OPS is a simulator that has been setup only to be installed and
+run in `*nix` based system (e.g., Mac OSX, Linux). 
+
+6. Can the result parsers (in the `parsers/` folder) be used as they are? 
+
+Yes, they can be used as they are, provided that the text output in the log files made by the OPS models in 
+`simulations/out` have not been changed. A general rule to keep in mind about the parsers is as follows.
+
+The existing parsers we developed were meant to obtain results that WE wanted. There is a possibility that 
+these results and hence, the parsers, may not suit other users' requirements for results. Therefore, 
+we recommend that you use these parsers to only get an idea to develop your own parsers that serve your 
+own requirements.
+
+One more thing - the current parsers are developed using Python. You are free to develop them in any language 
+you like.
+
+7. Why are no packets communicated between nodes?
+
+If you have introduced a new node model (an example of an existing node model is `KPromoteNode`), then that name
+must be added to the `expectedNodeTypes` parameter in the `KWirelessInterface.ned`.
+
+8. Why is it that destinations are not identified even though the destination oriented parameter is set in 
+`KPromoteApp`?
+
+If you have introduced a new node model (an example of an existing node model is `KPromoteNode`), then that name
+must be added to the `expectedNodeTypes` parameter in the `KPromoteApp.ned`.
 
 
-Question or Comments
---------------------
+Questions or Comments
+---------------------
 
 If you have any questions or comments, please write to,
 

@@ -34,20 +34,6 @@ class KLinkAdaptLayer: public cSimpleModule
         string ownMACAddress;
         string broadcastMACAddress;
 
-        // statistics generation signals
-        simsignal_t dataSendSignal;
-        simsignal_t dataReceiveSignal;
-        simsignal_t feedbackSendSignal;
-        simsignal_t feedbackReceiveSignal;
-
-        // statistics collection variables
-        int dataSentCount;
-        int dataReceivedCount;
-        int feedbackSentCount;
-        int feedbackReceivedCount;
-
-
-
 };
 
 #define KLINKADAPTLAYER_SIMMODULEINFO       " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KLinkAdaptLayer"

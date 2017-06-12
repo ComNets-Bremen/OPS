@@ -6,16 +6,26 @@
 //
 // @date: 08-11-2015
 // @author: Asanga Udugama (adu@comnets.uni-bremen.de)
+//
+// Modified to send also unicast packets in addition to 
+// broadcast packets
+//
+// @date: 08-05-2017
+// @author: Asanga Udugama (adu@comnets.uni-bremen.de)
+//
 
 #ifndef KWIRELESSINTERFACE_H_
 #define KWIRELESSINTERFACE_H_
+
+#define TRUE                            1
+#define FALSE                           0
 
 #include "inet/mobility/contract/IMobility.h"
 
 #include <omnetpp.h>
 #include <cstdlib>
 #include <string>
-
+#include <queue>
 
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
@@ -30,24 +40,32 @@ class KWirelessInterface: public cSimpleModule
         virtual void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
         virtual int numInitStages() const;
+        virtual void finish();
 
     private:
         string ownMACAddress;
         double wirelessRange;
-		string expectedNodeTypes;
-		double neighbourScanInterval;
+        string expectedNodeTypes;
+        double neighbourScanInterval;
         double bandwidthBitRate;
         int wirelessHeaderSize;
 
         string broadcastMACAddress;
         KBaseNodeInfo *ownNodeInfo;
-		list<KBaseNodeInfo*> allNodeInfoList;
+        list<KBaseNodeInfo*> allNodeInfoList;
+        queue<cMessage*> packetQueue;
+        cMessage *sendNextPacketTimeoutEvent;
+
+        void sendBroadcastMsg(cMessage *msg);
+        void sendUnicastMsg(cMessage *msg);
+        string getDestinationAddress(cMessage *msg);
 
 };
 
 #define KWIRELESSINTERFACE_SIMMODULEINFO       " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KWirelessInterface"
 #define KWIRELESSINTERFACE_BIT_RATE_10Mbps     10000000
 #define KWIRELESSINTERFACE_NEIGH_EVENT_CODE    112
+#define KWIRELESSINTERFACE_PKTSEND_EVENT_CODE  114
 
 
 #endif /* KWIRELESSINTERFACE_H_ */

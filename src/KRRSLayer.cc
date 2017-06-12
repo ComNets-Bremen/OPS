@@ -20,6 +20,9 @@ void KRRSLayer::initialize(int stage)
         maximumCacheSize = par("maximumCacheSize");
         currentCacheSize = 0;
         destinationOrientedData = par("destinationOrientedData");
+
+        // set other parameters
+        broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
         
     } else if (stage == 1) {
 
@@ -230,7 +233,7 @@ void KRRSLayer::handleMessage(cMessage *msg)
 		        KDataMsg *dataMsg = new KDataMsg();
 
 		        dataMsg->setSourceAddress(ownMACAddress.c_str());
-		        dataMsg->setDestinationAddress("all");
+		        dataMsg->setDestinationAddress(broadcastMACAddress.c_str());
 		        dataMsg->setDataName(cacheEntry->dataName.c_str());
 		        dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
 		        dataMsg->setRealPayloadSize(cacheEntry->realPayloadSize);
@@ -241,10 +244,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
 				dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
                 dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
 
-		        send(dataMsg, "lowerLayerOut");	
+		        send(dataMsg, "lowerLayerOut");
 
-
-				
 				EV_INFO << KRRSLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Data Msg :: " << dataMsg->getSourceAddress() << " :: " 
 					<< dataMsg->getDestinationAddress() << " :: " << dataMsg->getDataName() << " :: " << dataMsg->getGoodnessValue() << "\n";
 			}

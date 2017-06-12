@@ -40,7 +40,6 @@ class KPromoteApp : public cSimpleModule
         virtual void finish();
 
     private:
-
         char prefixName[128] = "/promote";
         int nodeIndex;
         int notificationGenDistribution;
@@ -51,11 +50,12 @@ class KPromoteApp : public cSimpleModule
         int dataPacketSizeInBytes;
         int usedRNG;
         string expectedNodeTypes;
+        bool destinationOriented;
         int lastGeneratedNotificationID = 10000;
-        
+
         cMessage *appRegistrationEvent;
         cMessage *dataTimeoutEvent;
-        
+
         list<string*> nodeNameList;
 };
 

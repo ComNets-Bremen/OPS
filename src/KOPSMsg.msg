@@ -4,24 +4,39 @@
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de)
 // @date   : 06-oct-2015
 //
+// example sizes in bytes
 //
-// bytes -> addresses = 6 each, data name = 64, goodness value = 2, payload size = 2 , payload = 512 -> total 592
+//               addrs | data name | goodness value | payload size | payload | valid until | final dest | hop count | total  |
+//               s & d | or msg ID |  (1 byte int)  | (2 byte int) | (bytes) | (4 byte int)| (dest orie)|  (1 byte) | (bytes)|
+// Keetchi  ->   6 + 6     64             1               2           512          4             6           -         601
+// RRS      ->   6 + 6     64             -               2           512          4             6           -         600
+// Epidemic ->   6 + 6     64             -               2           512          4             6           1         601
 //
 
 packet KDataMsg {
+
+    // common fields
     string sourceAddress;
     string destinationAddress;
     string dataName;
-    int goodnessValue;
-    int realPayloadSize;
     string dummyPayloadContent;
 	int msgType;
 	double validUntilTime;
         
+    int realPayloadSize;
     int realPacketSize;
     
+    // destination oriented delivery specific fields
+    string originatorNodeName;
     string finalDestinationNodeName;
+    bool destinationOriented;
     
+    // keetchi specific fields
+    int goodnessValue;
+    
+    // epidemic routing specific fields
+    string messageID;
+    int hopCount;
 }
 
 //
@@ -31,14 +46,72 @@ packet KDataMsg {
 // @date   : 06-oct-2015
 //
 //
-// bytes -> addresses = 6 each, data name = 64, goodness value = 2 -> total 78
+// example sizes in bytes
+//
+//               addrs | data name | goodness value | total  |
+//               s & d | or msg ID |  (1 byte int)  | (bytes)|
+// Keetchi  ->   6 + 6     64             1             77
 //
 
 packet KFeedbackMsg {
+
+    // common fields
     string sourceAddress;
     string destinationAddress;
     string dataName;
-    int goodnessValue;
 
     int realPacketSize;
+    
+    // keetchi specific fields
+    int goodnessValue;
+}
+
+//
+// Summary vector exchange message (used with Epidemic Routing).
+//
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @date   : 02-may-2017
+//
+//
+// example sizes in bytes
+//
+//                addrs | msg ID hashes  | total  |
+//                s & d | 2 bytes x count| (bytes)|
+// Epidemic  ->   6 + 6     2 x 10           32
+
+packet KSummaryVectorMsg {
+
+    // common fields
+    string sourceAddress;
+    string destinationAddress;
+    
+    int realPacketSize;
+    
+    // epidemic routing specific fields
+    string messageIDHashVector[];  // summary vector
+}
+
+//
+// Data request message (used with Epidemic Routing).
+//
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @date   : 02-may-2017
+//
+//
+// example sizes in bytes
+//
+//                addrs | msg ID hashes  | total  |
+//                s & d | 2 bytes x count| (bytes)|
+// Epidemic  ->   6 + 6     2 x 5            32
+
+packet KDataRequestMsg {
+
+    // common fields
+    string sourceAddress;
+    string destinationAddress;
+    
+    int realPacketSize;
+    
+    // epidemic routing specific fields
+    string messageIDHashVector[];  // request vector
 }

@@ -19,10 +19,17 @@ module KPromoteNode
 
         // unique node identifier
         int nodeID;
-		
-		// app deployed (is node just a router)
-		int promoteAppDeployed = default(1);
 
+        // app deployed (or is node just a forwarder?)
+        // 1 = app deplyed
+        // 2 = app not deployed (just forwarding)
+        int promoteAppDeployed = default(1);
+
+        // type of forwarding layer used
+        // 1 = RRS
+        // 2 = Keetchi
+        // 3 = Epidemic
+        int forwardingLayer = default(1);
 
         // build own address from nodeID (in the form of a MAC address)
         int digit1 = (nodeID - (nodeID % 10000)) / 10000;
@@ -51,7 +58,12 @@ module KPromoteNode
         }
 
         // Forwarding layer
-        forwarding: KRRSLayer {
+        forwarding: KRRSLayer if forwardingLayer == 1 {
+            parameters:
+                ownMACAddress = ownAddress;
+                @display("p=120,112");
+        }
+        forwarding: KEpidemicRoutingLayer if forwardingLayer == 3 {
             parameters:
                 ownMACAddress = ownAddress;
                 @display("p=120,112");

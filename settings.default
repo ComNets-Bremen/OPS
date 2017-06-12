@@ -9,7 +9,7 @@
 
 OPS_MODEL_NAME=ops-simu
 
-# Set to false and adapt INET_PATH if you prefer using your own inet checkout
+# Set to false and adapt INET_PATH if you prefer using your own INET checkout
 INET_BUILD=true
 INET_PATH=modules/inet/src
 INET_LIB=$INET_PATH
