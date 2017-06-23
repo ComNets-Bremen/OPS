@@ -13,11 +13,13 @@ source ./tools/shell-functions.sh
 loadSettings
 
 cd simulations
-opp_makemake -r --deep -I$INET_PATH -L$INET_PATH -lINET --mode release -o $OPS_MODEL_NAME -f
+opp_makemake -r --deep -I$KEETCHI_API_PATH -I$INET_PATH -L$KEETCHI_API_PATH/.libs/ -L$INET_PATH -lkeetchi -lINET --mode release -o $OPS_MODEL_NAME -f
 cd ..
 cd src
-opp_makemake -r --deep -I$INET_PATH -L$INET_PATH -lINET --mode release -o $OPS_MODEL_NAME -f
+opp_makemake -r --deep -I$KEETCHI_API_PATH -I$INET_PATH -L$KEETCHI_API_PATH/.libs/ -L$INET_PATH -llibkeetchi.dylib -lINET --mode release -o $OPS_MODEL_NAME -f
 cd ..
-opp_makemake -r --deep -Xmodules -I$INET_PATH -L$INET_PATH -lINET --mode release -o $OPS_MODEL_NAME -f
+opp_makemake -r --deep -Xmodules -I$KEETCHI_API_PATH -I$INET_PATH -L$KEETCHI_API_PATH/.libs/ -L$INET_PATH -lkeetchi -lINET --mode release -o $OPS_MODEL_NAME -f
 
-echo "Run make to compile and make the $KEETCHI_MODEL_NAME executable"
+echo "Run make to compile and make the $OPS_MODEL_NAME executable"
+
+
