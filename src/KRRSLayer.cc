@@ -19,7 +19,6 @@ void KRRSLayer::initialize(int stage)
 		nextAppID = 1;
         maximumCacheSize = par("maximumCacheSize");
         currentCacheSize = 0;
-        destinationOrientedData = par("destinationOrientedData");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
@@ -240,6 +239,7 @@ void KRRSLayer::handleMessage(cMessage *msg)
 		        dataMsg->setDummyPayloadContent(cacheEntry->dummyPayloadContent.c_str());
 		        dataMsg->setRealPacketSize(cacheEntry->realPacketSize);
 		        dataMsg->setByteLength(cacheEntry->realPacketSize);
+		        dataMsg->setByteLength(cacheEntry->realPacketSize);
 				dataMsg->setMsgType(cacheEntry->msgType);
 				dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
                 dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
@@ -262,7 +262,7 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
             // if destination oriented data sent around, then cache message only if not destined to self
             // or if no destination in data, cache all messages
-            if(!destinationOrientedData || (strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) == NULL)) {
+            if(!omnetDataMsg->getDestinationOriented() || (strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) == NULL)) {
 
                 // insert/update cache
                 CacheEntry *cacheEntry;			

@@ -176,6 +176,8 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
             string destinationAddress = getDestinationAddress(nextMsg);
 
+            // cout << simTime().dbl() << " " << getParentModule()->getFullName() << " queued packet sent - size " << ((cPacket*) nextMsg)->getByteLength() << "\n";
+
             // send broadcast message
             if (destinationAddress == broadcastMACAddress) {
 
@@ -207,11 +209,18 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
             // if currently there is a pending msg, then queue this msg
             if (sendNextPacketTimeoutEvent->isScheduled()) {
+                
+                // cout << simTime().dbl() << " " << getParentModule()->getFullName() << " packet queued to send - size " << ((cPacket*)msg)->getByteLength() << "\n";
+                
+                
                 packetQueue.push(msg);
 
             // no queued msgs, so send immediately and start next message timer
             } else {
                 string destinationAddress = getDestinationAddress(msg);
+
+
+                // cout << simTime().dbl() << " " << getParentModule()->getFullName() << " packet sent immediately - size " << ((cPacket*)msg)->getByteLength() << "\n";
 
                 // send broadcast message
                 if (destinationAddress == broadcastMACAddress) {
@@ -268,8 +277,21 @@ void KWirelessInterface::sendBroadcastMsg(cMessage *msg)
     // remove msg
     delete msg;
 
-    // setup the the next pkt send time basd on last sent packet tx duration
-    scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
+    // setup the the next pkt send
+    if (txDuration > 0.0) {
+        
+        // setup timer based on last sent packet tx duration
+        scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
+        
+    } else if (!packetQueue.empty()) {
+        
+        // if a pkt was unable to be sent, then try sending another
+        // but after a short duration (1/10th of a millisecond later)
+        scheduleAt(simTime() + 0.0001, sendNextPacketTimeoutEvent);
+        
+    } else {
+        // timer not set
+    }
 
 }
 
@@ -320,8 +342,21 @@ void KWirelessInterface::sendUnicastMsg(cMessage *msg)
     // remove msg
     delete msg;
 
-    // setup the the next pkt send time basd on last sent packet tx duration
-    scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
+    // setup the the next pkt send
+    if (txDuration > 0.0) {
+        
+        // setup timer based on last sent packet tx duration
+        scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
+        
+    } else if (!packetQueue.empty()) {
+        
+        // if a pkt was unable to be sent, then try sending another
+        // but after a short duration (1/10th of a millisecond later)
+        scheduleAt(simTime() + 0.0001, sendNextPacketTimeoutEvent);
+        
+    } else {
+        // timer not set
+    }
 
 }
 

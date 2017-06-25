@@ -60,7 +60,8 @@ e.g.,
 
 ### INET 3.4.0
 
-OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate mobility and checks out an own version of INET where running `./bootstrap.sh`.
+OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate 
+mobility and checks out an own version of INET where running `./bootstrap.sh`.
 As downloading and compiling INET takes a while, you might prefer using your
 own checkout of INET. To do so, please change the following values in the file
 `settings.default`:
@@ -225,6 +226,9 @@ to the specific layer as listed below.
    - `KRRSLayer` - Implements a simple forwarding strategy based on the Randomised
      Rumor Spreading (RRS) algorithm which randomly selects a data item to broadcast
      to a node's neighbourhood
+   - `KKeetchiLayer` - Implements the Organic Data Dissemination algorithm as described 
+     in the publication `A Novel Data Dissemination Model for Organic Data Flows` by
+     A. Foerster et al
    - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described 
      in the publication `Epidemic Routing for Partially-Connected Ad Hoc Networks` by
      A. Vahdat and D. Becker
@@ -341,6 +345,10 @@ be requested to generate traces based on synthetic mobility models (e.g., Random
 mobility model) or from an actual mobility trace (e.g., San Fransisco Taxi trace at 
 www.crawdad.com).
 
+If you look at some of the `.ini` files in `./simulations/` folder, you see that we refer
+to a `50_traces.gpx.movements` file. This is a 50 node version of the San Fransisco Taxi trace
+we created to use with the INET BonnMotion Mobility Model. We have not made this file available
+here due to the size of this file (49MB). If you require that file, please send us an email.
 
 
 FAQs
@@ -401,6 +409,18 @@ must be added to the `expectedNodeTypes` parameter in the `KWirelessInterface.ne
 If you have introduced a new node model (an example of an existing node model is `KPromoteNode`), then that name
 must be added to the `expectedNodeTypes` parameter in the `KPromoteApp.ned`.
 
+9. I pulled a newer version of OPS from Github (i.e., through git clone or git pull). But now, why is building OPS
+is failing?
+
+One possible reason may be that the newer version has a newer `settings.default` (i.e., a changed `settings.default`). 
+If you have copied the `settings.default` of the previous version to your home folder as `.opsSettings`, remove
+`.opsSettings` and copy the newer version. Caveat: this is only one possibility. 
+
+10. Where can I find the `50_traces.gpx.movements` file used with the BonnMotion Mobility Model?
+
+Send us an email if you want a copy of this file.
+
+ 
 
 Questions or Comments
 ---------------------
@@ -411,6 +431,7 @@ If you have any questions or comments, please write to,
   - Jens Dede (jd@comnets.uni-bremen.de)
   - Anna Foerster (anna.foerster@comnets.uni-bremen.de)
   - Anas bin Muslim (anas1@uni-bremen.de)
+  - Vishnupriya Parimalam (vp@fb1.uni-bremen.de)
 
 
 

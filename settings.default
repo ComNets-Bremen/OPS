@@ -9,10 +9,8 @@
 
 OPS_MODEL_NAME=ops-simu
 
-#~/Vishnu/OPS_comnets/OPS
-
 KEETCHI_API_PATH=modules/KeetchiLib/lib
-KEETCHI_API_LIB=KEETCHI_API_PATH/.libs
+KEETCHI_API_LIB=$KEETCHI_API_PATH/.libs
 
 # Set to false and adapt INET_PATH if you prefer using your own inet checkout
 INET_BUILD=true
@@ -20,5 +18,5 @@ INET_PATH=modules/inet/src
 INET_LIB=$INET_PATH
 INET_NED=$INET_PATH
 
-OMNET_INI_FILE=simulations/omnetpp-promote-expon_keetchi.ini
+OMNET_INI_FILE=simulations/omnetpp-promote-expon.ini
 OMNET_OUTPUT_DIR=./out/

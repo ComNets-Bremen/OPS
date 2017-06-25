@@ -36,7 +36,6 @@ class KRRSLayer: public cSimpleModule
         string ownMACAddress;
 		int nextAppID;
         int maximumCacheSize;
-        bool destinationOrientedData;
         
         int currentCacheSize;
 		

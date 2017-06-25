@@ -32,7 +32,7 @@ class KKeetchiLayer: public cSimpleModule
 
     private:
         string ownMACAddress;
-		double agingInterval;
+        double agingInterval;
         KLKeetchi *keetchiAPI;
         void processUpperLayerInDataMsg(KDataMsg *dataMsg);
         void processUpperLayerInFeedbackMsg(KFeedbackMsg *feedbackMsg);
@@ -44,7 +44,9 @@ class KKeetchiLayer: public cSimpleModule
         KDataMsg* createOMNETDataMsgFromKeetchiAPIDataMsg(KLDataMsg* keetchiAPIDataMsg);
         KFeedbackMsg* createOMNETFeedbackMsgFromKeetchiAPIFeedbackMsg(KLFeedbackMsg* keetchiAPIFeedbackMsg);
 
-		cMessage *ageDataTimeoutEvent;
+        cMessage *ageDataTimeoutEvent;
+
+        string broadcastMACAddress;
 
 };
 #define KKEETCHILAYER_SIMMODULEINFO       " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KKeetchiLayer"

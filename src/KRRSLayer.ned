@@ -17,10 +17,7 @@ simple KRRSLayer
         
         // size of cache in bytes - zero means unlimited caching
         int maximumCacheSize @unit(byte) = default(0byte);
-        
-        // consider all messages to be destination oriented 
-        bool destinationOrientedData = default(false);
-		
+        		
         // icon used
       	@display("i=block/transport");
         

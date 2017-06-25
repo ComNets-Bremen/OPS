@@ -11,9 +11,9 @@ source ./tools/shell-functions.sh
 loadSettings
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$INET_LIB
+    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$KEETCHI_API_LIB:$INET_LIB
 elif [[ "$OSTYPE" == "linux"* ]]; then
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INET_LIB
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$KEETCHI_API_LIB:$INET_LIB
 fi
 
 

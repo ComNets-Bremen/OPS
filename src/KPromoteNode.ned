@@ -62,14 +62,14 @@ module KPromoteNode
             parameters:
                 ownMACAddress = ownAddress;
                 @display("p=120,112");
-	}
+        }
 
-	forwarding: KKeetchiLayer if forwardingLayer == 2 {
+        forwarding: KKeetchiLayer if forwardingLayer == 2 {
             parameters:
                 ownMACAddress = ownAddress;
                 @display("p=120,112");
         }
-        
+
         forwarding: KEpidemicRoutingLayer if forwardingLayer == 3 {
             parameters:
                 ownMACAddress = ownAddress;
@@ -113,3 +113,5 @@ module KPromoteNode
         wirelessIfc.lowerLayerIn <-- radioIn;
 
 }
+
+

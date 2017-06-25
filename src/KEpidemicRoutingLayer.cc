@@ -152,8 +152,8 @@ void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
         }
         if (expiredFound) {
             
-            EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Removing Expired Data Entry :: " 
-                << cacheEntry->dataName << " :: Valid Until :: " << cacheEntry->validUntilTime << "\n";
+            // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Removing Expired Data Entry :: "
+            //     << cacheEntry->dataName << " :: Valid Until :: " << cacheEntry->validUntilTime << "\n";
                 
                 
             currentCacheSize -= cacheEntry->realPacketSize;
@@ -163,8 +163,8 @@ void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
         }
     }
     
-    EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: New Cache Size :: " 
-        << cacheList.size() << " :: Removed Count :: " << (originalSize - cacheList.size()) << "\n";
+    // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: New Cache Size :: "
+    //     << cacheList.size() << " :: Removed Count :: " << (originalSize - cacheList.size()) << "\n";
 
     // setup next age data trigger
     scheduleAt(simTime() + 1.0, msg);
@@ -353,6 +353,7 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
     }
     int realPacketSize = 6 + 6 + (cacheList.size() * KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE);
     baseSummaryVectorMsg->setRealPacketSize(realPacketSize);
+    baseSummaryVectorMsg->setByteLength(realPacketSize);
 
     // send summary vector messages to all nodes to sync in a loop
     i = 0;
@@ -562,6 +563,7 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     dataRequestMsg->setDestinationAddress(summaryVectorMsg->getSourceAddress());
     int realPacketSize = 6 + 6 + (selectedMessageIDList.size() * KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE);
     dataRequestMsg->setRealPacketSize(realPacketSize);
+    dataRequestMsg->setByteLength(realPacketSize);
     dataRequestMsg->setMessageIDHashVectorArraySize(selectedMessageIDList.size());
     i = 0;
     vector<string>::iterator iteratorMessageIDList;
@@ -576,6 +578,9 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     }
 
     send(dataRequestMsg, "lowerLayerOut");
+
+    EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Data Request Msg :: " << dataRequestMsg->getSourceAddress() << " :: "
+        << dataRequestMsg->getDestinationAddress() << "\n";
 
     // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Sending Request To :: "
     //     << summaryVectorMsg->getSourceAddress() << " :: Requested Data Count :: " << selectedMessageIDList.size() << "\n";
@@ -626,6 +631,7 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             // check KOPSMsg.msg on sizing mssages
             int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6 + 1; 
             dataMsg->setRealPacketSize(realPacketSize);
+            dataMsg->setByteLength(realPacketSize);
             dataMsg->setOriginatorNodeName(cacheEntry->originatorNodeName.c_str());
             dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
             if (cacheEntry->destinationOriented) {
@@ -635,6 +641,10 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             dataMsg->setHopCount(cacheEntry->hopCount);
 
             send(dataMsg, "lowerLayerOut");
+
+            EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Data Msg :: " << dataMsg->getSourceAddress() << " :: "
+                << dataMsg->getDestinationAddress() << "\n";
+
 
             // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Sending Requested Data :: "
             //     << cacheEntry->dataName << " :: To :: " << dataRequestMsg->getSourceAddress() << "\n";

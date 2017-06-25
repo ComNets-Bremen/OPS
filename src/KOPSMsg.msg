@@ -20,20 +20,20 @@ packet KDataMsg {
     string destinationAddress;
     string dataName;
     string dummyPayloadContent;
-	int msgType;
-	double validUntilTime;
-        
+    int msgType;
+    double validUntilTime;
+
     int realPayloadSize;
     int realPacketSize;
-    
+
     // destination oriented delivery specific fields
     string originatorNodeName;
     string finalDestinationNodeName;
     bool destinationOriented;
-    
+
     // keetchi specific fields
     int goodnessValue;
-    
+
     // epidemic routing specific fields
     string messageID;
     int hopCount;
@@ -61,7 +61,7 @@ packet KFeedbackMsg {
     string dataName;
 
     int realPacketSize;
-    
+
     // keetchi specific fields
     int goodnessValue;
 }
@@ -84,9 +84,9 @@ packet KSummaryVectorMsg {
     // common fields
     string sourceAddress;
     string destinationAddress;
-    
+
     int realPacketSize;
-    
+
     // epidemic routing specific fields
     string messageIDHashVector[];  // summary vector
 }
@@ -109,9 +109,9 @@ packet KDataRequestMsg {
     // common fields
     string sourceAddress;
     string destinationAddress;
-    
+
     int realPacketSize;
-    
+
     // epidemic routing specific fields
     string messageIDHashVector[];  // request vector
 }
