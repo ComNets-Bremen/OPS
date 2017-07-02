@@ -404,17 +404,13 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: "
         << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << "\n";
 
-    // if destination oriented data sent around, then cache message only if not destined to self
-    // or if no destination in data, cache all messages
-    bool cacheData;
-    if (!omnetDataMsg->getDestinationOriented()) {
-        cacheData = TRUE;
-    } else if (omnetDataMsg->getDestinationOriented() && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+    // if destination oriented data sent around and this node is the destination
+    // then cache or else don't cache
+    bool cacheData = TRUE;
+    if (omnetDataMsg->getDestinationOriented() && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
         cacheData = FALSE;
-    } else {
-        cacheData = TRUE;
     }
-        
+    
     if(cacheData) {
 
         // insert/update cache

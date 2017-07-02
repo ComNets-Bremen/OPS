@@ -262,7 +262,12 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
             // if destination oriented data sent around, then cache message only if not destined to self
             // or if no destination in data, cache all messages
-            if(!omnetDataMsg->getDestinationOriented() || (strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) == NULL)) {
+            bool cacheData = TRUE;
+            if (omnetDataMsg->getDestinationOriented() && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+                cacheData = FALSE;
+            }
+            
+            if(cacheData) {
 
                 // insert/update cache
                 CacheEntry *cacheEntry;			

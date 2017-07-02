@@ -269,7 +269,7 @@ void KWirelessInterface::sendBroadcastMsg(cMessage *msg)
 
             sendDirect(outPktCopy, NULL, txDuration, nodeInfo->nodeModule, "radioIn");
 
-            // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending pkt to " << nodeInfo->nodeModule->getFullName() << "\n";
+            // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending (bcast) pkt to " << nodeInfo->nodeModule->getFullName() << "\n";
         }
         iteratorAllNodeInfo++;
     }
@@ -283,14 +283,21 @@ void KWirelessInterface::sendBroadcastMsg(cMessage *msg)
         // setup timer based on last sent packet tx duration
         scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
         
+        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " bcast - duration " << txDuration << "\n";
+        
     } else if (!packetQueue.empty()) {
         
         // if a pkt was unable to be sent, then try sending another
         // but after a short duration (1/10th of a millisecond later)
         scheduleAt(simTime() + 0.0001, sendNextPacketTimeoutEvent);
         
+        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " bcast - duration == 0, queue not empty \n";
+        
     } else {
         // timer not set
+
+        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " bcast - duration == 0, queue empty \n";
+
     }
 
 }
@@ -348,14 +355,21 @@ void KWirelessInterface::sendUnicastMsg(cMessage *msg)
         // setup timer based on last sent packet tx duration
         scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
         
+        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " ucast - duration " << txDuration << "\n";
+        
     } else if (!packetQueue.empty()) {
         
         // if a pkt was unable to be sent, then try sending another
         // but after a short duration (1/10th of a millisecond later)
         scheduleAt(simTime() + 0.0001, sendNextPacketTimeoutEvent);
         
+        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " ucast - duration == 0, queue not empty \n";
+
     } else {
         // timer not set
+
+        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " ucast - duration == 0, queue empty \n";
+
     }
 
 }
