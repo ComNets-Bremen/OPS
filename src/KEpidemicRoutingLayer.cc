@@ -31,12 +31,6 @@ void KEpidemicRoutingLayer::initialize(int stage)
         ageDataTimeoutEvent->setKind(108);
         scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
 
-        // setup the trigger to init synced neighbors based on antiEntropyInterval
-        syncedNeighboursInitTimeoutEvent = new cMessage("Synced Neighbours Init Timeout Event");
-        syncedNeighboursInitTimeoutEvent->setKind(110);
-        scheduleAt(simTime() + 2.0, syncedNeighboursInitTimeoutEvent);
-
-
     } else {
         EV_FATAL << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
     }
@@ -60,11 +54,6 @@ void KEpidemicRoutingLayer::handleMessage(cMessage *msg)
         if (msg->getKind() == 108) {
 
             handleDataAgingTrigger(msg);
-
-        // synced neighbour init trigger fired
-        } else if (msg->getKind() == 110) {
-
-            handleSyncedNeighbourRemovalTrigger(msg);
 
         } else {
             EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
@@ -171,43 +160,6 @@ void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
 
 }
 
-void KEpidemicRoutingLayer::handleSyncedNeighbourRemovalTrigger(cMessage *msg)
-{
-    bool syncedNeighbourRemoved = TRUE;
-
-    while (syncedNeighbourRemoved) {
-        syncedNeighbourRemoved = FALSE;
-
-        SyncedNeighbour *syncedNeighbour = NULL;
-        list<SyncedNeighbour*>::iterator iteratorSyncedNeighbour;
-        bool found = FALSE;
-        iteratorSyncedNeighbour = syncedNeighbourList.begin();
-        while (iteratorSyncedNeighbour != syncedNeighbourList.end()) {
-            syncedNeighbour = *iteratorSyncedNeighbour;
-            if ((syncedNeighbour->lastSyncTime + antiEntropyInterval) < simTime().dbl()) {
-                found = TRUE;
-                break;
-            }
-
-            iteratorSyncedNeighbour++;
-        }
-
-        if (found) {
-
-            // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Synced Neighbour Removal :: "
-            //     << syncedNeighbour->nodeMACAddress << " :: Last Sync Time :: " << syncedNeighbour->lastSyncTime << "\n";
-
-            syncedNeighbourList.remove(syncedNeighbour);
-            delete syncedNeighbour;
-
-            syncedNeighbourRemoved = TRUE;
-        }
-    }
-
-    // setup next age data trigger
-    scheduleAt(simTime() + 1.0, msg);
-}
-
 void KEpidemicRoutingLayer::handleAppRegistrationMsg(cMessage *msg)
 {
     KRegisterAppMsg *regAppMsg = dynamic_cast<KRegisterAppMsg*>(msg);
@@ -288,7 +240,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         cacheEntry = new CacheEntry;
 
         cacheEntry->messageID = omnetDataMsg->getDataName();
-        cacheEntry->hopCount = maximumHopCount;
+        cacheEntry->hopCount = 0;
         cacheEntry->dataName = omnetDataMsg->getDataName();
         cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
         cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
@@ -360,30 +312,32 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
     while (i < neighListMsg->getNeighbourNameListArraySize()) {
         string nodeMACAddress = neighListMsg->getNeighbourNameList(i);
 
-        // sync done only if my node ID is larger than the neighbors
-        // node ID
-        if (ownMACAddress > nodeMACAddress) {
+        // // sync done only if my node ID is larger than the neighbors
+        // // node ID
+        // if (ownMACAddress > nodeMACAddress) {
+        //     i++;
+        //     continue;
+        // }
 
-            // if the sync was not done with neighbor, start the process by sending
-            // a summary vector msg
-            if (!syncDoneWithNeighbour(nodeMACAddress)) {
+        // if the sync was not done with neighbor, start the process by sending
+        // a summary vector msg
+        if (!syncDoneWithNeighbour(nodeMACAddress)) {
 
-                KSummaryVectorMsg *summaryVectorMsg = baseSummaryVectorMsg->dup();
-                summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
-                send(summaryVectorMsg, "lowerLayerOut");
+            KSummaryVectorMsg *summaryVectorMsg = baseSummaryVectorMsg->dup();
+            summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
+            send(summaryVectorMsg, "lowerLayerOut");
 
-                updateNeighbourSyncStarted(nodeMACAddress);
+            updateNeighbourSyncStarted(nodeMACAddress);
 
-                EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Summary Vector Msg :: "
-                    << summaryVectorMsg->getSourceAddress() << " :: " << summaryVectorMsg->getDestinationAddress()
-                        << " :: Cached Entries " << summaryVectorMsg->getMessageIDHashVectorArraySize() << "\n";
-                
-                
-                // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Starting Neighbour Sync :: "
-                //     << nodeMACAddress << " :: Entries in Cache to Sync :: " << cacheList.size() << "\n";
-                                
+            EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Summary Vector Msg :: "
+                << summaryVectorMsg->getSourceAddress() << " :: " << summaryVectorMsg->getDestinationAddress()
+                    << " :: Cached Entries " << summaryVectorMsg->getMessageIDHashVectorArraySize() << "\n";
+            
+            
+            // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Starting Neighbour Sync :: "
+            //     << nodeMACAddress << " :: Entries in Cache to Sync :: " << cacheList.size() << "\n";
+                            
 
-            }
         }
         i++;
     }
@@ -405,9 +359,13 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << "\n";
 
     // if destination oriented data sent around and this node is the destination
+    // or if maximum hop count is reached
     // then cache or else don't cache
     bool cacheData = TRUE;
-    if (omnetDataMsg->getDestinationOriented() && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+    if ((omnetDataMsg->getDestinationOriented() 
+         && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL)
+        || omnetDataMsg->getHopCount() >= maximumHopCount) {
+
         cacheData = FALSE;
     }
     
@@ -456,7 +414,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             cacheEntry = new CacheEntry;
 
             cacheEntry->messageID = omnetDataMsg->getMessageID();
-            cacheEntry->hopCount = omnetDataMsg->getHopCount();
             cacheEntry->dataName = omnetDataMsg->getDataName();
             cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
             cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
@@ -473,6 +430,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             cacheList.push_back(cacheEntry);
 
             currentCacheSize += cacheEntry->realPacketSize;
+            
 
             // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " --- adding cache entry, size " << currentCacheSize << "b \n";
             // cout << "omnetDataMsg->getRealPacketSize()" << omnetDataMsg->getRealPacketSize() << "\n";
@@ -487,7 +445,10 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             
         }
 
+        cacheEntry->hopCount = omnetDataMsg->getHopCount() + 1;
         cacheEntry->lastAccessedTime = simTime().dbl();
+        // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " - data hc: " << omnetDataMsg->getHopCount()
+        //     << " - " << omnetDataMsg->getDataName() << "\n";
     }
 
     // if registered app exist, send data msg to app
@@ -655,7 +616,7 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
 bool KEpidemicRoutingLayer::syncDoneWithNeighbour(string nodeMACAddress)
 {
-    // check if node (neighbor) was seen before (and therefore sync done)
+    // check if node (neighbor) was seen before and sync done
     SyncedNeighbour *syncedNeighbour = NULL;
     list<SyncedNeighbour*>::iterator iteratorSyncedNeighbour;
     bool found = FALSE;
@@ -670,7 +631,7 @@ bool KEpidemicRoutingLayer::syncDoneWithNeighbour(string nodeMACAddress)
         iteratorSyncedNeighbour++;
     }
 
-    if (found) {
+    if (found && (syncedNeighbour->lastSyncTime + antiEntropyInterval) > simTime().dbl()) {
         return TRUE;
     }
 
@@ -679,16 +640,33 @@ bool KEpidemicRoutingLayer::syncDoneWithNeighbour(string nodeMACAddress)
 
 void KEpidemicRoutingLayer::updateNeighbourSyncStarted(string nodeMACAddress)
 {
-    if (syncDoneWithNeighbour(nodeMACAddress)) {
-        return;
+    // check if sync entry is there
+    SyncedNeighbour *syncedNeighbour = NULL;
+    list<SyncedNeighbour*>::iterator iteratorSyncedNeighbour;
+    bool found = FALSE;
+    iteratorSyncedNeighbour = syncedNeighbourList.begin();
+    while (iteratorSyncedNeighbour != syncedNeighbourList.end()) {
+        syncedNeighbour = *iteratorSyncedNeighbour;
+        if (syncedNeighbour->nodeMACAddress == nodeMACAddress) {
+            found = TRUE;
+            break;
+        }
+
+        iteratorSyncedNeighbour++;
     }
+    
+    if (!found) {
+        
+        // if sync entry not there, create an entry
+        syncedNeighbour = new SyncedNeighbour;
 
-    SyncedNeighbour *syncedNeighbour = new SyncedNeighbour;
-
-    syncedNeighbour->nodeMACAddress = nodeMACAddress.c_str();
+        syncedNeighbour->nodeMACAddress = nodeMACAddress.c_str();
+        syncedNeighbourList.push_back(syncedNeighbour);
+    }
+    
+    // update sync started time
     syncedNeighbour->lastSyncTime = simTime().dbl();
 
-    syncedNeighbourList.push_back(syncedNeighbour);
 }
 
 void KEpidemicRoutingLayer::finish()
@@ -698,10 +676,6 @@ void KEpidemicRoutingLayer::finish()
     // remove age data trigger
     cancelEvent(ageDataTimeoutEvent);
     delete ageDataTimeoutEvent;
-
-    // remove age data trigger
-    cancelEvent(syncedNeighboursInitTimeoutEvent);
-    delete syncedNeighboursInitTimeoutEvent;
 
 }
 

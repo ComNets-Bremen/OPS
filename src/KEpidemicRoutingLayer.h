@@ -81,10 +81,8 @@ class KEpidemicRoutingLayer: public cSimpleModule
         list<SyncedNeighbour*> syncedNeighbourList;
 
         cMessage *ageDataTimeoutEvent;
-        cMessage *syncedNeighboursInitTimeoutEvent;
 
         void handleDataAgingTrigger(cMessage *msg);
-        void handleSyncedNeighbourRemovalTrigger(cMessage *msg);
         void handleAppRegistrationMsg(cMessage *msg);
         void handleDataMsgFromUpperLayer(cMessage *msg);
         void handleNeighbourListMsgFromLowerLayer(cMessage *msg);
