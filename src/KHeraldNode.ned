@@ -10,7 +10,6 @@
 package ops;
 
 import inet.mobility.contract.IMobility;
-import inet.mobility.single.RandomWPMobility;
 
 module KHeraldNode
 {
@@ -20,8 +19,16 @@ module KHeraldNode
         // unique node identifier
         int nodeID;
 		
-		// app deployed (is node just a router)
+        // app deployed (or is node just a forwarder?)
+        // 1 = app deplyed
+        // 2 = app not deployed (just forwarding)
 		int heraldAppDeployed = default(1);
+
+        // type of forwarding layer used
+        // 1 = RRS
+        // 2 = Keetchi
+        // 3 = Epidemic
+        int forwardingLayer = default(2);
 
         // build own address from nodeID (in the form of a MAC address)
         int digit1 = (nodeID - (nodeID % 10000)) / 10000;

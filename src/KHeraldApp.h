@@ -69,7 +69,7 @@ class KHeraldApp : public cSimpleModule
         double feedbackGenerationInterval;
         double maxFeedbackGenerationInterval;
 
-        int notificationCount = 20;
+        int notificationCount;
         struct NotificationItem notificationItem[100] = {
 
             {22200, "/herald/item-22200", "Details of item-22200", "D item-22200", "F item-22200", 0, 512, 592, 78, 259210.0, 0, FALSE},

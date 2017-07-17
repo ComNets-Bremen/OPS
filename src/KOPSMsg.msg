@@ -21,7 +21,7 @@ packet KDataMsg {
     string dataName;
     string dummyPayloadContent;
     int msgType;
-    double validUntilTime;
+    double validUntilTime = 0;
 
     int realPayloadSize;
     int realPacketSize;
@@ -29,14 +29,14 @@ packet KDataMsg {
     // destination oriented delivery specific fields
     string originatorNodeName;
     string finalDestinationNodeName;
-    bool destinationOriented;
+    bool destinationOriented = false;
 
     // keetchi specific fields
-    int goodnessValue;
+    int goodnessValue = 50;
 
     // epidemic routing specific fields
     string messageID;
-    int hopCount;
+    int hopCount = 255;
 }
 
 //

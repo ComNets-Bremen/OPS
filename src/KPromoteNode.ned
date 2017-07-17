@@ -29,7 +29,7 @@ module KPromoteNode
         // 1 = RRS
         // 2 = Keetchi
         // 3 = Epidemic
-        int forwardingLayer = default(2);
+        int forwardingLayer = default(1);
 
         // build own address from nodeID (in the form of a MAC address)
         int digit1 = (nodeID - (nodeID % 10000)) / 10000;

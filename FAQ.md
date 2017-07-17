@@ -65,8 +65,8 @@ If you have introduced a new node model (an example of an existing node model is
 must be added to the `expectedNodeTypes` parameter in the `KPromoteApp.ned`.
 
 
-`9.` I pulled a newer version of OPS from Github (i.e., through git clone or git pull). But now, why is building OPS
-is failing?
+`9.` I pulled a newer version of OPS from Github (i.e., through git clone or git pull). But now, why is building of OPS
+failing?
 
 One possible reason may be that the newer version has a newer `settings.default` (i.e., a changed `settings.default`). 
 If you have copied the `settings.default` of the previous version to your home folder as `.opsSettings`, remove
@@ -76,3 +76,13 @@ If you have copied the `settings.default` of the previous version to your home f
 `10.` Where can I find the `50_traces.gpx.movements` file used with the BonnMotion Mobility Model?
 
 Send us an email if you want a copy of this file.
+
+
+`11.` Why does the simulation fail/crash when using `omnetpp.ini` file?
+
+The given `.ini` files were used in our simulations and therefore, they may not have the right parameters for 
+your simulation. If you want to just get OPS running, use the `omnetpp-promote-expon.ini` file. All the 
+other `.ini` files may require some changes to use.
+
+
+

@@ -140,10 +140,6 @@ void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
             iteratorCache++;
         }
         if (expiredFound) {
-            
-            // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Removing Expired Data Entry :: "
-            //     << cacheEntry->dataName << " :: Valid Until :: " << cacheEntry->validUntilTime << "\n";
-                
                 
             currentCacheSize -= cacheEntry->realPacketSize;
             cacheList.remove(cacheEntry);
@@ -152,9 +148,6 @@ void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
         }
     }
     
-    // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: New Cache Size :: "
-    //     << cacheList.size() << " :: Removed Count :: " << (originalSize - cacheList.size()) << "\n";
-
     // setup next age data trigger
     scheduleAt(simTime() + 1.0, msg);
 
@@ -194,10 +187,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Upper In :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: "
         << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() <<"\n";
 
-    // cout << "---omnetDataMsg->getRealPacketSize() " << omnetDataMsg->getRealPacketSize() << "\n";
-
-
-
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
     int found = FALSE;
@@ -233,8 +222,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
             cacheList.remove(removingCacheEntry);
             delete removingCacheEntry;
 
-            // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " --- removing cache entry, size " << currentCacheSize << "b \n";
-
         }
 
         cacheEntry = new CacheEntry;
@@ -257,14 +244,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         cacheList.push_back(cacheEntry);
 
         currentCacheSize += cacheEntry->realPacketSize;
-
-        // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " --- adding cache entry, size " << currentCacheSize << "b \n";
-        
-        
-        // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Adding App Generated Cache Entry :: "
-        //     << cacheEntry->dataName << "\n";
-        
-        
 
     }
 
@@ -312,9 +291,9 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
     while (i < neighListMsg->getNeighbourNameListArraySize()) {
         string nodeMACAddress = neighListMsg->getNeighbourNameList(i);
 
-        // // sync done only if my node ID is larger than the neighbors
-        // // node ID
-        // if (ownMACAddress > nodeMACAddress) {
+        // // sync initiation done only if my node ID is larger than the neighbors node ID
+        // // note: opposit way is done when this sync is completed
+        // if (ownMACAddress < nodeMACAddress) {
         //     i++;
         //     continue;
         // }
@@ -332,11 +311,6 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Summary Vector Msg :: "
                 << summaryVectorMsg->getSourceAddress() << " :: " << summaryVectorMsg->getDestinationAddress()
                     << " :: Cached Entries " << summaryVectorMsg->getMessageIDHashVectorArraySize() << "\n";
-            
-            
-            // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Starting Neighbour Sync :: "
-            //     << nodeMACAddress << " :: Entries in Cache to Sync :: " << cacheList.size() << "\n";
-                            
 
         }
         i++;
@@ -407,8 +381,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 cacheList.remove(removingCacheEntry);
                 delete removingCacheEntry;
 
-                // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " --- removing cache entry, size " << currentCacheSize << "b \n";
-
             }
 
             cacheEntry = new CacheEntry;
@@ -430,25 +402,13 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             cacheList.push_back(cacheEntry);
 
             currentCacheSize += cacheEntry->realPacketSize;
-            
-
-            // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " --- adding cache entry, size " << currentCacheSize << "b \n";
-            // cout << "omnetDataMsg->getRealPacketSize()" << omnetDataMsg->getRealPacketSize() << "\n";
-
-
-            // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Caching Received Data :: "
-            //     << cacheEntry->dataName << " :: From :: " << omnetDataMsg->getSourceAddress() << "\n";
 
         } else {
-            // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Already Cached Data Received :: "
-            //     << cacheEntry->dataName << " :: From :: " << omnetDataMsg->getSourceAddress() << "\n";
-            
+
         }
 
         cacheEntry->hopCount = omnetDataMsg->getHopCount() + 1;
         cacheEntry->lastAccessedTime = simTime().dbl();
-        // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " - data hc: " << omnetDataMsg->getHopCount()
-        //     << " - " << omnetDataMsg->getDataName() << "\n";
     }
 
     // if registered app exist, send data msg to app
@@ -480,11 +440,6 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Summary Vector Msg :: " << summaryVectorMsg->getSourceAddress() << " :: "
         << summaryVectorMsg->getDestinationAddress() << "\n";
-    
-    
-    // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Summary Vector Received From :: "
-    //     << summaryVectorMsg->getSourceAddress() << " :: Summary Vector Data Count :: " << summaryVectorMsg->getMessageIDHashVectorArraySize()
-    //         << "\n";
 
     // check and build a list of missing data items
     string messageID;
@@ -539,9 +494,6 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Data Request Msg :: " << dataRequestMsg->getSourceAddress() << " :: "
         << dataRequestMsg->getDestinationAddress() << "\n";
 
-    // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Sending Request To :: "
-    //     << summaryVectorMsg->getSourceAddress() << " :: Requested Data Count :: " << selectedMessageIDList.size() << "\n";
-
     delete msg;
 }
 
@@ -551,11 +503,6 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Summary Vector Msg :: " << dataRequestMsg->getSourceAddress() << " :: "
         << dataRequestMsg->getDestinationAddress() << "\n";
-
-
-    // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Data Request Received From :: "
-    //     << dataRequestMsg->getSourceAddress() << " :: Request Count:: "
-    //         << dataRequestMsg->getMessageIDHashVectorArraySize() << "\n";
 
     int i = 0;
     while (i < dataRequestMsg->getMessageIDHashVectorArraySize()) {
@@ -671,7 +618,6 @@ void KEpidemicRoutingLayer::updateNeighbourSyncStarted(string nodeMACAddress)
 
 void KEpidemicRoutingLayer::finish()
 {
-    // cout << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Cache size " << currentCacheSize << ", Cache entries " << cacheList.size() << "\n";
 
     // remove age data trigger
     cancelEvent(ageDataTimeoutEvent);
