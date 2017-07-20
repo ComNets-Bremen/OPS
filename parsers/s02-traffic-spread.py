@@ -63,8 +63,9 @@ def extract_from_log():
     tempfile1.write("# all required tags from log file")
     
     for line in inputfile:
-        if "INFO" in line and (":: KKeetchiLayer ::" in line or ":: KRRSLayer ::" in line) \
-            and ":: Lower In ::" in line and (":: Data Msg ::" in line or ":: Feedback Msg ::" in line):
+        if "INFO" in line and (":: KKeetchiLayer ::" in line or ":: KRRSLayer ::" in line or ":: KEpidemicRoutingLayer ::" in line) \
+            and ":: Lower In ::" in line and (":: Data Msg ::" in line or ":: Feedback Msg ::" in line or ":: Summary Vector Msg ::" in line \
+            or ":: Data Request Msg ::" in line):
             tempfile1.write(line)
 
 def compute_stats():
@@ -108,7 +109,7 @@ def compute_cov():
 
     cov = std_deviation / mean
 
-    outputfile1.write("# Total Packets (Data and Feedback) :: Coefficient of Variation \n")
+    outputfile1.write("# Total Packets (Data + Feedback + Summary Vector + Data Request) :: Coefficient of Variation \n")
     outputfile1.write(str(total) + " :: " + str(cov) + "\n")
     
     outputfile1mat1.write("figure;\nhold on;\n")
@@ -123,7 +124,7 @@ def compute_cov():
     outputfile1mat1.write("xlim([0 3]);\n")
     outputfile1mat1.write("ylim([0 " + str(total + (total // 8)) + "]);\n")
     outputfile1mat1.write("xlabel(\'Scenario\');\n")
-    outputfile1mat1.write("ylabel(\'Packets Received by All Nodes (Data and Feedback)\');\n")
+    outputfile1mat1.write("ylabel(\'Packets Received by All Nodes (Data + Feedback + Summary Vector + Data Request)\');\n")
     outputfile1mat1.write("set(gca, \'XTick\', 1:2, \'XTickLabel\', labels);\n")
     outputfile1mat1.write("set(gca, \'YTickMode\',\'manual\');\n")
     outputfile1mat1.write("set(gca, \'YTickLabel\', num2str(get(gca, \'YTick\')\'));\n")

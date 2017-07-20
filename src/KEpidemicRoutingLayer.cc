@@ -501,7 +501,7 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 {
     KDataRequestMsg *dataRequestMsg = dynamic_cast<KDataRequestMsg*>(msg);
 
-    EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Summary Vector Msg :: " << dataRequestMsg->getSourceAddress() << " :: "
+    EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Data Request Msg :: " << dataRequestMsg->getSourceAddress() << " :: "
         << dataRequestMsg->getDestinationAddress() << "\n";
 
     int i = 0;

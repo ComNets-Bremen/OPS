@@ -18,6 +18,10 @@ void KHeraldApp::initialize(int stage)
         nodeIndex = par("nodeIndex");
         notificationCount = par("notificationCount");
         usedRNG = par("usedRNG");
+        dataGenerationInterval = par("dataGenerationInterval");
+        dataGeneratingNodeIndex = par("dataGeneratingNodeIndex");
+        
+        
 		
 		totalSimulationTime = SimTime::parse(getEnvir()->getConfig()->getConfigValue("sim-time-limit")).dbl();
 

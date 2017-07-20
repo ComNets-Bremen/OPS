@@ -31,7 +31,8 @@ nonliked_received = 0
 useful_data_received = 0
 additional_data_received = 0
 feedback_received = 0
-
+sum_vec_received = 0
+data_req_received = 0
 
 class Event:
 
@@ -52,6 +53,8 @@ class Node:
         self.liked_received = 0
         self.nonliked_total = 0
         self.nonliked_received = 0
+        self.sum_vec_received = 0
+        self.data_req_received = 0
         
     def get_name():
         return self.name
@@ -94,6 +97,12 @@ class Node:
             sys.exit()
         
         event.times_feedback_received += 1
+
+    def update_sum_vec_receipt(self): 
+        self.sum_vec_received += 1
+
+    def update_data_req_receipt(self): 
+        self.data_req_received += 1
 
 
 def parse_param_n_open_files(argv):
@@ -148,7 +157,8 @@ def extract_from_log():
     
     for line in inputfile:
         if "INFO" in line and (":: KKeetchiLayer ::" in line or\
-            ":: KHeraldApp ::" in line or ":: KRRSLayer ::"):
+            ":: KHeraldApp ::" in line or ":: KRRSLayer ::" in line or\
+             ":: KRRSLayer ::" in line or ":: KEpidemicRoutingLayer ::" in line):
             tempfile1.write(line)
 
 def compute_node_acctivity_summary():
@@ -177,7 +187,7 @@ def compute_node_acctivity_summary():
                 nodes.append(node)
             node.add_event(words[5].strip(), int(words[6]), float(words[7]))
 
-        elif ("KKeetchiLayer" in line or "KRRSLayer" in line) and "Lower In :: Data Msg" in line:
+        elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and "Lower In :: Data Msg" in line:
             words = line.split("::")
             found = False
             for node in nodes:
@@ -187,7 +197,7 @@ def compute_node_acctivity_summary():
             if found:
                 node.update_event(words[9].strip(), float(words[1].strip()))
             
-        elif ("KKeetchiLayer" in line or "KRRSLayer" in line) and "Lower In :: Feedback Msg" in line:
+        elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and "Lower In :: Feedback Msg" in line:
             words = line.split("::")
             found = False
             for node in nodes:
@@ -195,8 +205,28 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_feedback(words[9].strip())          
-            
+                node.update_feedback(words[9].strip())
+
+        elif "KEpidemicRoutingLayer" in line and "Lower In :: Summary Vector Msg" in line:
+            words = line.split("::")
+            found = False
+            for node in nodes:
+                if node.name == words[2].strip():
+                    found = True
+                    break
+            if found:
+                node.update_sum_vec_receipt()          
+
+        elif "KEpidemicRoutingLayer" in line and "Lower In :: Data Request Msg" in line:
+            words = line.split("::")
+            found = False
+            for node in nodes:
+                if node.name == words[2].strip():
+                    found = True
+                    break
+            if found:
+                node.update_data_req_receipt()          
+
     outputfile1.write("# node name :: data name :: goodness val :: " + \
                      " valid until :: times data received :: first time received :: times feedback received \n")
 
@@ -222,9 +252,12 @@ def compute_like_dislike_summary():
     global useful_data_received
     global additional_data_received
     global feedback_received
-
+    global sum_vec_received
+    global data_req_received
 
     for node in nodes:
+        sum_vec_received += node.sum_vec_received
+        data_req_received += node.data_req_received
         for event in node.events:
             if event.goodness_val >= 75:
                 node.liked_total += 1
@@ -311,11 +344,11 @@ def compute_like_dislike_summary():
     outputfile3mat.write("legend(h, leg);\n\n")
     
     
-    outputfile4.write("# all :: total (data and feedback) :: useful data :: " \
-                    + " additional data :: feedback \n")
-    outputfile4.write(" all :: " + str(useful_data_received + additional_data_received + feedback_received) 
+    outputfile4.write("# all :: total (data + feedback + sum vec + data req) :: useful data :: " \
+                    + " additional data :: feedback :: summary vector :: data request \n")
+    outputfile4.write(" all :: " + str(useful_data_received + additional_data_received + feedback_received + sum_vec_received + data_req_received) 
                         + " :: " + str(useful_data_received) + " :: " \
-                    + str(additional_data_received) + " :: " + str(feedback_received) + "\n")
+                    + str(additional_data_received) + " :: " + str(feedback_received) + " :: " + str(sum_vec_received) + " :: " str(data_req_received) + " :: " + "\n")
 
     outputfile4mat.write("figure;\nhold on;\n")
     outputfile4mat.write("data = [\n")
