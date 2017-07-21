@@ -54,7 +54,7 @@ def parse_param_n_open_files(argv):
     newfilename = re.sub('-', '_', newfilename)
 
     inputfile = open(inputfilename, "r")
-    tempfile1 = tempfile.TemporaryFile()
+    tempfile1 = tempfile.TemporaryFile(dir='.')
     outputfile1 = open(re.sub('.txt', '_dr_01.txt', newfilename), "w+")
     outputfile2 = open(re.sub('.txt', '_dr_02.txt', newfilename), "w+")
 

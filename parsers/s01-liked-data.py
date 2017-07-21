@@ -133,7 +133,7 @@ def parse_param_n_open_files(argv):
     newfilename = re.sub('-', '_', newfilename)
 
     inputfile = open(inputfilename, "r")
-    tempfile1 = tempfile.TemporaryFile()
+    tempfile1 = tempfile.TemporaryFile(dir='.')
     outputfile1 = open(re.sub('.txt', '_ld_01.txt', newfilename), "w+")
     outputfile2 = open(re.sub('.txt', '_ld_02.txt', newfilename), "w+")
     outputfile2mat = open(re.sub('.txt', '_ld_02.m', newfilename), "w+")
@@ -348,7 +348,7 @@ def compute_like_dislike_summary():
                     + " additional data :: feedback :: summary vector :: data request \n")
     outputfile4.write(" all :: " + str(useful_data_received + additional_data_received + feedback_received + sum_vec_received + data_req_received) 
                         + " :: " + str(useful_data_received) + " :: " \
-                    + str(additional_data_received) + " :: " + str(feedback_received) + " :: " + str(sum_vec_received) + " :: " str(data_req_received) + " :: " + "\n")
+                    + str(additional_data_received) + " :: " + str(feedback_received) + " :: " + str(sum_vec_received) + " :: " + str(data_req_received) + " :: " + "\n")
 
     outputfile4mat.write("figure;\nhold on;\n")
     outputfile4mat.write("data = [\n")

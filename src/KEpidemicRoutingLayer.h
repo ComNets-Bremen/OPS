@@ -64,6 +64,9 @@ class KEpidemicRoutingLayer: public cSimpleModule
             bool destinationOriented;
             string originatorNodeName;
             string finalDestinationNodeName;
+            
+		    int goodnessValue;
+            
 
             double createdTime;
             double updatedTime;

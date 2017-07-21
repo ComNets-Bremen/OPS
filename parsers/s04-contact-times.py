@@ -80,7 +80,7 @@ def parse_param_n_open_files(argv):
 
     # open files - dsome have to be created
     inputfile = open(inputfilename, "r")
-    tempfile1 = tempfile.TemporaryFile()
+    tempfile1 = tempfile.TemporaryFile(dir='.')
     outputfile1 = open(re.sub('.txt', '_ct_01.txt', newfilename), "w+")
     outputfile2 = open(re.sub('.txt', '_ct_02.txt', newfilename), "w+")
     outputfile3 = open(re.sub('.txt', '_ct_03.txt', newfilename), "w+")

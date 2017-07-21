@@ -238,6 +238,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         if (omnetDataMsg->getDestinationOriented()) {
             cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
         }
+        cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
 
@@ -396,6 +397,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             if (omnetDataMsg->getDestinationOriented()) {
                 cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
             }
+            cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
             cacheEntry->createdTime = simTime().dbl();
             cacheEntry->updatedTime = simTime().dbl();
 
@@ -543,6 +545,7 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             }
             dataMsg->setMessageID(cacheEntry->messageID.c_str());
             dataMsg->setHopCount(cacheEntry->hopCount);
+            dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
 
             send(dataMsg, "lowerLayerOut");
 
