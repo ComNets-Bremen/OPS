@@ -158,7 +158,7 @@ def extract_from_log():
     for line in inputfile:
         if "INFO" in line and (":: KKeetchiLayer ::" in line or\
             ":: KHeraldApp ::" in line or ":: KRRSLayer ::" in line or\
-             ":: KRRSLayer ::" in line or ":: KEpidemicRoutingLayer ::" in line):
+            ":: KEpidemicRoutingLayer ::" in line):
             tempfile1.write(line)
 
 def compute_node_acctivity_summary():

@@ -63,8 +63,8 @@ def extract_from_log():
     tempfile1.write("# all required tags from log file")
     
     for line in inputfile:
-        if "INFO" in line and (":: KKeetchiLayer ::" in line or ":: KRRSLayer ::" in line or ":: KEpidemicRoutingLayer ::" in line) \
-            and ":: Lower In ::" in line and (":: Data Msg ::" in line or ":: Feedback Msg ::" in line or ":: Summary Vector Msg ::" in line \
+        if "INFO" in line and (":: KKeetchiLayer ::" in line or ":: KRRSLayer ::" in line or ":: KEpidemicRoutingLayer ::" in line)\
+            and ":: Lower In ::" in line and (":: Data Msg ::" in line or ":: Feedback Msg ::" in line or ":: Summary Vector Msg ::" in line\
             or ":: Data Request Msg ::" in line):
             tempfile1.write(line)
 
