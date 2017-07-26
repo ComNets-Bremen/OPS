@@ -72,6 +72,17 @@ own checkout of INET. To do so, please change the following values in the file
 When building the `INET Framework`, make sure to build and use the `release` version (not the `debug` version).
 
 
+
+###  KeetchiLib
+
+An external library called `KeetchiLib` is used by the `KKeetchiLayer` model to handle all the functionality 
+related to the [Organic Data Dissemination](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18) 
+forwarding model. The code for this library is available at Github and pulled for building by OPS. OPS builds 
+this library automatically, but if the build environment is not setup properly, the build will fail. Check the [README](https://github.com/ComNets-Bremen/KeetchiLib/blob/master/README.md) of `KeetchiLib` to see what is 
+required to be done to setup the build environment.
+
+
+
 Caveats
 -------
 
@@ -227,11 +238,11 @@ to the specific layer as listed below.
      Rumor Spreading (RRS) algorithm which randomly selects a data item to broadcast
      to a node's neighbourhood
    - `KKeetchiLayer` - Implements the Organic Data Dissemination algorithm as described 
-     in the publication `A Novel Data Dissemination Model for Organic Data Flows` by
+     in the publication [A Novel Data Dissemination Model for Organic Data Flows](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18) by
      A. Foerster et al
    - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described 
-     in the publication `Epidemic Routing for Partially-Connected Ad Hoc Networks` by
-     A. Vahdat and D. Becker
+     in the publication [Epidemic Routing for Partially-Connected Ad Hoc Networks](http://issg.cs.duke.edu/epidemic/epidemic.pdf)
+     by A. Vahdat and D. Becker
  
 3. Link Adaptation Layer - Tasked with converting packets sent by the Opportunistic
    Networking Layer to the specific link technology used (at Link Layer). Currently

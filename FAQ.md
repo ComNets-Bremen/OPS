@@ -85,4 +85,9 @@ your simulation. If you want to just get OPS running, use the `omnetpp-promote-e
 other `.ini` files may require some changes to use.
 
 
+`12.` Why does the simulation crash saying `KeetchiLib` is unavailable?
+
+This means that the building of the `KeetchiLib` failed. This is usually due to not setting up the build 
+environment properly. Read the [README](https://github.com/ComNets-Bremen/KeetchiLib/blob/master/README.md) of 
+[KeetchiLib](https://github.com/ComNets-Bremen/KeetchiLib) to setup your environment to build this library. 
 
