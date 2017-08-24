@@ -64,6 +64,7 @@ packet KFeedbackMsg {
 
     // keetchi specific fields
     int goodnessValue;
+    int feedbackType;
 }
 
 //

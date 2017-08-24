@@ -33,6 +33,11 @@ class KKeetchiLayer: public cSimpleModule
     private:
         string ownMACAddress;
         double agingInterval;
+        int maximumCacheSize;
+        double neighbourhoodChangeSignificanceThreshold;
+        double coolOffDuration;
+        double learningConst;
+
         KLKeetchi *keetchiAPI;
         void processUpperLayerInDataMsg(KDataMsg *dataMsg);
         void processUpperLayerInFeedbackMsg(KFeedbackMsg *feedbackMsg);

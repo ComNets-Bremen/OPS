@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Script to extract and process all data related entries from the  
+# Script to extract and process all data related entries from the
 # OMNeT simulator log to compute the following statistics.
 #
 # - delivery ratio of data - with the Promote App
@@ -34,7 +34,7 @@ def parse_param_n_open_files(argv):
     global outputfile1
     global outputfile2
     global max_sim_time
-    
+
     try:
         opts, args = getopt.getopt(argv,"hi:m:",["ifile=", "maxtime="])
     except getopt.GetoptError:
@@ -66,16 +66,16 @@ def extract_from_log():
     global inputfile
     global tempfile1
     global max_sim_time
-    
+
     tempfile1.write("# all required tags from log file\n")
-    
+
     for line in inputfile:
         if "INFO" in line and (":: At Source ::" in line or\
             ":: At Destination ::" in line):
             words = line.split("::")
             sim_time = float(words[1].strip())
             if max_sim_time == 0.0 or (max_sim_time > 0.0 and sim_time <= max_sim_time):
-                tempfile1.write(line)            
+                tempfile1.write(line)
 
 def accumulate_and_show_delivery_data():
     global tempfile1
@@ -109,7 +109,7 @@ def accumulate_and_show_delivery_data():
             else:
                 print 'More than once generated data ' + words[5].strip()
                 sys.exit(2)
-            
+
 
         elif ":: At Destination ::" in line:
             words = line.split("::")
@@ -130,7 +130,7 @@ def accumulate_and_show_delivery_data():
                 sys.exit(2)
         else:
             print "Unknown line - " + line
-            
+
     outputfile1.write(str(data_generated) + " :: " + str(data_received) + " :: " + str(accumilated_delay / data_received) + "\n")
 
 def close_files():
@@ -152,4 +152,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-  
+

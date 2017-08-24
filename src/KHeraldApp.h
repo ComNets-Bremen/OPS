@@ -29,6 +29,9 @@ using namespace std;
 #define KHERALDAPP_SIMMODULEINFO        " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KHeraldApp"
 #define TRUE                            1
 #define FALSE                           0
+#define KHERALDAPP_MSGTYPE_NONE         0
+#define KHERALDAPP_MSGTYPE_IMMEDIATE    1
+#define KHERALDAPP_MSGTYPE_PREFERENCE   2
 
 
 class KHeraldApp : public cSimpleModule
