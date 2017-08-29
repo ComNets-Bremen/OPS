@@ -40,6 +40,7 @@ class KEpidemicRoutingLayer: public cSimpleModule
         int maximumCacheSize;
         double antiEntropyInterval;
         int maximumHopCount;
+        double maximumRandomBackoffDuration;
 
         int currentCacheSize;
 
@@ -64,9 +65,9 @@ class KEpidemicRoutingLayer: public cSimpleModule
             bool destinationOriented;
             string originatorNodeName;
             string finalDestinationNodeName;
-            
-		    int goodnessValue;
-            
+
+            int goodnessValue;
+
 
             double createdTime;
             double updatedTime;
@@ -76,7 +77,16 @@ class KEpidemicRoutingLayer: public cSimpleModule
 
         struct SyncedNeighbour {
             string nodeMACAddress;
-            double lastSyncTime;
+            double syncCoolOffEndTime;
+
+            bool randomBackoffStarted;
+            double randomBackoffEndTime;
+
+            bool neighbourSyncing;
+            double neighbourSyncEndTime;
+
+            bool nodeConsidered;
+
         };
 
         list<AppInfo*> registeredAppList;
@@ -92,8 +102,11 @@ class KEpidemicRoutingLayer: public cSimpleModule
         void handleDataMsgFromLowerLayer(cMessage *msg);
         void handleSummaryVectorMsgFromLowerLayer(cMessage *msg);
         void handleDataRequestMsgFromLowerLayer(cMessage *msg);
-        bool syncDoneWithNeighbour(string nodeMACAddress);
-        void updateNeighbourSyncStarted(string nodeMACAddress);
+
+        SyncedNeighbour* getSyncingNeighbourInfo(string nodeMACAddress);
+        void setSyncingNeighbourInfoForNextRound();
+        void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
+        KSummaryVectorMsg* makeSummaryVectorMessage();
 
 };
 #define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KEpidemicRoutingLayer"

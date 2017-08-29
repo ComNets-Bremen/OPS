@@ -18,6 +18,9 @@ simple KHeraldApp
         // number of notifications to use (from the 100 defined)
         int notificationCount = default(20);
 
+        // percentage of nodes from notificationCount to assign popularity values
+        double popularityAssignmentPercentage = default(10.0); // 10.0 = 10%
+
         // RNG to use
         int usedRNG = default(0);
 
@@ -26,6 +29,9 @@ simple KHeraldApp
 
         // node that generates data in (pumps data in to) network
         int dataGeneratingNodeIndex = default(1);
+
+        // data size
+        int dataSizeInBytes = default(1000);
 
         // icon used
         @display("i=block/app");

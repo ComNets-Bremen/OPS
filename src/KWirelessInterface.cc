@@ -91,8 +91,8 @@ void KWirelessInterface::initialize(int stage)
         scheduleAt(simTime() + neighbourScanInterval, sendNeighEvent);
 
         // setup pkt send event message
-        sendNextPacketTimeoutEvent = new cMessage("Send Next Packet Timeout Event");
-        sendNextPacketTimeoutEvent->setKind(KWIRELESSINTERFACE_PKTSEND_EVENT_CODE);
+        sendPacketTimeoutEvent = new cMessage("Send Packet Timeout Event");
+        sendPacketTimeoutEvent->setKind(KWIRELESSINTERFACE_PKTSEND_EVENT_CODE);
 
 
     } else {
@@ -111,8 +111,15 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
     // find and send neighbour list to upper layer
     if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACE_NEIGH_EVENT_CODE) {
-        list<KBaseNodeInfo*> neighbourNodeInfoList;
 
+        // init current neighbor list
+        while (currentNeighbourNodeInfoList.size() > 0) {
+            list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
+            KBaseNodeInfo *nodeInfo = *iteratorCurrentNeighbourNodeInfo;
+            currentNeighbourNodeInfoList.remove(nodeInfo);
+        }
+
+        // get current position of self
         inet::Coord ownCoord = ownNodeInfo->nodeMobilityModule->getCurrentPosition();
 
         // check which nodes are neighbours and if so, add to list
@@ -128,24 +135,24 @@ void KWirelessInterface::handleMessage(cMessage *msg)
                 + ((neighCoord.y - ownCoord.y) * (neighCoord.y - ownCoord.y));
             double r = wirelessRange * wirelessRange;
             if (l <= r) {
-                neighbourNodeInfoList.push_back(nodeInfo);
+                currentNeighbourNodeInfoList.push_back(nodeInfo);
             }
             iteratorAllNodeInfo++;
         }
 
         // if there are neighbours, send message
-        if (neighbourNodeInfoList.size() > 0) {
+        if (currentNeighbourNodeInfoList.size() > 0) {
 
             // build message
             int neighCount = 0;
 
             KNeighbourListMsg *neighListMsg = new KNeighbourListMsg("Neighbour List Msg");
-            neighListMsg->setNeighbourNameListArraySize(neighbourNodeInfoList.size());
-            neighListMsg->setNeighbourNameCount(neighbourNodeInfoList.size());
+            neighListMsg->setNeighbourNameListArraySize(currentNeighbourNodeInfoList.size());
+            neighListMsg->setNeighbourNameCount(currentNeighbourNodeInfoList.size());
 
-            list<KBaseNodeInfo*>::iterator iteratorNeighNodeInfo = neighbourNodeInfoList.begin();
-            while (iteratorNeighNodeInfo != neighbourNodeInfoList.end()) {
-                KBaseNodeInfo *nodeInfo = *iteratorNeighNodeInfo;
+            list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
+            while (iteratorCurrentNeighbourNodeInfo != currentNeighbourNodeInfoList.end()) {
+                KBaseNodeInfo *nodeInfo = *iteratorCurrentNeighbourNodeInfo;
 
                 string nodeAddress = nodeInfo->nodeModule->par("ownAddress").stringValue();
                 neighListMsg->setNeighbourNameList(neighCount, nodeAddress.c_str());
@@ -153,7 +160,7 @@ void KWirelessInterface::handleMessage(cMessage *msg)
                 EV_INFO << KWIRELESSINTERFACE_SIMMODULEINFO << " :: Neigbourhood Info :: " << ownMACAddress << " :: " << nodeAddress << " :: " << nodeInfo->nodeModule->getFullName() << "\n";
 
                 neighCount++;
-                iteratorNeighNodeInfo++;
+                iteratorCurrentNeighbourNodeInfo++;
             }
 
             // send msg to upper layer
@@ -168,30 +175,21 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
         delete msg;
 
-    // trigger to send next queued packet
+    // trigger to send pending packet and setup new send
     } else if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACE_PKTSEND_EVENT_CODE) {
 
+        // send the pending packet out
+        sendPendingMsg();
+
+        // if there are queued packets, setup for sending the next one at top of queue
         if (!packetQueue.empty()) {
+
+            // get next at the top of queue
             cMessage *nextMsg = packetQueue.front();
-
-            string destinationAddress = getDestinationAddress(nextMsg);
-
-            // cout << simTime().dbl() << " " << getParentModule()->getFullName() << " queued packet sent - size " << ((cPacket*) nextMsg)->getByteLength() << "\n";
-
-            // send broadcast message
-            if (destinationAddress == broadcastMACAddress) {
-
-                sendBroadcastMsg(nextMsg);
-
-            // send unicast message
-            } else {
-
-                sendUnicastMsg(nextMsg);
-
-            }
-
             packetQueue.pop();
 
+            // setup for next message sending and start timer
+            setupSendingMsg(nextMsg);
         }
 
     // process a packet (arriving from upper or lower layers)
@@ -208,32 +206,20 @@ void KWirelessInterface::handleMessage(cMessage *msg)
         if (strstr(gateName, "upperLayerIn") != NULL) {
 
             // if currently there is a pending msg, then queue this msg
-            if (sendNextPacketTimeoutEvent->isScheduled()) {
-                
-                // cout << simTime().dbl() << " " << getParentModule()->getFullName() << " packet queued to send - size " << ((cPacket*)msg)->getByteLength() << "\n";
-                
-                
+            if (sendPacketTimeoutEvent->isScheduled()) {
+
                 packetQueue.push(msg);
 
-            // no queued msgs, so send immediately and start next message timer
+                // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Queuing pkt to " << getDestinationAddress(msg) << " \n";
+
+
+            // no queued msgs
             } else {
-                string destinationAddress = getDestinationAddress(msg);
 
+                // so setup for next message sending and start timer
+                setupSendingMsg(msg);
 
-                // cout << simTime().dbl() << " " << getParentModule()->getFullName() << " packet sent immediately - size " << ((cPacket*)msg)->getByteLength() << "\n";
-
-                // send broadcast message
-                if (destinationAddress == broadcastMACAddress) {
-
-                    sendBroadcastMsg(msg);
-
-                // send unicast message
-                } else {
-
-                    sendUnicastMsg(msg);
-
-                }
-            }
+              }
 
         // from lowerLayerIn
         } else {
@@ -245,131 +231,87 @@ void KWirelessInterface::handleMessage(cMessage *msg)
     }
 }
 
-void KWirelessInterface::sendBroadcastMsg(cMessage *msg)
+void KWirelessInterface::setupSendingMsg(cMessage *msg)
 {
-    inet::Coord ownCoord = ownNodeInfo->nodeMobilityModule->getCurrentPosition();
-    simtime_t txDuration = 0.0;
+    string destinationAddress = getDestinationAddress(msg);
+    bool isBroadcastMsg = FALSE;
+    if (destinationAddress == broadcastMACAddress) {
+        isBroadcastMsg = TRUE;
+    }
 
-    list<KBaseNodeInfo*>::iterator iteratorAllNodeInfo = allNodeInfoList.begin();
-    while (iteratorAllNodeInfo != allNodeInfoList.end()) {
-        KBaseNodeInfo *nodeInfo = *iteratorAllNodeInfo;
-        inet::Coord neighCoord = nodeInfo->nodeMobilityModule->getCurrentPosition();
+    // make the neighbour list at begining of msg tx (to check later if those neighbours are still there)
+    list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
+    while (iteratorCurrentNeighbourNodeInfo != currentNeighbourNodeInfoList.end()) {
+        KBaseNodeInfo *nodeInfo = *iteratorCurrentNeighbourNodeInfo;
+        string nodeAddress = nodeInfo->nodeModule->par("ownAddress").stringValue();
 
-        double l = ((neighCoord.x - ownCoord.x) * (neighCoord.x - ownCoord.x))
-            + ((neighCoord.y - ownCoord.y) * (neighCoord.y - ownCoord.y));
-        double r = wirelessRange * wirelessRange;
-        if (l <= r) {
-
-            // node in transmission range, so send to node
-            cPacket *outPktCopy =  dynamic_cast<cPacket*>(msg->dup());
-
-            // compute transmission duration
-            double bitsToSend = (outPktCopy->getByteLength() * 8) + (wirelessHeaderSize * 8);
-            txDuration = bitsToSend / bandwidthBitRate;
-
-            sendDirect(outPktCopy, NULL, txDuration, nodeInfo->nodeModule, "radioIn");
-
-            // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending (bcast) pkt to " << nodeInfo->nodeModule->getFullName() << "\n";
+        // if broadcast, add all addresses to tx time neighbour list
+        // if unicast, add only the specific address
+        if (isBroadcastMsg || destinationAddress == nodeAddress) {
+            atTxNeighbourNodeInfoList.push_back(nodeInfo);
         }
-        iteratorAllNodeInfo++;
+
+        iteratorCurrentNeighbourNodeInfo++;
     }
 
-    // remove msg
-    delete msg;
+    // save the msg to send
+    currentPendingMsg = msg;
 
-    // setup the the next pkt send
-    if (txDuration > 0.0) {
-        
-        // setup timer based on last sent packet tx duration
-        scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
-        
-        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " bcast - duration " << txDuration << "\n";
-        
-    } else if (!packetQueue.empty()) {
-        
-        // if a pkt was unable to be sent, then try sending another
-        // but after a short duration (1/10th of a millisecond later)
-        scheduleAt(simTime() + 0.0001, sendNextPacketTimeoutEvent);
-        
-        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " bcast - duration == 0, queue not empty \n";
-        
-    } else {
-        // timer not set
+    // compute transmission duration
+    cPacket *currentPendingPkt = dynamic_cast<cPacket*>(currentPendingMsg);
+    double bitsToSend = (currentPendingPkt->getByteLength() * 8) + (wirelessHeaderSize * 8);
+    double txDuration = bitsToSend / bandwidthBitRate;
 
-        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " bcast - duration == 0, queue empty \n";
+    // setup timer to trigger at tx duration
+    scheduleAt(simTime() + txDuration, sendPacketTimeoutEvent);
 
-    }
+    // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending pkt to " << destinationAddress << " - start \n";
 
 }
 
-void KWirelessInterface::sendUnicastMsg(cMessage *msg)
+void KWirelessInterface::sendPendingMsg()
 {
-    inet::Coord ownCoord = ownNodeInfo->nodeMobilityModule->getCurrentPosition();
-    string destinationAddress = getDestinationAddress(msg);
-    simtime_t txDuration = 0.0;
-    bool nodeFound = FALSE;
-    KBaseNodeInfo *nodeInfo = NULL;
+    // check if nodes to deliver are still in neighbourhood, if so send the packet
+    list<KBaseNodeInfo*>::iterator iteratorAtTxNeighbourNodeInfo = atTxNeighbourNodeInfoList.begin();
+    while (iteratorAtTxNeighbourNodeInfo != atTxNeighbourNodeInfoList.end()) {
+        KBaseNodeInfo *atTxNeighbourNodeInfo = *iteratorAtTxNeighbourNodeInfo;
+        string atTxNeighbourNodeAddress = atTxNeighbourNodeInfo->nodeModule->par("ownAddress").stringValue();
 
-    // find if the node to unicast is in range
-    list<KBaseNodeInfo*>::iterator iteratorAllNodeInfo = allNodeInfoList.begin();
-    while (iteratorAllNodeInfo != allNodeInfoList.end()) {
-        nodeInfo = *iteratorAllNodeInfo;
-        string nodeAddress = nodeInfo->nodeModule->par("ownAddress").stringValue();
-        if (destinationAddress == nodeAddress) {
+        list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
+        while (iteratorCurrentNeighbourNodeInfo != currentNeighbourNodeInfoList.end()) {
+            KBaseNodeInfo *currentNeighbourNodeInfo = *iteratorCurrentNeighbourNodeInfo;
+            string currentNeighbourNodeAddress = currentNeighbourNodeInfo->nodeModule->par("ownAddress").stringValue();
 
-            inet::Coord neighCoord = nodeInfo->nodeMobilityModule->getCurrentPosition();
+            // check if node is still in neighbourhood
+            if (atTxNeighbourNodeAddress == currentNeighbourNodeAddress) {
 
-            double l = ((neighCoord.x - ownCoord.x) * (neighCoord.x - ownCoord.x))
-                + ((neighCoord.y - ownCoord.y) * (neighCoord.y - ownCoord.y));
-            double r = wirelessRange * wirelessRange;
+                // make duplicate of packet
+                cPacket *outPktCopy =  dynamic_cast<cPacket*>(currentPendingMsg->dup());
 
-            if (l <= r) {
-                nodeFound = TRUE;
+                // send to node
+                sendDirect(outPktCopy, currentNeighbourNodeInfo->nodeModule, "radioIn");
+
+                // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending pkt to " << getDestinationAddress(currentPendingMsg)
+                //     << " (" << currentNeighbourNodeInfo->nodeModule->par("ownAddress").stringValue() << ")" << " - end \n";
+
+                break;
             }
-            break;
+
+            iteratorCurrentNeighbourNodeInfo++;
         }
-        iteratorAllNodeInfo++;
+
+        iteratorAtTxNeighbourNodeInfo++;
     }
 
-    // if node in range, then send message
-    if (nodeFound) {
-        // node in transmission range, so send to node
-        cPacket *outPktCopy =  dynamic_cast<cPacket*>(msg->dup());
+    // remove original message
+    delete currentPendingMsg;
+    currentPendingMsg = NULL;
 
-        // compute transmission duration
-        double bitsToSend = (outPktCopy->getByteLength() * 8) + (wirelessHeaderSize * 8);
-        txDuration = bitsToSend / bandwidthBitRate;
-
-        sendDirect(outPktCopy, NULL, txDuration, nodeInfo->nodeModule, "radioIn");
-
-        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending pkt to " << nodeInfo->nodeModule->getFullName() << "\n";
-
-    }
-
-    // remove msg
-    delete msg;
-
-    // setup the the next pkt send
-    if (txDuration > 0.0) {
-        
-        // setup timer based on last sent packet tx duration
-        scheduleAt(simTime() + txDuration, sendNextPacketTimeoutEvent);
-        
-        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " ucast - duration " << txDuration << "\n";
-        
-    } else if (!packetQueue.empty()) {
-        
-        // if a pkt was unable to be sent, then try sending another
-        // but after a short duration (1/10th of a millisecond later)
-        scheduleAt(simTime() + 0.0001, sendNextPacketTimeoutEvent);
-        
-        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " ucast - duration == 0, queue not empty \n";
-
-    } else {
-        // timer not set
-
-        // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " " << getParentModule()->getFullName() << " ucast - duration == 0, queue empty \n";
-
+    // remove entries in list used to check neighbour list at begining of msg tx
+    while (atTxNeighbourNodeInfoList.size() > 0) {
+        list<KBaseNodeInfo*>::iterator iteratorAtTxNeighbourNodeInfo = atTxNeighbourNodeInfoList.begin();
+        KBaseNodeInfo *nodeInfo = *iteratorAtTxNeighbourNodeInfo;
+        atTxNeighbourNodeInfoList.remove(nodeInfo);
     }
 
 }
@@ -406,10 +348,13 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
 void KWirelessInterface::finish()
 {
     // remove send msg timeout
-    if (sendNextPacketTimeoutEvent->isScheduled()) {
-        cancelEvent(sendNextPacketTimeoutEvent);
+    if (sendPacketTimeoutEvent->isScheduled()) {
+        cancelEvent(sendPacketTimeoutEvent);
     }
-    delete sendNextPacketTimeoutEvent;
+    delete sendPacketTimeoutEvent;
+
+
+
 
 }
 

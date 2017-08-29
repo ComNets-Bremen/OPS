@@ -10,6 +10,8 @@
 
 Define_Module(KHeraldApp);
 
+list<int> popularityList;
+
 void KHeraldApp::initialize(int stage)
 {
     if (stage == 0) {
@@ -20,11 +22,42 @@ void KHeraldApp::initialize(int stage)
         usedRNG = par("usedRNG");
         dataGenerationInterval = par("dataGenerationInterval");
         dataGeneratingNodeIndex = par("dataGeneratingNodeIndex");
+        popularityAssignmentPercentage = par("popularityAssignmentPercentage");
+        dataSizeInBytes = par("dataSizeInBytes");
 
         totalSimulationTime = SimTime::parse(getEnvir()->getConfig()->getConfigValue("sim-time-limit")).dbl();
 
         // setup prefix
         strcpy(prefixName, "/herald");
+
+
+        // The following procedure is followed when assigning goodness values to each notification
+        // - introduce popularity of messages. The “pop” value represents the percentage of the complete
+        //   network which will love this packet (e.g. joke).
+        // - at initialisation, create pop-values for all messages. 90% of the messages get a pop-value of
+        //   0, 10% of the messages get a random pop-value between 1 and 20.
+        // - after creating all the messages with their pop-values, allow each user to decide whether she
+        //   likes the message or not. There are only two decisions possible: IGNORE (corresponds to a value
+        //   of 0) and LOVE (correponds to a value of 100).
+        // - the decision itself is taken according to Fig. 3b and Equation (2) of the UBM paper. The
+        //   resulting value is compared to 90: if the value is greater or equal to 90, LOVE. If not, IGNORE.
+        // - The final “like” values (only 0 and 100s possible) are stored and used later at simulation time
+        //   to represent the reaction of the user and to send to Keetchi as goodness values.
+
+
+        // assign popularity values for the popularityAssignmentPercentage of notificationCount
+        if (popularityList.size() == 0) {
+            for (int i = 0; i < notificationCount; i++) {
+                double perc = (double) (i + 1) / notificationCount * 100.0;
+                int popularity = 0;
+
+                if (perc <= popularityAssignmentPercentage) {
+                    popularity = intuniform(1, 20, usedRNG);
+                }
+
+                popularityList.push_back(popularity);
+            }
+        }
 
         // setup the event notification array
         for (int i = 0; i < notificationCount; i++) {
@@ -35,11 +68,21 @@ void KHeraldApp::initialize(int stage)
             sprintf(notificationItem->dummyPayloadContent, "Details of item-%0d", notificationItem->itemNumber);
             sprintf(notificationItem->dataMsgName, "D item-%0d", notificationItem->itemNumber);
             sprintf(notificationItem->feedbackMsgName, "F item-%0d", notificationItem->itemNumber);
-            notificationItem->goodnessValue = 0;
-            notificationItem->realPayloadSize = 512;
-            notificationItem->dataByteLength = 592;
+
+            list<int>::iterator iteratorPopularity = popularityList.begin();
+            advance(iteratorPopularity, i);
+            notificationItem->popularity = *iteratorPopularity;
+            notificationItem->likeness = intuniform(notificationItem->popularity, 100, usedRNG);
+            if (notificationItem->likeness >= 90) {
+                notificationItem->goodnessValue = 100;
+            } else {
+                notificationItem->goodnessValue = 0;
+            }
+
+            notificationItem->realPayloadSize = dataSizeInBytes;
+            notificationItem->dataByteLength = dataSizeInBytes;
             notificationItem->feedbackByteLength = 78;
-            notificationItem->validUntilTime = 2071531.0;
+            notificationItem->validUntilTime = 99999999.0;
             notificationItem->timesDataMsgReceived = 0;
             notificationItem->feedbackGenerated = FALSE;
 
@@ -48,17 +91,7 @@ void KHeraldApp::initialize(int stage)
 
     } else if (stage == 1) {
 
-        // assign own goodness values
-        for (int i = 0; i < notificationCount; i++) {
-            list<NotificationItem*>::iterator it = notificationList.begin();
-            advance(it, i);
-            NotificationItem *notificationItem = *it;
-
-            int goodnessValue = ((int) uniform(0.0, 5.0, usedRNG))  * 25;
-            notificationItem->goodnessValue = goodnessValue;
-        }
-
-        // dump the notification list with given goodness value
+        // dump the notification list with given popularity, likeness and goodness value
         EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Notification List Begin :: Count :: " << notificationCount << "\n";
         for (int i = 0; i < notificationCount; i++) {
             list<NotificationItem*>::iterator it = notificationList.begin();
@@ -66,7 +99,10 @@ void KHeraldApp::initialize(int stage)
             NotificationItem *notificationItem = *it;
 
             EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Notification Entry :: " << notificationItem->dataName << " :: "
-                << notificationItem->goodnessValue << " :: " << notificationItem->validUntilTime << "\n";
+                << notificationItem->popularity << " :: " << notificationItem->likeness << " :: "
+                << notificationItem->goodnessValue << " :: "
+                << (notificationItem->goodnessValue == 100 ? "LOVE" : "IGNORE") << " :: "
+                << notificationItem->validUntilTime << "\n";
         }
         EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Notification List End :: Count :: " << notificationCount << "\n";
 

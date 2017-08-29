@@ -15,7 +15,7 @@ For Linux or MacOS:
 - Install and setup OMNeT++ (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
 - Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS`
-- Copy the settings.default as .opsSettings to home folder (and change if required)
+- Copy the `settings.default` as `.opsSettings` to home folder (and change if required)
 - Checkout and build dependencies: `./bootstrap.sh`
 - Create makefiles: `./ops-makefile-setup.sh`
 - Build simulation: `make`
@@ -45,8 +45,8 @@ perform opportunistic networking. This release of the models consist of
 models relevant to each protocol layer.
 
 
-Prerequisites I (MUST be installed)
------------------------------------
+Prerequisites I (MUST for All Users)
+------------------------------------
 
 OPS requires the following software to be installed and operational in the systems 
 on which it is run.
@@ -191,12 +191,12 @@ run the required simulations. Currently there are many samples of these 3 compon
   `omnetpp-herald.ini` in the `simulations/` folder
 
 
-3. Modify the settings to point to the created OMNeT++ parameters in the
+2. Modify the settings to point to the created OMNeT++ parameters in the
 previous step.
 
-4. Create the results output folder `simulations/out`
+3. Create the results output folder `simulations/out`
 
-5. Run the `ops-simu-run` script file to run simulations. Simulation can be run using the GUI
+4. Run the `ops-simu-run` script file to run simulations. Simulation can be run using the GUI
 (Tkenv) mode or the command line mode. To enable the required mode, the  `-m` switch must be used.
 
   - `ops-simu-run -m tkenv` - The `tkenv` mode brings up the GUI version of the simulation

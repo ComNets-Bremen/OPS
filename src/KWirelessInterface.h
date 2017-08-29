@@ -7,7 +7,7 @@
 // @date: 08-11-2015
 // @author: Asanga Udugama (adu@comnets.uni-bremen.de)
 //
-// Modified to send also unicast packets in addition to 
+// Modified to send also unicast packets in addition to
 // broadcast packets
 //
 // @date: 08-05-2017
@@ -54,10 +54,14 @@ class KWirelessInterface: public cSimpleModule
         KBaseNodeInfo *ownNodeInfo;
         list<KBaseNodeInfo*> allNodeInfoList;
         queue<cMessage*> packetQueue;
-        cMessage *sendNextPacketTimeoutEvent;
+        cMessage *sendPacketTimeoutEvent;
 
-        void sendBroadcastMsg(cMessage *msg);
-        void sendUnicastMsg(cMessage *msg);
+        list<KBaseNodeInfo*> currentNeighbourNodeInfoList;
+        list<KBaseNodeInfo*> atTxNeighbourNodeInfoList;
+        cMessage *currentPendingMsg;
+
+        void setupSendingMsg(cMessage *msg);
+        void sendPendingMsg();
         string getDestinationAddress(cMessage *msg);
 
 };

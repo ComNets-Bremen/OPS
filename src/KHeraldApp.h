@@ -54,7 +54,10 @@ class KHeraldApp : public cSimpleModule
             char dataMsgName[128];
             char feedbackMsgName[128];
 
+            int popularity;
+            int likeness;
             int goodnessValue;
+
             int realPayloadSize;
             int dataByteLength;
             int feedbackByteLength;
@@ -63,6 +66,7 @@ class KHeraldApp : public cSimpleModule
 
             int timesDataMsgReceived;
             int feedbackGenerated;
+
 
         };
 
@@ -81,6 +85,9 @@ class KHeraldApp : public cSimpleModule
         cMessage *appRegistrationEvent;
         cMessage *dataTimeoutEvent;
         cMessage *feedbackTimeoutEvent;
+
+        double popularityAssignmentPercentage;
+        int dataSizeInBytes;
 
 };
 

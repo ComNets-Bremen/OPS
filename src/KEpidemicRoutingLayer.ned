@@ -24,6 +24,9 @@ simple KEpidemicRoutingLayer
         // maximum amount of hops to forward for a data
         int maximumHopCount = default(10);
 
+        // maximum duration to use when obtaining a random backoff duration
+        double maximumRandomBackoffDuration @unit(s) = default(5s);
+
         // icon used
         @display("i=block/transport");
 
