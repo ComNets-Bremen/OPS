@@ -125,7 +125,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
     	} else if (strstr(gateName, "upperLayerIn") != NULL && (omnetDataMsg = dynamic_cast<KDataMsg*>(msg)) != NULL) {
 
 			EV_INFO << KRRSLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Upper In :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: " 
-				<< omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() <<"\n";
+				<< omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << " :: " 
+                << omnetDataMsg->getByteLength() << "\n";
 
             // cout << "---omnetDataMsg->getRealPacketSize() " << omnetDataMsg->getRealPacketSize() << "\n";
 
@@ -247,7 +248,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
 		        send(dataMsg, "lowerLayerOut");
 
 				EV_INFO << KRRSLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Data Msg :: " << dataMsg->getSourceAddress() << " :: " 
-					<< dataMsg->getDestinationAddress() << " :: " << dataMsg->getDataName() << " :: " << dataMsg->getGoodnessValue() << "\n";
+					<< dataMsg->getDestinationAddress() << " :: " << dataMsg->getDataName() << " :: " << dataMsg->getGoodnessValue() << " :: " 
+                    << dataMsg->getByteLength() << "\n";
 			}
 
 			delete msg;
@@ -258,7 +260,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
             int found;
             
 			EV_INFO << KRRSLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: " 
-				<< omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << "\n";
+				<< omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << " :: " 
+                    << omnetDataMsg->getByteLength() << "\n";
 
             // if destination oriented data sent around, then cache message only if not destined to self
             // or if no destination in data, cache all messages
@@ -352,7 +355,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
 				send(msg, "upperLayerOut");
 				
 				EV_INFO << KRRSLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Upper Out :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: " 
-					<< omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << "\n";
+					<< omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << " :: " 
+                    << omnetDataMsg->getByteLength() << "\n";
 				
 			} else {
 				delete msg;

@@ -186,7 +186,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Upper In :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: "
-        << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() <<"\n";
+        << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << " :: "
+        << omnetDataMsg->getByteLength() << "\n";
 
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
@@ -356,7 +357,8 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
 
             EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Summary Vector Msg :: "
                 << summaryVectorMsg->getSourceAddress() << " :: " << summaryVectorMsg->getDestinationAddress()
-                    << " :: Cached Entries " << summaryVectorMsg->getMessageIDHashVectorArraySize() << "\n";
+                << " :: Cached Entries " << summaryVectorMsg->getMessageIDHashVectorArraySize() << " :: "
+                << summaryVectorMsg->getByteLength() << "\n";
 
             // cout << " me " << ownMACAddress << " sending actual summ vec to " << nodeMACAddress << " now - " << simTime().dbl() << "\n";
         }
@@ -383,7 +385,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     bool found;
 
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: "
-        << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << "\n";
+        << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << " :: "
+        << omnetDataMsg->getByteLength() << "\n";
 
     // if destination oriented data sent around and this node is the destination
     // or if maximum hop count is reached
@@ -481,7 +484,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         send(msg, "upperLayerOut");
 
         EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Upper Out :: Data Msg :: " << omnetDataMsg->getSourceAddress() << " :: "
-            << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << "\n";
+            << omnetDataMsg->getDestinationAddress() << " :: " << omnetDataMsg->getDataName() << " :: " << omnetDataMsg->getGoodnessValue() << " :: "
+            << omnetDataMsg->getByteLength() << "\n";
 
     } else {
         delete msg;
@@ -495,7 +499,7 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     // cout << " me " << ownMACAddress << " got summ vec from " << summaryVectorMsg->getSourceAddress() << " - " << simTime().dbl() << "\n";
 
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Summary Vector Msg :: " << summaryVectorMsg->getSourceAddress() << " :: "
-        << summaryVectorMsg->getDestinationAddress() << "\n";
+        << summaryVectorMsg->getDestinationAddress() << " :: " << summaryVectorMsg->getByteLength() << "\n";
 
     // when a summary vector is received, it means that the neighbour started the syncing
     // so send the data request message with the required data items
@@ -552,7 +556,7 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     send(dataRequestMsg, "lowerLayerOut");
 
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Data Request Msg :: " << dataRequestMsg->getSourceAddress() << " :: "
-        << dataRequestMsg->getDestinationAddress() << "\n";
+        << dataRequestMsg->getDestinationAddress() << " :: " << dataRequestMsg->getByteLength() << "\n";
 
 
     // cancel the random backoff timer (because neighbour started syncing)
@@ -582,7 +586,7 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
 
     EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower In :: Data Request Msg :: " << dataRequestMsg->getSourceAddress() << " :: "
-        << dataRequestMsg->getDestinationAddress() << "\n";
+        << dataRequestMsg->getDestinationAddress() << " :: " << dataRequestMsg->getByteLength() << "\n";
 
     int i = 0;
     while (i < dataRequestMsg->getMessageIDHashVectorArraySize()) {
@@ -628,7 +632,7 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             send(dataMsg, "lowerLayerOut");
 
             EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << " :: " << ownMACAddress << " :: Lower Out :: Data Msg :: " << dataMsg->getSourceAddress() << " :: "
-                << dataMsg->getDestinationAddress() << "\n";
+                << dataMsg->getDestinationAddress() << " :: " << dataMsg->getByteLength() << "\n";
 
 
             // EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << KEPIDEMICROUTINGLAYER_DEBUG << " :: Sending Requested Data :: "
