@@ -33,9 +33,10 @@ class KLinkAdaptLayer: public cSimpleModule
     private:
         string ownMACAddress;
         string broadcastMACAddress;
+        int logging;
 
 };
 
-#define KLINKADAPTLAYER_SIMMODULEINFO       " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KLinkAdaptLayer"
+#define KLINKADAPTLAYER_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KLinkAdaptLayer"
 
 #endif /* KLINKADAPTLAYER_H_ */

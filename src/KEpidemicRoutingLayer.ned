@@ -27,6 +27,9 @@ simple KEpidemicRoutingLayer
         // maximum duration to use when obtaining a random backoff duration
         double maximumRandomBackoffDuration @unit(s) = default(5s);
 
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
+
         // icon used
         @display("i=block/transport");
 

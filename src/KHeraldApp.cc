@@ -24,6 +24,7 @@ void KHeraldApp::initialize(int stage)
         dataGeneratingNodeIndex = par("dataGeneratingNodeIndex");
         popularityAssignmentPercentage = par("popularityAssignmentPercentage");
         dataSizeInBytes = par("dataSizeInBytes");
+        logging = par("logging");
 
         totalSimulationTime = SimTime::parse(getEnvir()->getConfig()->getConfigValue("sim-time-limit")).dbl();
 
@@ -92,19 +93,19 @@ void KHeraldApp::initialize(int stage)
     } else if (stage == 1) {
 
         // dump the notification list with given popularity, likeness and goodness value
-        EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Notification List Begin :: Count :: " << notificationCount << "\n";
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
         for (int i = 0; i < notificationCount; i++) {
             list<NotificationItem*>::iterator it = notificationList.begin();
             advance(it, i);
             NotificationItem *notificationItem = *it;
 
-            EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Notification Entry :: " << notificationItem->dataName << " :: "
-                << notificationItem->popularity << " :: " << notificationItem->likeness << " :: "
-                << notificationItem->goodnessValue << " :: "
-                << (notificationItem->goodnessValue == 100 ? "LOVE" : "IGNORE") << " :: "
-                << notificationItem->validUntilTime << "\n";
+            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NE>!<" << notificationItem->dataName << ">!<"
+                << notificationItem->popularity << ">!<" << notificationItem->likeness << ">!<"
+                << notificationItem->goodnessValue << ">!<"
+                << (notificationItem->goodnessValue == 100 ? "L" : "I") << ">!<"
+                << notificationItem->validUntilTime << "\n";}
         }
-        EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Notification List End :: Count :: " << notificationCount << "\n";
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
 
 
     } else if (stage == 2) {
@@ -120,7 +121,7 @@ void KHeraldApp::initialize(int stage)
             dataTimeoutEvent->setKind(93);
             scheduleAt(simTime() + dataGenerationInterval, dataTimeoutEvent);
 
-            EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Setting up to generate "<< notificationCount << " data items" << "\n";
+            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<SUTG "<< notificationCount << " DI" << "\n";}
         }
 
         // create and setup feedback generation trigger
@@ -156,7 +157,7 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
         send(regAppMsg, "lowerLayerOut");
 
-        EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Generated App Registration" << "\n";
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
 
     } else if (msg->isSelfMessage() && msg->getKind() == 93) {
         // timeout for data (notification) send event occured
@@ -183,7 +184,7 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
         send(dataMsg, "lowerLayerOut");
 
-        EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Generated Data :: " << dataMsg->getDataName() << "\n";
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << "\n";}
 
         // setup next data generation trigger only if limit has not exceeded
         if ((lastGeneratedNotification + 1) < notificationCount) {
@@ -228,7 +229,7 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
             send(feedbackMsg, "lowerLayerOut");
 
-            EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Generated Feedback :: " << feedbackMsg->getDataName() << " :: Type - Preference \n";
+            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GF>!<" << feedbackMsg->getDataName() << ">!<T-Pre\n";}
 
             notificationItem->feedbackGenerated = TRUE;
         }
@@ -242,7 +243,7 @@ void KHeraldApp::handleMessage(cMessage *msg)
         // message received from outside so, process received data message
         KDataMsg *dataMsg = check_and_cast<KDataMsg *>(msg);
 
-        EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Received Data :: " << dataMsg->getDataName() << "\n";
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
 
         // check if data seen before
         int notificationIndex = -1;
@@ -276,13 +277,13 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
         send(feedbackMsg, "lowerLayerOut");
 
-        EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Generated Feedback :: " << feedbackMsg->getDataName() << " :: Type - Immediate \n";
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GF>!<" << feedbackMsg->getDataName() << ">!<T-Imm\n";}
 
         delete msg;
 
     } else {
 
-        EV_INFO << KHERALDAPP_SIMMODULEINFO << " :: Received unexpected packet \n";
+        EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<Received unexpected packet \n";
         delete msg;
     }
 

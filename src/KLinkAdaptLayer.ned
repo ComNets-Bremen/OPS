@@ -16,6 +16,9 @@ simple KLinkAdaptLayer
         // own address
         string ownMACAddress;
 
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
+
         @display("i=block/layer");
 
     gates:

@@ -21,6 +21,7 @@ void KWirelessInterface::initialize(int stage)
         neighbourScanInterval = par("neighbourScanInterval");
         bandwidthBitRate = par("bandwidthBitRate");
         wirelessHeaderSize = par("wirelessHeaderSize");
+        logging = par("logging");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
@@ -62,7 +63,6 @@ void KWirelessInterface::initialize(int stage)
 
             KBaseNodeInfo *nodeInfo = new KBaseNodeInfo();
             nodeInfo->nodeModule = unknownModule;
-            // EV_INFO <<  KWIRELESSINTERFACE_SIMMODULEINFO << " :: not me :: " << nodeInfo->nodeModule->getFullName() << "\n";
 
             // find the wireless ifc module & mobility module
             for (cModule::SubmoduleIterator it(unknownModule); !it.end(); ++it) {
@@ -128,9 +128,6 @@ void KWirelessInterface::handleMessage(cMessage *msg)
             KBaseNodeInfo *nodeInfo = *iteratorAllNodeInfo;
             inet::Coord neighCoord = nodeInfo->nodeMobilityModule->getCurrentPosition();
 
-            // EV_INFO << KWIRELESSINTERFACE_SIMMODULEINFO << " :: Own Coord (x, y) :: " <<  ownCoord.x << ", " << ownCoord.y << " :: Neighbour Coord (x, y): "
-            //     <<  neighCoord.x << ", " << neighCoord.y << "\n";
-
             double l = ((neighCoord.x - ownCoord.x) * (neighCoord.x - ownCoord.x))
                 + ((neighCoord.y - ownCoord.y) * (neighCoord.y - ownCoord.y));
             double r = wirelessRange * wirelessRange;
@@ -157,7 +154,8 @@ void KWirelessInterface::handleMessage(cMessage *msg)
                 string nodeAddress = nodeInfo->nodeModule->par("ownAddress").stringValue();
                 neighListMsg->setNeighbourNameList(neighCount, nodeAddress.c_str());
 
-                EV_INFO << KWIRELESSINTERFACE_SIMMODULEINFO << " :: Neigbourhood Info :: " << ownMACAddress << " :: " << nodeAddress << " :: " << nodeInfo->nodeModule->getFullName() << "\n";
+                if (logging) {EV_INFO << KWIRELESSINTERFACE_SIMMODULEINFO << ">!<NI>!<" << ownMACAddress << ">!<" << nodeAddress << ">!<" 
+                    << nodeInfo->nodeModule->getFullName() << "\n";}
 
                 neighCount++;
                 iteratorCurrentNeighbourNodeInfo++;
@@ -209,9 +207,6 @@ void KWirelessInterface::handleMessage(cMessage *msg)
             if (sendPacketTimeoutEvent->isScheduled()) {
 
                 packetQueue.push(msg);
-
-                // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Queuing pkt to " << getDestinationAddress(msg) << " \n";
-
 
             // no queued msgs
             } else {
@@ -265,8 +260,6 @@ void KWirelessInterface::setupSendingMsg(cMessage *msg)
     // setup timer to trigger at tx duration
     scheduleAt(simTime() + txDuration, sendPacketTimeoutEvent);
 
-    // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending pkt to " << destinationAddress << " - start \n";
-
 }
 
 void KWirelessInterface::sendPendingMsg()
@@ -290,9 +283,6 @@ void KWirelessInterface::sendPendingMsg()
 
                 // send to node
                 sendDirect(outPktCopy, currentNeighbourNodeInfo->nodeModule, "radioIn");
-
-                // cout <<  KWIRELESSINTERFACE_SIMMODULEINFO << " Sending pkt to " << getDestinationAddress(currentPendingMsg)
-                //     << " (" << currentNeighbourNodeInfo->nodeModule->par("ownAddress").stringValue() << ")" << " - end \n";
 
                 break;
             }
@@ -338,7 +328,7 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
         return dataRequestMsg->getDestinationAddress();
     }
 
-    EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << " :: Unknown message type. Check \"string KWirelessInterface::getDestinationAddress(cMessage *msg)\"\n";
+    EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << ">!<Unknown message type. Check \"string KWirelessInterface::getDestinationAddress(cMessage *msg)\"\n";
 
     throw cRuntimeError("Unknown message type in KWirelessnterface");
 

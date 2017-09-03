@@ -39,6 +39,9 @@ simple KBruitApp
 
     	// how often a feedback is generated for a previously recived data 
         volatile double feedbackGenerationInterval  @unit(s) = default(60s);
+        
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
 
 		// signals for statistics received
 		@signal[dataSendSignal](type="int");

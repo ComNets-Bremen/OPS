@@ -19,6 +19,9 @@ simple KWirelessInterface
         double neighbourScanInterval @unit(s) = default(5s);
         double bandwidthBitRate @unit(bps) = default(10000000bps); // 10Mbps
         int wirelessHeaderSize @unit(byte) = default(32byte); // 32byte = 802.11 a/b/g, 16byte = BT
+        
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
 
         // icon
         @display("i=device/card");

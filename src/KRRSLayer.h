@@ -9,8 +9,8 @@
 #ifndef KRRSLAYER_H_
 #define KRRSLAYER_H_
 
-#define TRUE							1
-#define FALSE							0
+#define TRUE                            1
+#define FALSE                           0
 
 #include <omnetpp.h>
 #include <cstdlib>
@@ -34,42 +34,43 @@ class KRRSLayer: public cSimpleModule
 
     private:
         string ownMACAddress;
-		int nextAppID;
+        int nextAppID;
         int maximumCacheSize;
-        
+        int logging;
+
         int currentCacheSize;
-		
-		struct AppInfo {
-			int appID;
-			string appName;
-			string prefixName;
-		};
-		
-		struct CacheEntry {
-		    string dataName;
-		    int goodnessValue;
-		    int realPayloadSize;
-		    string dummyPayloadContent;
-			int msgType;
-			double validUntilTime;
-    
-		    int realPacketSize;
-			
+
+        struct AppInfo {
+            int appID;
+            string appName;
+            string prefixName;
+        };
+
+        struct CacheEntry {
+            string dataName;
+            int goodnessValue;
+            int realPayloadSize;
+            string dummyPayloadContent;
+            int msgType;
+            double validUntilTime;
+
+            int realPacketSize;
+
             string finalDestinationNodeName;
-            
-			double createdTime;
-			double updatedTime;
-			double lastAccessedTime;
-            
-		};
-		
+
+            double createdTime;
+            double updatedTime;
+            double lastAccessedTime;
+
+        };
+
         string broadcastMACAddress;
-		
-		list<AppInfo*> registeredAppList;
-		list<CacheEntry*> cacheList;
-		cMessage *ageDataTimeoutEvent;
+
+        list<AppInfo*> registeredAppList;
+        list<CacheEntry*> cacheList;
+        cMessage *ageDataTimeoutEvent;
 
 };
-#define KRRSLAYER_SIMMODULEINFO       " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KRRSLayer"
+#define KRRSLAYER_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KRRSLayer"
 
 #endif /* KRRSLAYER_H_ */

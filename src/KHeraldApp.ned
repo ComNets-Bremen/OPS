@@ -33,6 +33,9 @@ simple KHeraldApp
         // data size
         int dataSizeInBytes = default(1000);
 
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
+
         // icon used
         @display("i=block/app");
 

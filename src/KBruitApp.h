@@ -42,6 +42,7 @@ class KBruitApp : public cSimpleModule
         string appNameGenPrefix;
         double dataGenerationInterval;
         double feedbackGenerationInterval;
+        int logging;
 		
 		cMessage *appRegistrationEvent;
 		cMessage *dataTimeoutEvent;
@@ -57,6 +58,6 @@ class KBruitApp : public cSimpleModule
 
 };
 
-#define KBRUITAPP_SIMMODULEINFO       " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KBruitApp"
+#define KBRUITAPP_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KBruitApp"
 
 #endif /* KBRUITAPP_H_ */

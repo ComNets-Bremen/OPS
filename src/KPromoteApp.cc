@@ -25,6 +25,7 @@ void KPromoteApp::initialize(int stage)
         usedRNG = par("usedRNG");
         expectedNodeTypes = par("expectedNodeTypes").stringValue();
         destinationOriented = par("destinationOriented");
+        logging = par("logging");
 
     } else if (stage == 1) {
 
@@ -80,7 +81,7 @@ void KPromoteApp::initialize(int stage)
         double firstGenTime = simTime().dbl() + uniform(1.0, notificationGenStartMaxTime, usedRNG);
         scheduleAt(firstGenTime, dataTimeoutEvent);
 
-        EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Setting up to generate data items" << "\n";
+        if (logging) {EV_INFO << KPROMOTEAPP_SIMMODULEINFO << ">!<SUTG "<< -1 << " DI" << "\n";}
 
     } else {
         EV_FATAL << KPROMOTEAPP_SIMMODULEINFO << "Something is radically wrong\n";
@@ -105,7 +106,7 @@ void KPromoteApp::handleMessage(cMessage *msg)
 
         send(regAppMsg, "lowerLayerOut");
 
-        EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Generated App Registration" << "\n";
+        if (logging) {EV_INFO << KPROMOTEAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
 
     } else if (msg->isSelfMessage() && msg->getKind() == 93) {
         // timeout for data (notification) send event occured
@@ -144,8 +145,8 @@ void KPromoteApp::handleMessage(cMessage *msg)
 
         send(dataMsg, "lowerLayerOut");
 
-        EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Generated Data :: " << dataMsg->getDataName() << " :: At Source :: "
-            << getParentModule()->getFullName() << " \n";
+        if (logging) {EV_INFO << KPROMOTEAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << ">!<AS>!<"
+            << getParentModule()->getFullName() << " \n";}
 
         // setup next data generation trigger
         lastGeneratedNotificationID++;
@@ -170,15 +171,15 @@ void KPromoteApp::handleMessage(cMessage *msg)
 
         if(strstr(getParentModule()->getFullName(), dataMsg->getFinalDestinationNodeName()) != NULL) {
 
-            EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Received Data :: " << dataMsg->getDataName() << " :: At Destination :: "
-                << dataMsg->getFinalDestinationNodeName() << " \n";
+            if (logging) {EV_INFO << KPROMOTEAPP_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << ">!<AD>!<"
+                << dataMsg->getFinalDestinationNodeName() << " \n";}
         }
 
         delete msg;
 
     } else {
 
-        EV_INFO << KPROMOTEAPP_SIMMODULEINFO << " :: Received unexpected packet \n";
+        EV_INFO << KPROMOTEAPP_SIMMODULEINFO << ">!<Received unexpected packet \n";
         delete msg;
     }
 }

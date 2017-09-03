@@ -18,6 +18,9 @@ simple KRRSLayer
         // size of cache in bytes - zero means unlimited caching
         int maximumCacheSize @unit(byte) = default(0byte);
         		
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
+
         // icon used
       	@display("i=block/transport");
         

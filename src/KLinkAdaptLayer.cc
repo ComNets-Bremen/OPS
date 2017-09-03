@@ -17,6 +17,8 @@ void KLinkAdaptLayer::initialize(int stage)
         // get parameters
         ownMACAddress = par("ownMACAddress").stringValue();
 
+        logging = par("logging");
+
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
 

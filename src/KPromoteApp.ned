@@ -46,6 +46,9 @@ simple KPromoteApp
         // are generated data destination oriented
         bool destinationOriented = default(false);
         
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
+
         // icon used
         @display("i=block/app");
 

@@ -23,7 +23,7 @@ using namespace omnetpp;
 using namespace std;
 
 
-#define KPROMOTEAPP_SIMMODULEINFO        " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KPromoteApp"
+#define KPROMOTEAPP_SIMMODULEINFO        ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KPromoteApp"
 #define TRUE                            1
 #define FALSE                           0
 #define KPROMOTEAPP_DISTR_NONE          1 // constant time intervals
@@ -51,6 +51,7 @@ class KPromoteApp : public cSimpleModule
         int usedRNG;
         string expectedNodeTypes;
         bool destinationOriented;
+        int logging;
         int lastGeneratedNotificationID = 10000;
 
         cMessage *appRegistrationEvent;

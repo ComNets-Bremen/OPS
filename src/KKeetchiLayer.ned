@@ -37,6 +37,9 @@ simple KKeetchiLayer
         // feedback) - a value between 0.0 - 1.0
         double learningConst = default(0.5);
 
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
+
         // icon used
         @display("i=block/transport");
 

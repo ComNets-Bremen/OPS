@@ -37,6 +37,7 @@ class KKeetchiLayer: public cSimpleModule
         double neighbourhoodChangeSignificanceThreshold;
         double coolOffDuration;
         double learningConst;
+        int logging;
 
         KLKeetchi *keetchiAPI;
         void processUpperLayerInDataMsg(KDataMsg *dataMsg);
@@ -54,6 +55,6 @@ class KKeetchiLayer: public cSimpleModule
         string broadcastMACAddress;
 
 };
-#define KKEETCHILAYER_SIMMODULEINFO       " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KKeetchiLayer"
+#define KKEETCHILAYER_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KKeetchiLayer"
 
 #endif /* KKEETCHILAYER_H_ */

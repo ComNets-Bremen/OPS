@@ -12,8 +12,6 @@ Define_Module(KBruitApp);
 
 void KBruitApp::initialize(int stage)
 {
-    //EV_INFO << "Here a" << "\n";
-    //cout << "Going into BruitApp::initialize" << "\n";
     if (stage == 0) {
 
         // get parameters
@@ -25,15 +23,12 @@ void KBruitApp::initialize(int stage)
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
         dataGenerationInterval = par("dataGenerationInterval");
         feedbackGenerationInterval = par("feedbackGenerationInterval");
+        logging = par("logging");
 
         // setup stat collection signals
         dataSendSignal = registerSignal("dataSendSignal");
         dataReceiveSignal = registerSignal("dataReceiveSignal");
         feedbackSendSignal = registerSignal("feedbackSendSignal");
-
-//        EV_INFO << KBRUITAPP_SIMMODULEINFO << "Param: nodeIndex="<< nodeIndex
-//                << ", operationMode=" << operationMode << ", dataGeneratingNodeIndex=" << dataGeneratingNodeIndex
-//                << ", numberOfData=" << numberOfData << "\n";
 
     } else if (stage == 1) {
 
@@ -52,7 +47,7 @@ void KBruitApp::initialize(int stage)
         }
 
         if (operationMode == 2 && nodeIndex == dataGeneratingNodeIndex) {
-            EV_INFO << KBRUITAPP_SIMMODULEINFO << "Setting up to generate "<< numberOfData << " data items" << "\n";
+            if (logging) {EV_INFO << KBRUITAPP_SIMMODULEINFO << "SUTG "<< numberOfData << " DI" << "\n";}
         }
 
         // create and setup feedback generation trigger
@@ -87,7 +82,7 @@ void KBruitApp::handleMessage(cMessage *msg)
 
         send(regAppMsg, "lowerLayerOut");
 
-        EV_INFO << KBRUITAPP_SIMMODULEINFO << " :: Generated App Registration" << "\n";
+        if (logging) {EV_INFO << KBRUITAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
 
     } else if (msg->isSelfMessage() && msg->getKind() == 93) {
         // timeout for data send event occured
@@ -119,7 +114,7 @@ void KBruitApp::handleMessage(cMessage *msg)
         // send stat signal
         emit(dataSendSignal, 1);
 
-        EV_INFO << KBRUITAPP_SIMMODULEINFO << " :: Generated Data :: " << dataMsg->getDataName() << "\n";
+        if (logging) {EV_INFO << KBRUITAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << "\n";}
 
         // get the next data generation interval and setup next data generation trigger
         // only if limit has not exceeded
@@ -163,8 +158,8 @@ void KBruitApp::handleMessage(cMessage *msg)
             // send stat signal
             emit(feedbackSendSignal, 1);
 
-           // setup next feedback generation trigger
-            EV_INFO << KBRUITAPP_SIMMODULEINFO << " :: Generated Feedback :: " << *dataName << "\n";
+            // setup next feedback generation trigger
+            if (logging) {EV_INFO << KBRUITAPP_SIMMODULEINFO << ">!<GF>!<" << *dataName << "\n";}
 
         }
 
@@ -181,7 +176,7 @@ void KBruitApp::handleMessage(cMessage *msg)
         // send stat signal
         emit(dataReceiveSignal, 1);
 
-        EV_INFO << KBRUITAPP_SIMMODULEINFO << " :: Received Data :: " << dataMsg->getDataName() << "\n";
+        if (logging) {EV_INFO << KBRUITAPP_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
 
         // check if data seen before
         int found = 0;
@@ -204,7 +199,7 @@ void KBruitApp::handleMessage(cMessage *msg)
 
     } else {
 
-        EV_INFO << KBRUITAPP_SIMMODULEINFO << " :: Received unexpected packet \n";
+        EV_INFO << KBRUITAPP_SIMMODULEINFO << ">!<Received unexpected packet \n";
         delete msg;
     }
 

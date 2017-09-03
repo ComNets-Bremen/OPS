@@ -26,7 +26,7 @@ using namespace omnetpp;
 using namespace std;
 
 
-#define KHERALDAPP_SIMMODULEINFO        " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KHeraldApp"
+#define KHERALDAPP_SIMMODULEINFO        ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KHeraldApp"
 #define TRUE                            1
 #define FALSE                           0
 #define KHERALDAPP_MSGTYPE_NONE         0
@@ -88,6 +88,7 @@ class KHeraldApp : public cSimpleModule
 
         double popularityAssignmentPercentage;
         int dataSizeInBytes;
+        int logging;
 
 };
 

@@ -41,6 +41,7 @@ class KEpidemicRoutingLayer: public cSimpleModule
         double antiEntropyInterval;
         int maximumHopCount;
         double maximumRandomBackoffDuration;
+        int logging;
 
         int currentCacheSize;
 
@@ -109,8 +110,8 @@ class KEpidemicRoutingLayer: public cSimpleModule
         KSummaryVectorMsg* makeSummaryVectorMessage();
 
 };
-#define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         " :: " << simTime() << " :: " << getParentModule()->getFullName() << " :: KEpidemicRoutingLayer"
-#define KEPIDEMICROUTINGLAYER_DEBUG                 " :: DEBUG :: " << ownMACAddress
+#define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KEpidemicRoutingLayer"
+#define KEPIDEMICROUTINGLAYER_DEBUG                 ">!<DEBUG>!<" << ownMACAddress
 
 #define KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes
 
