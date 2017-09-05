@@ -147,9 +147,13 @@ def extract_from_log():
     tempfile1.write("# all required tags from log file")
 
     for line in inputfile:
-        if "INFO" in line and (":: KKeetchiLayer ::" in line or\
-            ":: KHeraldApp ::" in line or ":: KRRSLayer ::" in line or\
-            ":: KEpidemicRoutingLayer ::" in line):
+        if "INFO" in line and
+            ("KKeetchiLayer" in line or\
+             "KRRSLayer" in line or\
+             "KEpidemicRoutingLayer" in line or\
+             "KHeraldApp" in line or\
+             "KPromoteApp" in line or\
+             "KBruitApp" in line):
             tempfile1.write(line)
 
 def compute_node_acctivity_summary():
@@ -163,11 +167,11 @@ def compute_node_acctivity_summary():
         if line.strip().startswith("#"):
             continue
 
-        elif "KHeraldApp" in line and "Notification List Begin" in line:
+        elif "KHeraldApp" in line and ">!<NLB>!<" in line:
             pass
 
-        elif "KHeraldApp" in line and "Notification Entry" in line:
-            words = line.split("::")
+        elif "KHeraldApp" in line and ">!<NE>!<" in line:
+            words = line.split(">!<")
             found = False
             for node in nodes:
                 if node.name == words[2].strip():
@@ -178,8 +182,8 @@ def compute_node_acctivity_summary():
                 nodes.append(node)
             node.add_event(words[5].strip(), int(words[6]), float(words[7]))
 
-        elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and "Lower In :: Data Msg" in line:
-            words = line.split("::")
+        elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and ">!<LI>!<DM>!<" in line:
+            words = line.split(">!<")
             found = False
             for node in nodes:
                 if node.name == words[2].strip():
@@ -188,8 +192,8 @@ def compute_node_acctivity_summary():
             if found:
                 node.update_event(words[9].strip(), float(words[1].strip()))
 
-        elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and "Lower In :: Feedback Msg" in line:
-            words = line.split("::")
+        elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and ">!<LI>!<FM>!<" in line:
+            words = line.split(">!<")
             found = False
             for node in nodes:
                 if node.name == words[2].strip():
@@ -198,8 +202,8 @@ def compute_node_acctivity_summary():
             if found:
                 node.update_feedback(words[9].strip())
 
-        elif "KEpidemicRoutingLayer" in line and "Lower In :: Summary Vector Msg" in line:
-            words = line.split("::")
+        elif "KEpidemicRoutingLayer" in line and ">!<LI>!<SVM>!<" in line:
+            words = line.split(">!<")
             found = False
             for node in nodes:
                 if node.name == words[2].strip():
@@ -208,8 +212,8 @@ def compute_node_acctivity_summary():
             if found:
                 node.update_sum_vec_receipt()
 
-        elif "KEpidemicRoutingLayer" in line and "Lower In :: Data Request Msg" in line:
-            words = line.split("::")
+        elif "KEpidemicRoutingLayer" in line and ">!<LI>!<DRM>!<" in line:
+            words = line.split(">!<")
             found = False
             for node in nodes:
                 if node.name == words[2].strip():
