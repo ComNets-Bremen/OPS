@@ -597,9 +597,9 @@ KLDataMsg* KKeetchiLayer::createKeetchiAPIDataMsgFromOMNETDataMsg(KDataMsg* omne
     keetchiAPIDataMsg->setDataName(omnetDataMsg->getDataName());
     dataPayload = omnetDataMsg->getDummyPayloadContent();
 
-    dataSize = strlen(dataPayload) + 1;
+    dataSize = strlen(dataPayload);
     if (dataSize > 0) {
-        dataPtr = (char *) malloc(dataSize);
+        dataPtr = (char *) malloc(dataSize + 1);
         strcpy(dataPtr, dataPayload);
         keetchiAPIDataMsg->setDataPayload(dataPtr, dataSize);
         free(dataPtr);
