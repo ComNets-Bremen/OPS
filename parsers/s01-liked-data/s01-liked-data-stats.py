@@ -222,14 +222,14 @@ def compute_node_acctivity_summary():
             if found:
                 node.update_data_req_receipt()
 
-    outputfile1.write("# node name :: data name :: goodness val :: " + \
-                     " valid until :: times data received :: first time received :: times feedback received \n")
+    outputfile1.write("# node name >!< data name >!< goodness val >!< " + \
+                     " valid until >!< times data received >!< first time received >!< times feedback received \n")
 
     for node in nodes:
         for event in node.events:
-            outputfile1.write(node.name + " :: " + event.data_name + " :: " + str(event.goodness_val) + " :: " \
-                    + str(event.valid_until) + " :: " + str(event.times_received) + " :: " \
-                    + str(event.first_received_time) + " :: " + str(event.times_feedback_received) + "\n")
+            outputfile1.write(node.name + " >!< " + event.data_name + " >!< " + str(event.goodness_val) + " >!< " \
+                    + str(event.valid_until) + " >!< " + str(event.times_received) + " >!< " \
+                    + str(event.first_received_time) + " >!< " + str(event.times_feedback_received) + "\n")
 
 def compute_like_dislike_summary():
     global outputfile2
@@ -270,22 +270,22 @@ def compute_like_dislike_summary():
 
             feedback_received += event.times_feedback_received
 
-    outputfile2.write("# node name :: liked total :: liked received :: " \
-                    + " non-liked total :: non-liked received \n")
+    outputfile2.write("# node name >!< liked total >!< liked received >!< " \
+                    + " non-liked total >!< non-liked received \n")
     for node in nodes:
-        outputfile2.write(node.name + " :: " + str(node.liked_total) + " :: " + str(node.liked_received) + " :: " \
-                    + str(node.nonliked_total) + " :: " + str(node.nonliked_received) + "\n")
+        outputfile2.write(node.name + " >!< " + str(node.liked_total) + " >!< " + str(node.liked_received) + " >!< " \
+                    + str(node.nonliked_total) + " >!< " + str(node.nonliked_received) + "\n")
 
-    outputfile3.write("# all :: liked total :: liked received :: " \
-                    + " non-liked total :: non-liked received \n")
-    outputfile3.write(" all :: " + str(liked_total) + " :: " + str(liked_received) + " :: " \
-                    + str(nonliked_total) + " :: " + str(nonliked_received) + "\n")
+    outputfile3.write("# all >!< liked total >!< liked received >!< " \
+                    + " non-liked total >!< non-liked received \n")
+    outputfile3.write(" all >!< " + str(liked_total) + " >!< " + str(liked_received) + " >!< " \
+                    + str(nonliked_total) + " >!< " + str(nonliked_received) + "\n")
 
-    outputfile4.write("# all :: total (data + feedback + sum vec + data req) :: useful data :: " \
-                    + " additional data :: feedback :: summary vector :: data request \n")
-    outputfile4.write(" all :: " + str(useful_data_received + additional_data_received + feedback_received + sum_vec_received + data_req_received)
-                        + " :: " + str(useful_data_received) + " :: " \
-                    + str(additional_data_received) + " :: " + str(feedback_received) + " :: " + str(sum_vec_received) + " :: " + str(data_req_received) + " :: " + "\n")
+    outputfile4.write("# all >!< total (data + feedback + sum vec + data req) >!< useful data >!< " \
+                    + " additional data >!< feedback >!< summary vector >!< data request \n")
+    outputfile4.write(" all >!< " + str(useful_data_received + additional_data_received + feedback_received + sum_vec_received + data_req_received)
+                        + " >!< " + str(useful_data_received) + " >!< " \
+                    + str(additional_data_received) + " >!< " + str(feedback_received) + " >!< " + str(sum_vec_received) + " >!< " + str(data_req_received) + " >!< " + "\n")
 
 
 def close_files():
