@@ -40,6 +40,8 @@ class Event:
         self.times_received = 0
         self.first_received_time = 0.0
         self.times_feedback_received = 0
+        self.data_size_tot = 0
+        self.feedback_size_tot = 0
 
 class Node:
 
@@ -52,6 +54,8 @@ class Node:
         self.nonliked_received = 0
         self.sum_vec_received = 0
         self.data_req_received = 0
+        self.sum_vec_size_tot = 0
+        self.data_req_size_tot = 0
 
     def get_name():
         return self.name
@@ -69,7 +73,7 @@ class Node:
         event = Event(data_name, goodness_val, valid_until)
         self.events.append(event)
 
-    def update_event(self, data_name, received_time):
+    def update_event(self, data_name, received_time, data_size):
         found = False
         for event in self.events:
             if event.data_name == data_name:
@@ -80,10 +84,11 @@ class Node:
             sys.exit()
 
         event.times_received += 1
+        event.data_size_tot += data_size
         if event.first_received_time == 0.0:
             event.first_received_time = received_time
 
-    def update_feedback(self, data_name):
+    def update_feedback(self, data_name, feedback_size):
         found = False
         for event in self.events:
             if event.data_name == data_name:
@@ -94,11 +99,12 @@ class Node:
             sys.exit()
 
         event.times_feedback_received += 1
+        event.feedback_size_tot += feedback_size
 
-    def update_sum_vec_receipt(self):
+    def update_sum_vec_receipt(self, sum_vec_size):
         self.sum_vec_received += 1
 
-    def update_data_req_receipt(self):
+    def update_data_req_receipt(self, data_req_size):
         self.data_req_received += 1
 
 
@@ -190,7 +196,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_event(words[9].strip(), float(words[1].strip()))
+                node.update_event(words[9].strip(), float(words[1].strip()), int(words[11].strip()))
 
         elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and ">!<LI>!<FM>!<" in line:
             words = line.split(">!<")
@@ -200,7 +206,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_feedback(words[9].strip())
+                node.update_feedback(words[9].strip(), int(words[12].strip()))
 
         elif "KEpidemicRoutingLayer" in line and ">!<LI>!<SVM>!<" in line:
             words = line.split(">!<")
@@ -210,7 +216,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_sum_vec_receipt()
+                node.update_sum_vec_receipt(int(words[9].strip()))
 
         elif "KEpidemicRoutingLayer" in line and ">!<LI>!<DRM>!<" in line:
             words = line.split(">!<")
@@ -220,7 +226,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_data_req_receipt()
+                node.update_data_req_receipt(int(words[9].strip()))
 
     outputfile1.write("# node name >!< data name >!< goodness val >!< " + \
                      " valid until >!< times data received >!< first time received >!< times feedback received \n")

@@ -26,7 +26,7 @@ using namespace omnetpp;
 using namespace std;
 
 
-#define KHERALDAPP_SIMMODULEINFO        ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KHeraldApp"
+#define KHERALDAPP_SIMMODULEINFO        ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define TRUE                            1
 #define FALSE                           0
 #define KHERALDAPP_MSGTYPE_NONE         0

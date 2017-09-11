@@ -67,7 +67,7 @@ class KWirelessInterface: public cSimpleModule
 
 };
 
-#define KWIRELESSINTERFACE_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KWirelessInterface"
+#define KWIRELESSINTERFACE_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define KWIRELESSINTERFACE_BIT_RATE_10Mbps     10000000
 #define KWIRELESSINTERFACE_NEIGH_EVENT_CODE    112
 #define KWIRELESSINTERFACE_PKTSEND_EVENT_CODE  114

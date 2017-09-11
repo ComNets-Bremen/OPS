@@ -58,6 +58,6 @@ class KBruitApp : public cSimpleModule
 
 };
 
-#define KBRUITAPP_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KBruitApp"
+#define KBRUITAPP_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
 
 #endif /* KBRUITAPP_H_ */

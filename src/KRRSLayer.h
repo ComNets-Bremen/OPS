@@ -71,6 +71,6 @@ class KRRSLayer: public cSimpleModule
         cMessage *ageDataTimeoutEvent;
 
 };
-#define KRRSLAYER_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName() << ">!<KRRSLayer"
+#define KRRSLAYER_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
 
 #endif /* KRRSLAYER_H_ */
