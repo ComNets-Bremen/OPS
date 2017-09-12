@@ -93,6 +93,7 @@ class KEpidemicRoutingLayer: public cSimpleModule
         list<AppInfo*> registeredAppList;
         list<CacheEntry*> cacheList;
         list<SyncedNeighbour*> syncedNeighbourList;
+        bool syncedNeighbourListIHasChanged;
 
         cMessage *ageDataTimeoutEvent;
 

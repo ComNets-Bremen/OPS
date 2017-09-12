@@ -343,8 +343,15 @@ void KWirelessInterface::finish()
     }
     delete sendPacketTimeoutEvent;
 
-
-
-
+    // remove all messages
+    while(!packetQueue.empty()) {
+        cMessage *nextMsg = packetQueue.front();
+        packetQueue.pop();
+        delete nextMsg;
+    }
+    if (currentPendingMsg != NULL) {
+        delete currentPendingMsg;
+        currentPendingMsg = NULL;
+    }
 }
 

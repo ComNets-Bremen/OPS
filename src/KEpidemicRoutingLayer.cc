@@ -22,7 +22,9 @@ void KEpidemicRoutingLayer::initialize(int stage)
         maximumHopCount = par("maximumHopCount");
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         logging = par("logging");
-
+        
+        syncedNeighbourListIHasChanged = TRUE;
+        
     } else if (stage == 1) {
 
 
@@ -267,15 +269,15 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
     // if no neighbours or cache is empty, just return
     if (neighListMsg->getNeighbourNameListArraySize() == 0 || cacheList.size() == 0) {
 
-        // setup sync neighbour list for the next time
-        setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
-
+        // setup sync neighbour list for the next time - only if there were some changes
+        if (syncedNeighbourListIHasChanged) {
+            setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
+            syncedNeighbourListIHasChanged = FALSE;
+        }
+        
         delete msg;
         return;
     }
-
-    // make a summary vector msg that can be replicated to send to each of the neighbors
-    KSummaryVectorMsg *baseSummaryVectorMsg = makeSummaryVectorMessage();
 
     // send summary vector messages (if appropriate) to all nodes to sync in a loop
     int i = 0;
@@ -335,7 +337,7 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             syncedNeighbour->neighbourSyncEndTime = 0.0;
 
             // send summary vector (to start syncing)
-            KSummaryVectorMsg *summaryVectorMsg = baseSummaryVectorMsg->dup();
+            KSummaryVectorMsg *summaryVectorMsg = makeSummaryVectorMessage();
             summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
             send(summaryVectorMsg, "lowerLayerOut");
 
@@ -352,8 +354,9 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
     // setup sync neighbour list for the next time
     setSyncingNeighbourInfoForNextRound();
 
-    // remove the original summary vector msg (from which duplicates were made)
-    delete baseSummaryVectorMsg;
+    // synched neighbour list must be updated in next round
+    // as there were changes
+    syncedNeighbourListIHasChanged = TRUE;
 
     // delete the received neighbor list msg
     delete msg;
@@ -547,6 +550,11 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     syncedNeighbour->neighbourSyncing = TRUE;
     double delayPerDataMessage = 0.5; // assume 500 milli seconds per data message
     syncedNeighbour->neighbourSyncEndTime = simTime().dbl() + (selectedMessageIDList.size() * delayPerDataMessage);
+
+    // synched neighbour list must be updated in next round
+    // as there were changes
+    syncedNeighbourListIHasChanged = TRUE;
+
 
     delete msg;
 }

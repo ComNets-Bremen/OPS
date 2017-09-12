@@ -26,21 +26,29 @@ nonliked_total = 0
 nonliked_received = 0
 
 useful_data_received = 0
+useful_data_received_bytes = 0
 additional_data_received = 0
+additional_data_received_bytes = 0
 feedback_received = 0
+feedback_received_bytes = 0
 sum_vec_received = 0
+sum_vec_received_bytes = 0
 data_req_received = 0
+data_req_received_bytes = 0
 
 class Event:
 
-    def __init__(self, data_name, goodness_val, valid_until):
+    def __init__(self, data_name, popularity, likeness, goodness_val, valid_until):
         self.data_name = data_name
+        self.popularity = popularity
+        self.likeness = likeness
         self.goodness_val = goodness_val
         self.valid_until = valid_until
         self.times_received = 0
         self.first_received_time = 0.0
         self.times_feedback_received = 0
-        self.data_size_tot = 0
+        self.data_size_tot_first = 0
+        self.data_size_tot_rest = 0
         self.feedback_size_tot = 0
 
 class Node:
@@ -60,7 +68,7 @@ class Node:
     def get_name():
         return self.name
 
-    def add_event(self, data_name, goodness_val, valid_until):
+    def add_event(self, data_name, popularity, likeness, goodness_val, valid_until):
         found = False
         for event in self.events:
             if event.data_name == data_name:
@@ -70,7 +78,7 @@ class Node:
             print "Same event for the node listed again !!!"
             sys.exit()
 
-        event = Event(data_name, goodness_val, valid_until)
+        event = Event(data_name, popularity, likeness, goodness_val, valid_until)
         self.events.append(event)
 
     def update_event(self, data_name, received_time, data_size):
@@ -84,9 +92,11 @@ class Node:
             sys.exit()
 
         event.times_received += 1
-        event.data_size_tot += data_size
         if event.first_received_time == 0.0:
             event.first_received_time = received_time
+            event.data_size_tot_first += data_size
+        else:
+            event.data_size_tot_rest += data_size
 
     def update_feedback(self, data_name, feedback_size):
         found = False
@@ -103,9 +113,11 @@ class Node:
 
     def update_sum_vec_receipt(self, sum_vec_size):
         self.sum_vec_received += 1
+        self.sum_vec_size_tot += sum_vec_size
 
     def update_data_req_receipt(self, data_req_size):
         self.data_req_received += 1
+        self.data_req_size_tot += data_req_size
 
 
 def parse_param_n_open_files(argv):
@@ -153,7 +165,7 @@ def extract_from_log():
     tempfile1.write("# all required tags from log file")
 
     for line in inputfile:
-        if "INFO" in line and
+        if "INFO" in line and\
             ("KKeetchiLayer" in line or\
              "KRRSLayer" in line or\
              "KEpidemicRoutingLayer" in line or\
@@ -186,7 +198,7 @@ def compute_node_acctivity_summary():
             if not found:
                 node = Node(words[2].strip())
                 nodes.append(node)
-            node.add_event(words[5].strip(), int(words[6]), float(words[7]))
+            node.add_event(words[4].strip(), int(words[5]), int(words[6]), int(words[7]), float(words[9]))
 
         elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and ">!<LI>!<DM>!<" in line:
             words = line.split(">!<")
@@ -196,7 +208,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_event(words[9].strip(), float(words[1].strip()), int(words[11].strip()))
+                node.update_event(words[8].strip(), float(words[1].strip()), int(words[10].strip()))
 
         elif ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) and ">!<LI>!<FM>!<" in line:
             words = line.split(">!<")
@@ -206,7 +218,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_feedback(words[9].strip(), int(words[12].strip()))
+                node.update_feedback(words[8].strip(), int(words[11].strip()))
 
         elif "KEpidemicRoutingLayer" in line and ">!<LI>!<SVM>!<" in line:
             words = line.split(">!<")
@@ -216,7 +228,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_sum_vec_receipt(int(words[9].strip()))
+                node.update_sum_vec_receipt(int(words[8].strip()))
 
         elif "KEpidemicRoutingLayer" in line and ">!<LI>!<DRM>!<" in line:
             words = line.split(">!<")
@@ -226,7 +238,7 @@ def compute_node_acctivity_summary():
                     found = True
                     break
             if found:
-                node.update_data_req_receipt(int(words[9].strip()))
+                node.update_data_req_receipt(int(words[8].strip()))
 
     outputfile1.write("# node name >!< data name >!< goodness val >!< " + \
                      " valid until >!< times data received >!< first time received >!< times feedback received \n")
@@ -248,16 +260,24 @@ def compute_like_dislike_summary():
     global nonliked_received
 
     global useful_data_received
+    global useful_data_received_bytes
     global additional_data_received
+    global additional_data_received_bytes
     global feedback_received
+    global feedback_received_bytes
     global sum_vec_received
+    global sum_vec_received_bytes
     global data_req_received
+    global data_req_received_bytes
 
     for node in nodes:
         sum_vec_received += node.sum_vec_received
+        sum_vec_received_bytes += node.sum_vec_size_tot
         data_req_received += node.data_req_received
+        data_req_received_bytes += node.data_req_size_tot
+
         for event in node.events:
-            if event.goodness_val >= 75:
+            if event.goodness_val == 100:
                 node.liked_total += 1
                 liked_total += 1
                 if event.times_received > 0:
@@ -272,9 +292,12 @@ def compute_like_dislike_summary():
 
             if event.times_received > 0:
                 useful_data_received += 1
+                useful_data_received_bytes += event.data_size_tot_first
                 additional_data_received += (event.times_received - 1)
+                additional_data_received_bytes += event.data_size_tot_rest
 
             feedback_received += event.times_feedback_received
+            feedback_received_bytes += event.feedback_size_tot
 
     outputfile2.write("# node name >!< liked total >!< liked received >!< " \
                     + " non-liked total >!< non-liked received \n")
@@ -287,12 +310,18 @@ def compute_like_dislike_summary():
     outputfile3.write(" all >!< " + str(liked_total) + " >!< " + str(liked_received) + " >!< " \
                     + str(nonliked_total) + " >!< " + str(nonliked_received) + "\n")
 
-    outputfile4.write("# all >!< total (data + feedback + sum vec + data req) >!< useful data >!< " \
-                    + " additional data >!< feedback >!< summary vector >!< data request \n")
-    outputfile4.write(" all >!< " + str(useful_data_received + additional_data_received + feedback_received + sum_vec_received + data_req_received)
-                        + " >!< " + str(useful_data_received) + " >!< " \
-                    + str(additional_data_received) + " >!< " + str(feedback_received) + " >!< " + str(sum_vec_received) + " >!< " + str(data_req_received) + " >!< " + "\n")
+    outputfile4.write("# all >!< total count >!< total bytes >!< useful data count >!< useful data bytes >!< " \
+                    + " additional data count >!< additional data bytes >!< feedback count >!< feedback bytes >!<" \
+                    + " summary vector count >!< summary vector bytes >!< data request count >!< data request bytes \n")
 
+    total_count = useful_data_received + additional_data_received + feedback_received + sum_vec_received + data_req_received
+    total_bytes = useful_data_received_bytes + additional_data_received_bytes + feedback_received_bytes + sum_vec_received_bytes + data_req_received_bytes
+    outputfile4.write(" all >!< " + str(total_count) + " >!< " + str(total_bytes) + " >!< " \
+                            + str(useful_data_received) + " >!< " + str(useful_data_received_bytes) + " >!< " \
+                            + str(additional_data_received) + " >!< " + str(additional_data_received_bytes) + " >!< " \
+                            + str(feedback_received) + " >!< " + str(feedback_received_bytes) + " >!< " \
+                            + str(sum_vec_received) + " >!< " + str(sum_vec_received_bytes) + " >!< " \
+                            + str(data_req_received) + " >!< " + str(data_req_received_bytes) + "\n")
 
 def close_files():
     global inputfile
