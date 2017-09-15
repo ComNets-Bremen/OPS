@@ -31,7 +31,7 @@ void KKeetchiLayer::initialize(int stage)
         // create Keetchi API
         keetchiAPI = new KLKeetchi(KLKEETCHI_CACHE_REPLACEMENT_POLICY_LRU, maximumCacheSize, ownMACAddress,
                                         neighbourhoodChangeSignificanceThreshold, coolOffDuration,
-                                        learningConst);
+                                        learningConst, TRUE);
 
     } else if (stage == 2) {
 
@@ -612,6 +612,7 @@ KLDataMsg* KKeetchiLayer::createKeetchiAPIDataMsgFromOMNETDataMsg(KDataMsg* omne
     keetchiAPIDataMsg->setMsgType(omnetDataMsg->getMsgType());
     keetchiAPIDataMsg->setValidUntilTime(omnetDataMsg->getValidUntilTime());
 
+    keetchiAPIDataMsg->setSimDataPayloadSize(omnetDataMsg->getRealPayloadSize());
 
     return keetchiAPIDataMsg;
 }
@@ -651,12 +652,16 @@ KDataMsg* KKeetchiLayer::createOMNETDataMsgFromKeetchiAPIDataMsg(KLDataMsg* keet
 
     omnetDataMsg->setMsgType(keetchiAPIDataMsg->getMsgType());
     omnetDataMsg->setValidUntilTime(keetchiAPIDataMsg->getValidUntilTime());
-    omnetDataMsg->setRealPayloadSize(keetchiAPIDataMsg->getDataPayloadSize());
+    omnetDataMsg->setRealPayloadSize(keetchiAPIDataMsg->getSimDataPayloadSize());
     dataPtr = keetchiAPIDataMsg->getDataPayload();
     omnetDataMsg->setDummyPayloadContent(dataPtr);
-    omnetDataMsg->setRealPacketSize(592);
+    // check KOPSMsg.msg for format
+    int realPacketSize = 6 + 6 + 1 + 2 + keetchiAPIDataMsg->getSimDataPayloadSize() + 4 + 6;
+    omnetDataMsg->setRealPacketSize(realPacketSize);
 
-    omnetDataMsg->setByteLength(592);
+    omnetDataMsg->setByteLength(realPacketSize);
+    
+    
 
     return omnetDataMsg;
 }
