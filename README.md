@@ -345,7 +345,7 @@ example).
 `s01-liked-data-stats.py -i General-0-20170822-12:23:43-56750-log2.txt`
 
 - The above parser will create one or more text files with data. Use a text editor to view
-the data in those files and use this data to modify the required `...plot.py` files
+the data in those files and use this data to modify the required `...plot.py` files. 
 
 - Run the modified `...plot.py` scripts to obtain the graphs
 
@@ -354,12 +354,17 @@ packages
 
 In the following is a description of what the `...stats.py` scripts generate.  
 
-- `s01-liked-data-stats.py` - This script generates stats related to liked and non-liked data
-(based on Goodness value). Data items that have Goodness values >= 75 are considered as
-liked data and the data with Goodness values below 75 are considered as non-liked data.
-The script requires the log file created in `simulations/out/` as input to compute these
-stat values (i.e., using the `-i` switch). As output, this script creates text files
-with the computed stats.
+- `s01-liked-data-stats.py` - This script generates stats related to liked and non-liked data.
+The KHeraldApp pre-classifies data as liked or non-liked (ignored) for each node. This information
+is later used to identify what data was received. The script requires the log file created in 
+`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As 
+output, this script creates text files with the computed stats.
+
+- `s01-liked-data-progress-stats.py` - This script generates stats related to liked and non-liked data
+for every hour. The KHeraldApp pre-classifies data as liked or non-liked (ignored) for each node. This 
+information is later used to identify what data was received. The script requires the log file created in 
+`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As 
+output, this script creates text files with the computed stats.
 
 - `s02-traffic-spread-stats.py` - This script generates stats related to total packets generated
 by all nodes and how well the traffic is spread across the network (i.e., CoV of the means

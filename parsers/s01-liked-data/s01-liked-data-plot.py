@@ -15,7 +15,9 @@ liked_received = (21844, 21653, 21616)
 non_liked_total = (34637, 34637, 34637)
 non_liked_received = (33024, 32655, 32608)
 
-fig, ax = plt.subplots()
+# fig, ax = plt.subplots()
+
+fig = plt.figure(num=1, figsize=(8, 3))
 
 index = np.arange(n_groups)
 bar_width = 0.2
@@ -47,4 +49,7 @@ plt.legend()
 
 plt.tight_layout()
 plt.show()
+
+graph_filename = './scenario2.pdf'
+fig.savefig(graph_filename, bbox_inches='tight')
 
