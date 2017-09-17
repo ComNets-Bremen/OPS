@@ -713,8 +713,10 @@ KSummaryVectorMsg* KEpidemicRoutingLayer::makeSummaryVectorMessage()
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
         cacheEntry = *iteratorCache;
-        summaryVectorMsg->setMessageIDHashVector(i, cacheEntry->messageID.c_str());
-
+        if ((cacheEntry->hopCount + 1) < maximumHopCount) {
+            summaryVectorMsg->setMessageIDHashVector(i, cacheEntry->messageID.c_str());
+        }
+        
         iteratorCache++;
         i++;
     }
