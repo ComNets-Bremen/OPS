@@ -703,24 +703,37 @@ void KEpidemicRoutingLayer::setSyncingNeighbourInfoForNoNeighboursOrEmptyCache()
 
 KSummaryVectorMsg* KEpidemicRoutingLayer::makeSummaryVectorMessage()
 {
-    // make a summary vector message to start the syncing process
-    KSummaryVectorMsg *summaryVectorMsg = new KSummaryVectorMsg();
-    summaryVectorMsg->setSourceAddress(ownMACAddress.c_str());
-    summaryVectorMsg->setMessageIDHashVectorArraySize(cacheList.size());
-    int i = 0;
+    
+    // identify the entries of the summary vector
+    vector<string> selectedMessageIDList;
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
         cacheEntry = *iteratorCache;
         if ((cacheEntry->hopCount + 1) < maximumHopCount) {
-            summaryVectorMsg->setMessageIDHashVector(i, cacheEntry->messageID.c_str());
+            selectedMessageIDList.push_back(cacheEntry->messageID);
         }
         
         iteratorCache++;
-        i++;
     }
-    int realPacketSize = 6 + 6 + (cacheList.size() * KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE);
+    
+    // make a summary vector message
+    KSummaryVectorMsg *summaryVectorMsg = new KSummaryVectorMsg();
+    summaryVectorMsg->setSourceAddress(ownMACAddress.c_str());
+    summaryVectorMsg->setMessageIDHashVectorArraySize(selectedMessageIDList.size());
+    vector<string>::iterator iteratorMessageIDList;
+    int i = 0;
+    iteratorMessageIDList = selectedMessageIDList.begin();
+    while (iteratorMessageIDList != selectedMessageIDList.end()) {
+        string messageID = *iteratorMessageIDList;
+
+        summaryVectorMsg->setMessageIDHashVector(i, messageID.c_str());
+
+        i++;
+        iteratorMessageIDList++;
+    }
+    int realPacketSize = 6 + 6 + (selectedMessageIDList.size() * KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE);
     summaryVectorMsg->setRealPacketSize(realPacketSize);
     summaryVectorMsg->setByteLength(realPacketSize);
 
@@ -734,5 +747,29 @@ void KEpidemicRoutingLayer::finish()
     cancelEvent(ageDataTimeoutEvent);
     delete ageDataTimeoutEvent;
 
+    // clear resgistered app list
+    while (registeredAppList.size() > 0) {
+        list<AppInfo*>::iterator iteratorRegisteredApp = registeredAppList.begin();
+        AppInfo *appInfo= *iteratorRegisteredApp;
+        registeredAppList.remove(appInfo);
+        delete appInfo;
+    }
+    
+    // clear resgistered app list
+    while (cacheList.size() > 0) {
+        list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
+        CacheEntry *cacheEntry= *iteratorCache;
+        cacheList.remove(cacheEntry);
+        delete cacheEntry;
+    }
+
+    // clear synced neighbour info list
+    list<SyncedNeighbour*> syncedNeighbourList;
+    while (syncedNeighbourList.size() > 0) {
+        list<SyncedNeighbour*>::iterator iteratorSyncedNeighbour = syncedNeighbourList.begin();
+        SyncedNeighbour *syncedNeighbour = *iteratorSyncedNeighbour;
+        syncedNeighbourList.remove(syncedNeighbour);
+        delete syncedNeighbour;
+    }
 }
 
