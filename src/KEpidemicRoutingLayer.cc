@@ -144,7 +144,6 @@ void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
             iteratorCache++;
         }
         if (expiredFound) {
-
             currentCacheSize -= cacheEntry->realPacketSize;
             cacheList.remove(cacheEntry);
             delete cacheEntry;
@@ -443,8 +442,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
             currentCacheSize += cacheEntry->realPacketSize;
 
-        } else {
-
         }
 
         cacheEntry->hopCount = omnetDataMsg->getHopCount() + 1;
@@ -611,7 +608,7 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             send(dataMsg, "lowerLayerOut");
 
             if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
-                << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << "\n";}
+                << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << "\n";}
 
         }
 
