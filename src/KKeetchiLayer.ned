@@ -19,7 +19,7 @@ simple KKeetchiLayer
         double agingInterval @unit(s) = default(300s);
 
         // size of cache in bytes - zero means unlimited caching
-        int maximumCacheSize @unit(byte) = default(0byte);
+        int maximumCacheSize @unit(byte) = default(60000000byte);
 
         // a value between 0.0 and 1.0 to indicate after which fraction a change
         // in neighbourhood is considered as a significant change
