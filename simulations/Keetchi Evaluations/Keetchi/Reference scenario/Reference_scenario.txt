@@ -1,0 +1,21 @@
+Reference scenarios
+
+alpha = 0.1
+speed = 1.5 mps
+no of locations = 200
+waiting time = 6 hours (21600 s)
+neighborlocationdistance = 200 m
+radius = 200 m
+
+wireless interface:
+
+transmission range = 30 m
+
+Others:
+
+Buffer size = 60 MB
+
+Forwarding protocol: Keetchi
+
+
+The other scenarios have reference scenario with one parameter changed
