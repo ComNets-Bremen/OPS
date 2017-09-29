@@ -21,12 +21,12 @@ class Info:
 infolist = []
 
 # init
-infolist.append(Info("General_0_20170909_23_17_03_3328_epidemic2_log2_md.txt", "General_0_20170909_23_17_03_3328_epidemic2_log2_madr.txt", "Scenario 2 - Epidemic", "s05_md_hist_epidemic2.pdf", "s05_mdr1_hist_epidemic2.pdf", "s05_mdr2_hist_epidemic2.pdf"))
-infolist.append(Info("General_0_20170909_23_14_35_3034_keetchi2_log2_md.txt", "General_0_20170909_23_14_35_3034_keetchi2_log2_madr.txt", "Scenario 2 - Keetchi", "s05_md_hist_keetchi2.pdf", "s05_mdr1_hist_keetchi2.pdf", "s05_mdr2_hist_keetchi2.pdf"))
+infolist.append(Info("General_0_20170923_22_37_28_15766_keetchi_refscenario_log2_md.txt", "General_0_20170923_22_37_28_15766_keetchi_refscenario_log2_madr.txt", "Reference Scenario - Keetchi", "s05_md_hist_ref-scenario-keetchi.pdf", "s05_mdr1_hist_ref-scenario-keetchi.pdf", "s05_mdr2_hist_ref-scenario-keetchi.pdf"))
+infolist.append(Info("General_0_20170923_22_38_49_16134_epidemic_refscenario_log2_md.txt", "General_0_20170923_22_38_49_16134_epidemic_refscenario_log2_madr.txt", "Reference Scenario - Epidemic", "s05_md_hist_ref-scenario-epidemic.pdf", "s05_mdr1_hist_ref-scenario-epidemic.pdf", "s05_mdr2_hist_ref-scenario-epidemic.pdf"))
 
-cdf_msg_delay_pdf_file = "s05_md_cdf_msg_delay.pdf"
-cdf_node_msg_delay_pdf_file = "s05_mdr_cdf_node_msg_delay.pdf"
-cdf_node_ratio_pdf_file = "s05_mdr_cdf_node_ratio.pdf"
+cdf_msg_delay_pdf_file = "s05_md_cdf_msg_delay_ref_scenario.pdf"
+cdf_node_msg_delay_pdf_file = "s05_mdr_cdf_node_msg_delay_ref_scenario.pdf"
+cdf_node_ratio_pdf_file = "s05_mdr_cdf_node_ratio_ref_scenario.pdf"
 
 plt.close('all')
 
@@ -56,7 +56,7 @@ for info in infolist:
     plt.xlabel('Delay (sec)')
     plt.ylabel('Frequency')
     plt.title('Histogram of Message Delays (of all Messages)')
-    plt.ylim(0, 5000)
+    plt.ylim(0, 1000)
     plt.xlim(0.0, (unit_range * unit_size))
     plt.legend()
     plt.tight_layout()
@@ -77,8 +77,8 @@ for info in infolist:
 
     # print data
     bin_list = []
-    unit_size = 100.0
-    unit_range = 10
+    unit_size = 1000.0
+    unit_range = 20
     for i in range(unit_range):
         bin_list.append(i * unit_size)
     bin_list.append(unit_range * unit_size)
@@ -184,7 +184,7 @@ for info in infolist:
                 data.append(field)
     bin_list = []
     unit_size = 1.0
-    unit_range = 2000
+    unit_range = 20000
     for i in range(unit_range):
         bin_list.append(i * unit_size)
     bin_list.append(unit_range)

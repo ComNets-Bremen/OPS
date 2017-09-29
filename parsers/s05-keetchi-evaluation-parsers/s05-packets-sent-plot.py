@@ -18,10 +18,10 @@ class Info:
 infolist = []
 
 # init
-infolist.append(Info("General_0_20170909_23_17_03_3328_epidemic2_log2_ps.txt", "Scenario 2 - Epidemic", "s05_ps_hist_epidemic2.pdf"))
-infolist.append(Info("General_0_20170909_23_14_35_3034_keetchi2_log2_ps.txt", "Scenario 2 - Keetchi", "s05_ps_hist_keetchi2.pdf"))
+infolist.append(Info("General_0_20170923_22_37_28_15766_keetchi_refscenario_log2_ps.txt", "Reference Scenario - Keetchi", "s05_ps_hist_keetchi_refscenario.pdf"))
+infolist.append(Info("General_0_20170923_22_38_49_16134_epidemic_refscenario_log2_ps.txt", "Reference Scenario - Epidemic", "s05_ps_hist_epidemic_refscenario.pdf"))
 cdf_total_bytes_pdf_file = "s05_ps_cdf_total_bytes.pdf"
-cdf_total_overheads_pdf_file = "s05_ps_cdf_overhead_bytes.pdf"
+cdf_total_overheads_pdf_file = "s05_ps_cdf_overhead_bytes_refscenario.pdf"
 
 plt.close('all')
 
@@ -37,7 +37,7 @@ for info in infolist:
 
     # print data
     bin_list = []
-    unit_size = 50.0
+    unit_size = 10000.0
     unit_range = 16
     for i in range(unit_range):
         bin_list.append(i * unit_size)
@@ -69,14 +69,16 @@ for info in infolist:
                 field = float(words[3].strip()) / 1000000
                 data.append(field)
     bin_list = []
-    for i in range(800):
-        bin_list.append(i * 1.0)
-    bin_list.append(800.0)
+    unit_size = 10000.0
+    unit_range = 16
+    for i in range(unit_range):
+        bin_list.append(i * unit_size)
+    bin_list.append(unit_range * unit_size)
     counts, bin_edges = np.histogram(data, bins=bin_list)
     cdf = np.cumsum(counts)
     total = np.sum(counts)
     cdf2 = []
-    for i in range(800):
+    for i in range(unit_range):
         val = float(cdf[i]) / total * 100
         cdf2.append(val)
     plt.plot(bin_edges[1:], cdf2, label=info.title)
@@ -88,7 +90,7 @@ plt.xlabel('Total Bytes Sent (MB)')
 plt.ylabel('CDF (%)')
 plt.title('CDF of Total Bytes Sent')
 plt.ylim(0, 200)
-plt.xlim(0, 800)
+plt.xlim(0, 200000)
 plt.yticks(np.arange(0, 125, 25))
 plt.legend()
 plt.show()
@@ -108,14 +110,16 @@ for info in infolist:
                 field = float(overhead_total) / 1000000
                 data.append(field)
     bin_list = []
-    for i in range(100):
-        bin_list.append(i * 1.0)
-    bin_list.append(100.0)
+    unit_size = 10000.0
+    unit_range = 16
+    for i in range(unit_range):
+        bin_list.append(i * unit_size)
+    bin_list.append(unit_range * unit_size)
     counts, bin_edges = np.histogram(data, bins=bin_list)
     cdf = np.cumsum(counts)
     total = np.sum(counts)
     cdf2 = []
-    for i in range(100):
+    for i in range(unit_range):
         val = float(cdf[i]) / total * 100
         cdf2.append(val)
     plt.plot(bin_edges[1:], cdf2, label=info.title)
@@ -127,7 +131,7 @@ plt.xlabel('Overhead Bytes Sent (KB)')
 plt.ylabel('CDF (%)')
 plt.title('CDF of Overhead Bytes Sent')
 plt.ylim(0, 200)
-plt.xlim(0, 100)
+plt.xlim(0, 200000)
 plt.yticks(np.arange(0, 125, 25))
 plt.legend()
 plt.show()
