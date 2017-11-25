@@ -79,7 +79,6 @@ class KHeraldApp : public cSimpleModule
         int notificationCount;
         list<NotificationItem*> notificationList;
 
-        int lastGeneratedNotification = -1;
         int usedRNG;
 
         cMessage *appRegistrationEvent;

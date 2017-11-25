@@ -12,7 +12,7 @@ outputfile1 = 0
 outputfile2 = 0
 
 nodes = []
-excluded_nodes = ["node[1]", "xyz"]
+excluded_nodes = ["abc", "xyz"]
 
 total_data_sent = 0
 total_data_sent_bytes = 0

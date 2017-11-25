@@ -15,7 +15,7 @@ outputfile3 = 0
 
 nodes = []
 all_events = []
-excluded_nodes = ["node[1]", "xyz"]
+excluded_nodes = ["abc", "xyz"]
 
 class Event:
     def __init__(self, event_name):

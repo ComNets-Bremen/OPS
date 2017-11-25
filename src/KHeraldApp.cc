@@ -11,6 +11,10 @@
 Define_Module(KHeraldApp);
 
 list<int> popularityList;
+list<int> nodeIndexList;
+int nextGeneratorNodeIndex;
+int nextGenerationNotification;
+double nextGenerationTime;
 
 void KHeraldApp::initialize(int stage)
 {
@@ -53,8 +57,14 @@ void KHeraldApp::initialize(int stage)
                 int popularity = 0;
 
                 if (perc <= popularityAssignmentPercentage) {
-                    popularity = intuniform(1, 20, usedRNG);
+                    popularity = 100;
                 }
+
+                //
+                //
+                // if (perc <= popularityAssignmentPercentage) {
+                //     popularity = intuniform(1, 20, usedRNG);
+                // }
 
                 popularityList.push_back(popularity);
             }
@@ -73,7 +83,14 @@ void KHeraldApp::initialize(int stage)
             list<int>::iterator iteratorPopularity = popularityList.begin();
             advance(iteratorPopularity, i);
             notificationItem->popularity = *iteratorPopularity;
-            notificationItem->likeness = intuniform(notificationItem->popularity, 100, usedRNG);
+            
+            notificationItem->likeness = 0;
+            if (notificationItem->popularity == 100) {
+                notificationItem->likeness = 100;
+            }
+            
+            //
+            // notificationItem->likeness = intuniform(notificationItem->popularity, 100, usedRNG);
             if (notificationItem->likeness >= 90) {
                 notificationItem->goodnessValue = 100;
             } else {
@@ -89,6 +106,12 @@ void KHeraldApp::initialize(int stage)
 
             notificationList.push_back(notificationItem);
         }
+        
+        // update current node index (used to generate notifications later)
+        nodeIndexList.push_back(nodeIndex);
+        nextGeneratorNodeIndex = 0;
+        nextGenerationNotification = 0;
+        nextGenerationTime = dataGenerationInterval;
 
     } else if (stage == 1) {
 
@@ -115,8 +138,11 @@ void KHeraldApp::initialize(int stage)
         appRegistrationEvent->setKind(92);
         scheduleAt(simTime(), appRegistrationEvent);
 
-        // create and setup data generation trigger (only the given index)
-        if (nodeIndex == dataGeneratingNodeIndex) {
+        // create and setup data generation trigger
+        // == -1 -> every node gets a chance to generate one or more
+        // >=  0 -> only the given node
+        if (dataGeneratingNodeIndex == -1 || nodeIndex == dataGeneratingNodeIndex) {
+            
             dataTimeoutEvent = new cMessage("Data Timeout Event");
             dataTimeoutEvent->setKind(93);
             scheduleAt(simTime() + dataGenerationInterval, dataTimeoutEvent);
@@ -129,7 +155,8 @@ void KHeraldApp::initialize(int stage)
         feedbackGenerationInterval = uniform(1.0, maxFeedbackGenerationInterval, usedRNG);
         feedbackTimeoutEvent = new cMessage("Feedback Timeout Event");
         feedbackTimeoutEvent->setKind(94);
-        scheduleAt(simTime() + feedbackGenerationInterval, feedbackTimeoutEvent);
+        // feedback sending stopped
+        // scheduleAt(simTime() + feedbackGenerationInterval, feedbackTimeoutEvent);
 
 
     } else {
@@ -160,37 +187,50 @@ void KHeraldApp::handleMessage(cMessage *msg)
         if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
 
     } else if (msg->isSelfMessage() && msg->getKind() == 93) {
+
         // timeout for data (notification) send event occured
         // so, generate a data message
+        if ((nextGenerationNotification < notificationCount)
+            && (nodeIndex == dataGeneratingNodeIndex 
+                || (dataGeneratingNodeIndex == -1 && nodeIndex == nextGeneratorNodeIndex))
+            && simTime().dbl() >= nextGenerationTime) {
 
-        lastGeneratedNotification++;
-        list<NotificationItem*>::iterator it = notificationList.begin();
-        advance(it, lastGeneratedNotification);
-        NotificationItem *notificationItem = *it;
+                list<NotificationItem*>::iterator it = notificationList.begin();
+                advance(it, nextGenerationNotification);
+                NotificationItem *notificationItem = *it;
 
-        notificationItem->timesDataMsgReceived = 1;
+                notificationItem->timesDataMsgReceived = 1;
 
-        KDataMsg *dataMsg = new KDataMsg(notificationItem->dataMsgName);
+                KDataMsg *dataMsg = new KDataMsg(notificationItem->dataMsgName);
 
-        dataMsg->setSourceAddress("");
-        dataMsg->setDestinationAddress("");
-        dataMsg->setDataName(notificationItem->dataName);
-        dataMsg->setGoodnessValue(notificationItem->goodnessValue);
-        dataMsg->setRealPayloadSize(notificationItem->realPayloadSize);
-        dataMsg->setDummyPayloadContent(notificationItem->dummyPayloadContent);
-        dataMsg->setByteLength(notificationItem->dataByteLength);
-        dataMsg->setMsgType(0);
-        dataMsg->setValidUntilTime(notificationItem->validUntilTime);
+                dataMsg->setSourceAddress("");
+                dataMsg->setDestinationAddress("");
+                dataMsg->setDataName(notificationItem->dataName);
+                dataMsg->setGoodnessValue(notificationItem->goodnessValue);
+                dataMsg->setRealPayloadSize(notificationItem->realPayloadSize);
+                dataMsg->setDummyPayloadContent(notificationItem->dummyPayloadContent);
+                dataMsg->setByteLength(notificationItem->dataByteLength);
+                dataMsg->setMsgType(0);
+                dataMsg->setValidUntilTime(notificationItem->validUntilTime);
 
-        send(dataMsg, "lowerLayerOut");
+                send(dataMsg, "lowerLayerOut");
 
-        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << "\n";}
-
-        // setup next data generation trigger only if limit has not exceeded
-        if ((lastGeneratedNotification + 1) < notificationCount) {
-            scheduleAt(simTime() + dataGenerationInterval, msg);
+                if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << "\n";}
+                
+                nextGeneratorNodeIndex++;
+                if (nextGeneratorNodeIndex >= nodeIndexList.size()) {
+                    nextGeneratorNodeIndex = 0;
+                }
+                nextGenerationNotification++;
+                nextGenerationTime = simTime().dbl() + dataGenerationInterval;
         }
+        
+        // setup next data generation trigger
+        scheduleAt(simTime() + dataGenerationInterval, msg);
 
+        // if (lastGeneratedNotification == (notificationCount - 1)) {
+            // cout << simTime() << " " << getParentModule()->getFullName() << " " << "message generated - " << lastGeneratedNotification << "\n";
+        // }
 
     } else if (msg->isSelfMessage() && msg->getKind() == 94) {
         // timeout for feedback send event occured so, generate a feedback message
@@ -266,18 +306,20 @@ void KHeraldApp::handleMessage(cMessage *msg)
             notificationItem->timesDataMsgReceived++;
         }
 
-        KFeedbackMsg *feedbackMsg = new KFeedbackMsg(dataMsg->getDataName());
-
-        feedbackMsg->setSourceAddress("");
-        feedbackMsg->setDestinationAddress("");
-        feedbackMsg->setDataName(dataMsg->getDataName());
-        feedbackMsg->setGoodnessValue(dataMsg->getGoodnessValue());
-        feedbackMsg->setByteLength(78);
-        feedbackMsg->setFeedbackType(KHERALDAPP_MSGTYPE_IMMEDIATE);
-
-        send(feedbackMsg, "lowerLayerOut");
-
-        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GF>!<" << feedbackMsg->getDataName() << ">!<T-Imm\n";}
+        // feedback sending stopped
+        //
+        // KFeedbackMsg *feedbackMsg = new KFeedbackMsg(dataMsg->getDataName());
+        //
+        // feedbackMsg->setSourceAddress("");
+        // feedbackMsg->setDestinationAddress("");
+        // feedbackMsg->setDataName(dataMsg->getDataName());
+        // feedbackMsg->setGoodnessValue(dataMsg->getGoodnessValue());
+        // feedbackMsg->setByteLength(78);
+        // feedbackMsg->setFeedbackType(KHERALDAPP_MSGTYPE_IMMEDIATE);
+        //
+        // send(feedbackMsg, "lowerLayerOut");
+        //
+        // if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GF>!<" << feedbackMsg->getDataName() << ">!<T-Imm\n";}
 
         delete msg;
 
@@ -294,10 +336,8 @@ void KHeraldApp::finish()
     delete appRegistrationEvent;
 
     // remove data generation event
-    if (nodeIndex == dataGeneratingNodeIndex) {
-        if (lastGeneratedNotification < notificationCount) {
-            cancelEvent(dataTimeoutEvent);
-        }
+    if (nodeIndex == dataGeneratingNodeIndex || dataGeneratingNodeIndex == -1) {
+        cancelEvent(dataTimeoutEvent);
         delete dataTimeoutEvent;
     }
 
@@ -314,6 +354,10 @@ void KHeraldApp::finish()
         notificationList.remove(notificationItem);
         delete notificationItem;
     }
+    
+    // remove popularity values
+    
+    // remove node numbers
 
 }
 
