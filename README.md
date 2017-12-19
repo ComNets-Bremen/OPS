@@ -110,7 +110,8 @@ When building the `INET Framework`, make sure to build and use the `release` ver
 An external library called `KeetchiLib` is used by the `KKeetchiLayer` model to handle all the functionality 
 related to the [Organic Data Dissemination](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18) 
 forwarding model. The code for this library is available at Github and pulled for building by OPS. OPS builds 
-this library automatically, but if the build environment is not setup properly, the build will fail. Check the [README](https://github.com/ComNets-Bremen/KeetchiLib/blob/master/README.md) of `KeetchiLib` to see what is 
+this library automatically, but if the build environment is not setup properly, the build will fail. Check the 
+[README](https://github.com/ComNets-Bremen/KeetchiLib/blob/master/README.md) of `KeetchiLib` to see what is 
 required to be done to setup the build environment.
 
 
@@ -451,11 +452,11 @@ Questions or Comments
 
 Firstly, if you have any questions, please check the FAQ (linked above) and if you cannot find answers there, then
 write to us. Secondly, if you have any comments or suggestions, we are very glad to hear them. In both cases, please 
-write to us using any of the below e-mail adresses.
+write to us using any of the e-mail adresses below.
 
   - Asanga Udugama (adu@comnets.uni-bremen.de)
   - Jens Dede (jd@comnets.uni-bremen.de)
-  - Anna Foerster (anna.foerster@comnets.uni-bremen.de)
+  - Anna Förster (anna.foerster@comnets.uni-bremen.de)
   - Anas bin Muslim (anas1@uni-bremen.de)
   - Vishnupriya Parimalam (vp@fb1.uni-bremen.de)
 

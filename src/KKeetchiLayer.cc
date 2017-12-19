@@ -21,6 +21,7 @@ void KKeetchiLayer::initialize(int stage)
         neighbourhoodChangeSignificanceThreshold = par("neighbourhoodChangeSignificanceThreshold");
         coolOffDuration = par("coolOffDuration");
         learningConst = par("learningConst");
+        backoffTimerIncrementFactor = par("backoffTimerIncrementFactor");
         logging = par("logging");
 
         // set other parameters
@@ -31,7 +32,7 @@ void KKeetchiLayer::initialize(int stage)
         // create Keetchi API
         keetchiAPI = new KLKeetchi(KLKEETCHI_CACHE_REPLACEMENT_POLICY_LRU, maximumCacheSize, ownMACAddress,
                                         neighbourhoodChangeSignificanceThreshold, coolOffDuration,
-                                        learningConst, TRUE);
+                                        learningConst, TRUE, backoffTimerIncrementFactor);
 
     } else if (stage == 2) {
 
@@ -134,7 +135,7 @@ void KKeetchiLayer::finish()
 // Message processing methods
 
 void KKeetchiLayer::processUpperLayerInDataMsg(KDataMsg *dataMsg)
-{
+{ 
     KDataMsg *omnetDataMsg;
     KFeedbackMsg *omnetFeedbackMsg;
     KLAction *keetchiActions;
@@ -143,7 +144,7 @@ void KKeetchiLayer::processUpperLayerInDataMsg(KDataMsg *dataMsg)
 
     if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
         << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getDataName() << ">!<" << dataMsg->getGoodnessValue() << ">!<"
-        << dataMsg->getByteLength() << "\n";}
+        << dataMsg->getByteLength() << ">!<" << dataMsg->getHopsTravelled() << "\n";}
 
     // create the Keetchi API Data message
     keetchiDataMsg = createKeetchiAPIDataMsgFromOMNETDataMsg(dataMsg,
@@ -168,7 +169,7 @@ void KKeetchiLayer::processUpperLayerInDataMsg(KDataMsg *dataMsg)
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                << omnetDataMsg->getByteLength() << "\n";}
+                << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         } else { // KLDATAMSG_TO_LINK_LAYER
 
@@ -176,7 +177,7 @@ void KKeetchiLayer::processUpperLayerInDataMsg(KDataMsg *dataMsg)
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                << omnetDataMsg->getByteLength() << "\n";}
+                << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         }
         delete keetchiDataMsg;
@@ -258,14 +259,14 @@ void KKeetchiLayer::processUpperLayerInFeedbackMsg(KFeedbackMsg *feedbackMsg)
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() 
-                << ">!<" << omnetDataMsg->getByteLength() << "\n";}
+                << ">!<" << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         } else { // KLDATAMSG_TO_LINK_LAYER
             send(omnetDataMsg, "lowerLayerOut");
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() 
-                << ">!<" << omnetDataMsg->getByteLength() << "\n";}
+                << ">!<" << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         }
         delete keetchiDataMsg;
@@ -354,14 +355,14 @@ void KKeetchiLayer::processLowerLayerInNeighbourListMsg(KNeighbourListMsg *neigh
 
                 if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                     << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<" 
-                    << omnetDataMsg->getByteLength() << "\n";}
+                    << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
             } else { // KLDATAMSG_TO_LINK_LAYER
                 send(omnetDataMsg, "lowerLayerOut");
 
                 if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                     << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                    << omnetDataMsg->getByteLength() << "\n";}
+                    << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
             }
             delete keetchiDataMsg;
@@ -411,9 +412,12 @@ void KKeetchiLayer::processLowerLayerInDataMsg(KDataMsg *dataMsg)
     KLFeedbackMsg *keetchiFeedbackMsg;
     KLDataMsg *keetchiDataMsg;
 
+    // increment hops travelled
+    dataMsg->setHopsTravelled(dataMsg->getHopsTravelled() + 1);
+    
     if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
         << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getDataName() << ">!<" << dataMsg->getGoodnessValue() << ">!<" 
-        << dataMsg->getByteLength() << "\n";}
+        << dataMsg->getByteLength() << ">!<" << dataMsg->getHopsTravelled() << "\n";}
 
     // create the Keetchi API Data message
     keetchiDataMsg = createKeetchiAPIDataMsgFromOMNETDataMsg(dataMsg,
@@ -437,14 +441,14 @@ void KKeetchiLayer::processLowerLayerInDataMsg(KDataMsg *dataMsg)
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<" 
-                << omnetDataMsg->getByteLength() << "\n";}
+                << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         } else { // KLDATAMSG_TO_LINK_LAYER
             send(omnetDataMsg, "lowerLayerOut");
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<" 
-                << omnetDataMsg->getByteLength() << "\n";}
+                << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         }
         delete keetchiDataMsg;
@@ -524,14 +528,14 @@ void KKeetchiLayer::processLowerLayerInFeedbackMsg(KFeedbackMsg *feedbackMsg)
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<" 
-                << omnetDataMsg->getByteLength() << "\n";}
+                << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         } else { // KLDATAMSG_TO_LINK_LAYER
             send(omnetDataMsg, "lowerLayerOut");
 
             if (logging) {EV_INFO << KKEETCHILAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<" 
-                << omnetDataMsg->getByteLength() << "\n";}
+                << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
         }
         delete keetchiDataMsg;
@@ -611,6 +615,7 @@ KLDataMsg* KKeetchiLayer::createKeetchiAPIDataMsgFromOMNETDataMsg(KDataMsg* omne
     keetchiAPIDataMsg->setGoodnessValue(omnetDataMsg->getGoodnessValue());
     keetchiAPIDataMsg->setMsgType(omnetDataMsg->getMsgType());
     keetchiAPIDataMsg->setValidUntilTime(omnetDataMsg->getValidUntilTime());
+    keetchiAPIDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled());
 
     keetchiAPIDataMsg->setSimDataPayloadSize(omnetDataMsg->getRealPayloadSize());
 
@@ -652,6 +657,8 @@ KDataMsg* KKeetchiLayer::createOMNETDataMsgFromKeetchiAPIDataMsg(KLDataMsg* keet
 
     omnetDataMsg->setMsgType(keetchiAPIDataMsg->getMsgType());
     omnetDataMsg->setValidUntilTime(keetchiAPIDataMsg->getValidUntilTime());
+    omnetDataMsg->setHopsTravelled(keetchiAPIDataMsg->getHopsTravelled());
+    
     omnetDataMsg->setRealPayloadSize(keetchiAPIDataMsg->getSimDataPayloadSize());
     dataPtr = keetchiAPIDataMsg->getDataPayload();
     omnetDataMsg->setDummyPayloadContent(dataPtr);

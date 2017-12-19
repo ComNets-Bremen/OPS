@@ -189,7 +189,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
     if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
         << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-        << omnetDataMsg->getByteLength() << "\n";}
+        << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
@@ -243,6 +243,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
             cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
         }
         cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
+        cacheEntry->hopsTravelled = 0;
+        
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
 
@@ -365,10 +367,15 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
     bool found;
+    
+    // increment the travelled hop count
+    omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
+    omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
+    
 
     if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
         << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-        << omnetDataMsg->getByteLength() << "\n";}
+        << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
     // if destination oriented data sent around and this node is the destination
     // or if maximum hop count is reached
@@ -435,6 +442,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
             }
             cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
+            
             cacheEntry->createdTime = simTime().dbl();
             cacheEntry->updatedTime = simTime().dbl();
 
@@ -444,7 +452,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
         }
 
-        cacheEntry->hopCount = omnetDataMsg->getHopCount() + 1;
+        cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
+        cacheEntry->hopCount = omnetDataMsg->getHopCount();
         cacheEntry->lastAccessedTime = simTime().dbl();
     }
 
@@ -465,7 +474,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
         if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
             << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-            << omnetDataMsg->getByteLength() << "\n";}
+            << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
     } else {
         delete msg;
@@ -604,11 +613,13 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             dataMsg->setMessageID(cacheEntry->messageID.c_str());
             dataMsg->setHopCount(cacheEntry->hopCount);
             dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
+            dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
 
             send(dataMsg, "lowerLayerOut");
 
             if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
-                << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << "\n";}
+                << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << ">!<" 
+                << dataMsg->getHopsTravelled() << "\n";}
 
         }
 

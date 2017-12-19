@@ -25,6 +25,8 @@ packet KDataMsg {
 
     int realPayloadSize;
     int realPacketSize;
+    
+    int hopsTravelled = 0;
 
     // destination oriented delivery specific fields
     string originatorNodeName;

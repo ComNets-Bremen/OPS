@@ -36,6 +36,10 @@ simple KKeetchiLayer
         // computing the new value together with the recently arrived goodness value (in a data or
         // feedback) - a value between 0.0 - 1.0
         double learningConst = default(0.5);
+        
+        // the factor used to compute wait duration before sending the next data packet from cache
+        // when insignificant changes are present in the neighbourhood
+        double backoffTimerIncrementFactor = default(1.5);  
 
         // logging at layer - 0 = disabled, 1 = enabled
         int logging = default(1);

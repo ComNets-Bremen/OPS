@@ -10,21 +10,22 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import spline
 
 class Info:
-    def __init__(self, msg_delay_file_name, net_delay_ratio_file_name, title, msg_delay_pdf_file, net_delay_pdf_file, net_ratio_pdf_file):
+    def __init__(self, msg_delay_file_name, net_delay_ratio_file_name, title, msg_delay_pdf_file, net_delay_pdf_file, net_ratio_pdf_file, net_hops_pdf_file):
         self.msg_delay_file_name = msg_delay_file_name
         self.net_delay_ratio_file_name = net_delay_ratio_file_name
         self.title = title
         self.msg_delay_pdf_file = msg_delay_pdf_file
         self.net_delay_pdf_file = net_delay_pdf_file
         self.net_ratio_pdf_file = net_ratio_pdf_file
+        self.net_hops_pdf_file = net_hops_pdf_file
 
 infolist = []
 
 # init
-infolist.append(Info("General_0_20170923_22_37_28_15766_keetchi_refscenario_log2_md.txt", "General_0_20170923_22_37_28_15766_keetchi_refscenario_log2_madr.txt", "Reference Scenario - Keetchi", "s05_md_hist_ref-scenario-keetchi.pdf", "s05_mdr1_hist_ref-scenario-keetchi.pdf", "s05_mdr2_hist_ref-scenario-keetchi.pdf"))
-infolist.append(Info("General_0_20170923_22_38_49_16134_epidemic_refscenario_log2_md.txt", "General_0_20170923_22_38_49_16134_epidemic_refscenario_log2_madr.txt", "Reference Scenario - Epidemic", "s05_md_hist_ref-scenario-epidemic.pdf", "s05_mdr1_hist_ref-scenario-epidemic.pdf", "s05_mdr2_hist_ref-scenario-epidemic.pdf"))
+infolist.append(Info("md_l.txt", "madrh_l.txt", "Scenario 1 Title", "scenario1_msg_delay_hist.pdf", "scenario1_net_msg_delay_hist.pdff", "scenario1_net_msg_ratio_hist.pdf", "scenario1_net_msg_hops_hist.pdf"))
+infolist.append(Info("md_l.txt", "madrh_l.txt", "Scenario 2 Title", "scenario2_msg_delay_hist.pdf", "scenario2_net_msg_delay_hist.pdff", "scenario2_net_msg_ratio_hist.pdf", "scenario2_net_msg_hops_hist.pdf"))
 
-cdf_msg_delay_pdf_file = "s05_md_cdf_msg_delay_ref_scenario.pdf"
+cdf_msg_delay_pdf_file = "all_scenarios_msg_delay_cdf.pdf"
 cdf_node_msg_delay_pdf_file = "s05_mdr_cdf_node_msg_delay_ref_scenario.pdf"
 cdf_node_ratio_pdf_file = "s05_mdr_cdf_node_ratio_ref_scenario.pdf"
 

@@ -53,7 +53,8 @@ void KHeraldApp::initialize(int stage)
         // assign popularity values for the popularityAssignmentPercentage of notificationCount
         if (popularityList.size() == 0) {
             for (int i = 0; i < notificationCount; i++) {
-                double perc = (double) (i + 1) / notificationCount * 100.0;
+                // double perc = (double) (i + 1) / notificationCount * 100.0;
+                double perc = uniform(0.0, 100.0, usedRNG);
                 int popularity = 0;
 
                 if (perc <= popularityAssignmentPercentage) {

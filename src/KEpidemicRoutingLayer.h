@@ -68,12 +68,11 @@ class KEpidemicRoutingLayer: public cSimpleModule
             string finalDestinationNodeName;
 
             int goodnessValue;
-
+            int hopsTravelled;
 
             double createdTime;
             double updatedTime;
             double lastAccessedTime;
-
         };
 
         struct SyncedNeighbour {

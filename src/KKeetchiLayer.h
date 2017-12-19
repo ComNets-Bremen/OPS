@@ -37,6 +37,7 @@ class KKeetchiLayer: public cSimpleModule
         double neighbourhoodChangeSignificanceThreshold;
         double coolOffDuration;
         double learningConst;
+        double backoffTimerIncrementFactor;
         int logging;
 
         KLKeetchi *keetchiAPI;
