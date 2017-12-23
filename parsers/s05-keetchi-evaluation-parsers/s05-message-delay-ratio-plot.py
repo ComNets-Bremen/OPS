@@ -25,15 +25,6 @@ class Info:
 infolist = []
 
 # init
-# infolist.append(Info("md_l.txt",
-#                      "madrh_l.txt",
-#                      "mh_l.txt",
-#                      "Scenario 1 Title",
-#                      "scenario1_msg_delay_hist.pdf",
-#                      "scenario1_node_msg_delay_hist.pdf",
-#                      "scenario1_net_msg_ratio_hist.pdf",
-#                      "scenario1_net_msg_hops_hist.pdf"))
-
 infolist.append(Info("General_0_20171219_14_21_12_19973_keetchi_refscenario_log2_md_l.txt", 
                      "General_0_20171219_14_21_12_19973_keetchi_refscenario_log2_madrh_l.txt", 
                      "General_0_20171219_14_21_12_19973_keetchi_refscenario_log2_mh_l.txt", 
@@ -50,12 +41,6 @@ infolist.append(Info("General_0_20171219_14_21_12_19973_keetchi_refscenario_log2
                      "keetchi_ref_nonloved_node_msg_delay_hist.pdf", 
                      "keetchi_ref_nonloved_net_msg_ratio_hist.pdf", 
                      "keetchi_ref_nonloved_net_msg_hops_hist.pdf"))
-
-
-# cdf_msg_delay_pdf_file = "all_scenarios_msg_delay_cdf.pdf"
-# cdf_node_msg_delay_pdf_file = "all_scenarios_node_msg_delay_cdf.pdf"
-# cdf_node_ratio_pdf_file = "all_scenarios_node_ratio_cdf.pdf"
-# cdf_node_hops_pdf_file = "all_scenarios_hops_cdf.pdf"
 
 plt.close('all')
 
@@ -194,123 +179,4 @@ for info in infolist:
     plt.show()
     fig.savefig(info.msg_hops_pdf_file, bbox_inches='tight')
     plt.close(fig)
-
-
-
-
-# # draw all message delays CDF
-# fig = plt.figure(num=1, figsize=(8, 6))
-# for info in infolist:
-#     data = []
-#     with open(info.msg_delay_file_name, 'rb') as source:
-#         for line in source:
-#             if not line.startswith("#"):
-#                 words = line.split(">!<")
-#                 field = float(words[3].strip())
-#                 data.append(field)
-#     bin_list = []
-#     unit_size = 1.0
-#     unit_range = 2000
-#     for i in range(unit_range):
-#         bin_list.append(i * unit_size)
-#     bin_list.append(unit_size * unit_range)
-#     counts, bin_edges = np.histogram(data, bins=bin_list)
-#     cdf = np.cumsum(counts)
-#     total = np.sum(counts)
-#     cdf2 = []
-#     for i in range(unit_range):
-#         val = float(cdf[i]) / total * 100
-#         cdf2.append(val)
-#     plt.plot(bin_edges[1:], cdf2, label=info.title)
-#     # xnew = np.linspace(bin_edges[1:].min(), bin_edges[1:].max(), 1000)
-#     # ynew = spline(bin_edges[1:], cdf2, xnew)
-#     # plt.plot(xnew, ynew, label=info.title)
-#
-# plt.xlabel('Message Delays (sec)')
-# plt.ylabel('CDF (%)')
-# plt.title('CDF of Message Delays (All Messages)')
-# plt.ylim(0, 200)
-# plt.xlim(0, unit_range * unit_size)
-# plt.yticks(np.arange(0, 125, 25))
-# plt.legend()
-# plt.show()
-# fig.savefig(cdf_msg_delay_pdf_file, bbox_inches='tight')
-#
-#
-# # draw node average message delays CDF
-# fig = plt.figure(num=1, figsize=(8, 6))
-# for info in infolist:
-#     data = []
-#     with open(info.net_delay_ratio_file_name, 'rb') as source:
-#         for line in source:
-#             if not line.startswith("#"):
-#                 words = line.split(">!<")
-#                 field = float(words[2].strip())
-#                 data.append(field)
-#     bin_list = []
-#     unit_size = 1.0
-#     unit_range = 20000
-#     for i in range(unit_range):
-#         bin_list.append(i * unit_size)
-#     bin_list.append(unit_range)
-#     counts, bin_edges = np.histogram(data, bins=bin_list)
-#     cdf = np.cumsum(counts)
-#     total = np.sum(counts)
-#     cdf2 = []
-#     for i in range(unit_range):
-#         val = float(cdf[i]) / total * 100
-#         cdf2.append(val)
-#     plt.plot(bin_edges[1:], cdf2, label=info.title)
-#     # xnew = np.linspace(bin_edges[1:].min(), bin_edges[1:].max(), 1000)
-#     # ynew = spline(bin_edges[1:], cdf2, xnew)
-#     # plt.plot(xnew, ynew, label=info.title)
-#
-# plt.xlabel('Message Delays')
-# plt.ylabel('CDF (%)')
-# plt.title('CDF of Message Delays (from Node Averages)')
-# plt.ylim(0, 200)
-# plt.xlim(0, unit_range * unit_size)
-# plt.yticks(np.arange(0, 125, 25))
-# plt.legend()
-# plt.show()
-# fig.savefig(cdf_node_msg_delay_pdf_file, bbox_inches='tight')
-#
-#
-# # draw node delivery ratio CDF
-# fig = plt.figure(num=1, figsize=(8, 6))
-# for info in infolist:
-#     data = []
-#     with open(info.net_delay_ratio_file_name, 'rb') as source:
-#         for line in source:
-#             if not line.startswith("#"):
-#                 words = line.split(">!<")
-#                 field = float(words[5].strip())
-#                 data.append(field)
-#     bin_list = []
-#     unit_size = 0.01
-#     unit_range = 100
-#     for i in range(unit_range):
-#         bin_list.append(i * unit_size)
-#     bin_list.append(unit_range)
-#     counts, bin_edges = np.histogram(data, bins=bin_list)
-#     cdf = np.cumsum(counts)
-#     total = np.sum(counts)
-#     cdf2 = []
-#     for i in range(unit_range):
-#         val = float(cdf[i]) / total * 100
-#         cdf2.append(val)
-#     plt.plot(bin_edges[1:], cdf2, label=info.title)
-#     # xnew = np.linspace(bin_edges[1:].min(), bin_edges[1:].max(), 1000)
-#     # ynew = spline(bin_edges[1:], cdf2, xnew)
-#     # plt.plot(xnew, ynew, label=info.title)
-#
-# plt.xlabel('Delivery Ratio')
-# plt.ylabel('CDF (%)')
-# plt.title('CDF of Message Delivery Ratio')
-# plt.ylim(0, 200)
-# plt.xlim(0.0, (unit_range * unit_size))
-# plt.yticks(np.arange(0, 125, 25))
-# plt.legend()
-# plt.show()
-# fig.savefig(cdf_node_ratio_pdf_file, bbox_inches='tight')
 
