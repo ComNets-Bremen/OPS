@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/env bash
 #
 # Bash script to setup all the Makefiles required to compile
 # the Keetchi OMNeT++ model.
