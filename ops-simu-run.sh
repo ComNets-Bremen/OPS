@@ -52,6 +52,8 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
+mkdir -p simulations/$OMNET_OUTPUT_DIR
+
 case "$modeval" in
     cmdenv)
         echo "./$OPS_MODEL_NAME -u Cmdenv -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l INET --result-dir=$OMNET_OUTPUT_DIR"

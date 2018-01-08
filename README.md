@@ -19,7 +19,6 @@ For Linux or MacOS:
 - Checkout and build dependencies: `./bootstrap.sh`
 - Create makefiles: `./ops-makefile-setup.sh`
 - Build simulation: `make`
-- Create the `simulations/out` folder
 - Run simulation: `./ops-simu-run.sh -m tkenv`
 - Parse logs to obtain graphs (check `Parsers` section)
 - See how you can improve !!!
@@ -195,9 +194,7 @@ run the required simulations. Currently there are many samples of these 3 compon
 2. Modify the settings to point to the created OMNeT++ parameters in the
 previous step.
 
-3. Create the results output folder `simulations/out`
-
-4. Run the `ops-simu-run` script file to run simulations. Simulation can be run using the GUI
+3. Run the `ops-simu-run` script file to run simulations. Simulation can be run using the GUI
 (Tkenv) mode or the command line mode. To enable the required mode, the  `-m` switch must be used.
 
   - `ops-simu-run -m tkenv` - The `tkenv` mode brings up the GUI version of the simulation
