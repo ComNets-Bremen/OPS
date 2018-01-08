@@ -52,6 +52,7 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
+# Create output directory
 mkdir -p simulations/$OMNET_OUTPUT_DIR
 
 case "$modeval" in
