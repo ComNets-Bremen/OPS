@@ -18,5 +18,11 @@ INET_PATH=modules/inet/src
 INET_LIB=$INET_PATH
 INET_NED=$INET_PATH
 
-OMNET_INI_FILE=simulations/omnetpp-promote-expon.ini
+OMNET_INI_FILE=simulations/omnetpp-promote-expon-short.ini
 OMNET_OUTPUT_DIR=./out/
+
+# Directory to store the simulation results. As default, a generic directory for
+# each simulation run is created. It can be overwritten using the following
+# variable
+
+#SIM_OUTPUT_DIR=mySimulationOutput

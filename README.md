@@ -158,6 +158,9 @@ At the moment, the simulation uses the following parameters:
 
 - `OMNET_OUTPUT_DIR` - Path where the binaries will be located
 
+- `SIM_OUTPUT_DIR` - (Optional) Define a directory for the simulation output. If
+  not set, a generic directory is used
+
 
 Building the Model
 ------------------
