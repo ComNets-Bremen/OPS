@@ -11,6 +11,15 @@ source ./tools/shell-functions.sh
 
 loadSettings
 
+# Show help message
+showUsage(){
+    echo "Usage:"
+    echo " $0 [PARAMS]"
+    echo ""
+    echo "  -m cmdenv|tkenv : Mandatory, set the simulation type (command line vs. GUI)"
+    echo "  -c <ini file>   : Optional, set the simulation ini file"
+}
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
     export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$KEETCHI_API_LIB:$INET_LIB
 elif [[ "$OSTYPE" == "linux"* ]]; then
@@ -25,46 +34,47 @@ else
     exit 1
 fi
 
-modeval=""
-
 while [ "$#" -gt 0 ]; do
     case "$1" in
         -m)
+            if [ -z ${2+x} ]; then
+                echo "Missing parameter for \"$1\""
+                showUsage
+                exit 1
+            fi
+
             modeval="$2"
             shift 2
             ;;
         -h)
-            echo "Usage:"
-            echo " $0 -m cmdenv|tkenv" >&2
+            showUsage
             exit 0
             ;;
 
-        --mode=*)
-            modeval="${1#*=}"
-            shift 1
-            ;;
+        -c)
+            if [ -z ${2+x} ]; then
+                echo "Missing parameter for \"$1\""
+                showUsage
+                exit 1
+            fi
+            OMNET_INI_FILE="$2"
 
-        --mode)
-            echo "$1 requires an argument" >&2
-            echo "Usage:"
-            echo " $0 -m cmdenv|tkenv" >&2
-            exit 1
+            shift 2
             ;;
 
         *)
             echo "Unknown option: $1" >&2
-            echo "Usage:"
-            echo " $0 -m cmdenv|tkenv" >&2
+            showUsage
             exit 1
             ;;
     esac
 done
 
-# Is a default output directory defined in the settings? Use this one.
-# Otherwise create a generic one
-if [ -z ${SIM_OUTPUT_DIR+x} ]; then
-    SIM_OUTPUT_DIR=$(basename $OMNET_INI_FILE)
-    SIM_OUTPUT_DIR="$OMNET_OUTPUT_DIR$(date +"%Y-%m-%d_%H-%M-%S")_${SIM_OUTPUT_DIR%.*}"
+# Check if the ini file exists and is accessible
+
+if [ ! -f $OMNET_INI_FILE ]; then
+    echo "Simulation configuration file \"$OMNETPP_INI_FILE\" not found. Aborting"
+    exit 1
 fi
 
 echo "Storing Simulation in directory \"simulations/$SIM_OUTPUT_DIR\""
@@ -80,16 +90,24 @@ case "$modeval" in
 
     *)
         echo "Mode not specified" >&2
-        echo "Usage:"
-        echo " $0 -m cmdenv|tkenv" >&2
+        showUsage
         exit 1
         ;;
 esac
+
+# Is a default output directory defined in the settings? Use this one.
+# Otherwise create a generic one
+if [ -z ${SIM_OUTPUT_DIR+x} ]; then
+    SIM_OUTPUT_DIR=$(basename $OMNET_INI_FILE)
+    SIM_OUTPUT_DIR="$OMNET_OUTPUT_DIR$(date +"%Y-%m-%d_%H-%M-%S")_${SIM_OUTPUT_DIR%.*}"
+fi
 
 mkdir -p simulations/$SIM_OUTPUT_DIR
 
 # Keep the ini file in the output directory
 cp $OMNET_INI_FILE simulations/$SIM_OUTPUT_DIR
+
+echo "### Using \"$OMNET_INI_FILE\""
 
 echo "./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR" | tee simulations/$SIM_OUTPUT_DIR/sim_command.txt
 ./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR
