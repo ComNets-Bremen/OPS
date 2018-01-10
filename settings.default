@@ -23,6 +23,8 @@ OMNET_OUTPUT_DIR=./out/
 
 # Directory to store the simulation results. As default, a generic directory for
 # each simulation run is created. It can be overwritten using the following
-# variable
+# variable.
+#
+# It is a subdirectory of $OMNET_OUTPUT_DIR
 
 #SIM_OUTPUT_DIR=mySimulationOutput
