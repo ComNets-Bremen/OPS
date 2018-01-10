@@ -5,7 +5,7 @@
 #
 # @author: Asanga Udugama (adu@comnets.uni-bremen.de)
 # @author: Jens Dede (jd@comnets.uni-bremen.de)
-# @date: 09-January-2018
+# @date: 10-January-2018
 #
 source ./tools/shell-functions.sh
 
@@ -18,6 +18,7 @@ showUsage(){
     echo ""
     echo "  -m cmdenv|tkenv : Mandatory, set the simulation type (command line vs. GUI)"
     echo "  -c <ini file>   : Optional, set the simulation ini file"
+    echo "  -o <output dir> : Optional, set the simulation output directory"
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -62,6 +63,18 @@ while [ "$#" -gt 0 ]; do
             shift 2
             ;;
 
+        -o)
+            if [ -z ${2+x} ]; then
+                echo "Missing parameter for \"$1\""
+                showUsage
+                exit 1
+            fi
+            SIM_OUTPUT_DIR="$2"
+
+            shift 2
+            ;;
+
+
         *)
             echo "Unknown option: $1" >&2
             showUsage
@@ -76,8 +89,6 @@ if [ ! -f $OMNET_INI_FILE ]; then
     echo "Simulation configuration file \"$OMNETPP_INI_FILE\" not found. Aborting"
     exit 1
 fi
-
-echo "Storing Simulation in directory \"simulations/$SIM_OUTPUT_DIR\""
 
 case "$modeval" in
     cmdenv)
@@ -107,9 +118,29 @@ mkdir -p simulations/$SIM_OUTPUT_DIR
 # Keep the ini file in the output directory
 cp $OMNET_INI_FILE simulations/$SIM_OUTPUT_DIR
 
-echo "### Using \"$OMNET_INI_FILE\""
+echo ""
+echo "############################# Simulation Settings #############################"
+echo "#"
+echo "# \$OMNET_INI_FILE : $OMNET_INI_FILE"
+echo "# \$SIM_OUTPUT_DIR : simulations/$SIM_OUTPUT_DIR"
+echo "#"
+echo "#"
+echo "# Simulation mode : $SIMTYPE"
+echo "#"
+echo "# Simulation command:"
+echo "# ./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR" | tee simulations/$SIM_OUTPUT_DIR/sim_command.txt
+echo "#"
+echo "###############################################################################"
+echo ""
 
-echo "./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR" | tee simulations/$SIM_OUTPUT_DIR/sim_command.txt
 ./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR
+ret=$?
 
+# Did the simulation return something else than "0"? -> Error
+if [ $ret -eq 0 ]; then
+    echo "Simulation ended successfully"
+    exit 0
+fi
 
+echo "Error during simulation run. Simulation returned code $ret"
+exit $ret
