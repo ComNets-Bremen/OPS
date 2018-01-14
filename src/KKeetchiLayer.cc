@@ -30,9 +30,13 @@ void KKeetchiLayer::initialize(int stage)
     } else if (stage == 1) {
 
         // create Keetchi API
-        keetchiAPI = new KLKeetchi(KLKEETCHI_CACHE_REPLACEMENT_POLICY_LRU, maximumCacheSize, ownMACAddress,
+        const char *confVal = getEnvir()->getConfig()->getConfigValue("eventlog-file");
+        string logfilePath(confVal);
+        logfilePath = "simulations/" + logfilePath + "_KeetchiLib.txt";
+        keetchiAPI = new KLKeetchi(KLKEETCHI_CACHE_REPLACEMENT_POLICY_LRU, maximumCacheSize, 
+                                        ownMACAddress, getParentModule()->getFullName(),
                                         neighbourhoodChangeSignificanceThreshold, coolOffDuration,
-                                        learningConst, TRUE, backoffTimerIncrementFactor);
+                                        learningConst, TRUE, backoffTimerIncrementFactor, logfilePath);
 
     } else if (stage == 2) {
 

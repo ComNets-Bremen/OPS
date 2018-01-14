@@ -36,6 +36,9 @@ if the information that the new model attempts to log is the same or similar.
 | LI       | Lower In                   |
 | UO       | Upper Out                  |
 | DRM      | Data Request Msg           |
+| CU       | Cache entry updated        |
+| CA       | Cache entry added          |
+| CR       | Cache entry removed        |
 | **Link Layer Codes**          |       |
 | NI       | Neighbourhood Info         |
 

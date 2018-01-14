@@ -209,10 +209,9 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
         // apply caching policy if limited cache and cache is full
         if (maximumCacheSize != 0
-                && (currentCacheSize + omnetDataMsg->getRealPacketSize()) > maximumCacheSize
+                && (currentCacheSize + omnetDataMsg->getRealPayloadSize()) > maximumCacheSize
                 && cacheList.size() > 0) {
             iteratorCache = cacheList.begin();
-            advance(iteratorCache, 0);
             CacheEntry *removingCacheEntry = *iteratorCache;
             iteratorCache = cacheList.begin();
             while (iteratorCache != cacheList.end()) {
@@ -222,8 +221,13 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
                 }
                 iteratorCache++;
             }
-            currentCacheSize -= removingCacheEntry->realPacketSize;
+            currentCacheSize -= removingCacheEntry->realPayloadSize;
             cacheList.remove(removingCacheEntry);
+
+            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<" 
+                << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
+                << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << "\n";}
+
             delete removingCacheEntry;
 
         }
@@ -250,11 +254,22 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
         cacheList.push_back(cacheEntry);
 
-        currentCacheSize += cacheEntry->realPacketSize;
+        currentCacheSize += cacheEntry->realPayloadSize;
 
     }
 
     cacheEntry->lastAccessedTime = simTime().dbl();
+    
+    // log cache update or add
+    if (found) {
+        if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<" 
+            << omnetDataMsg->getDataName() << ">!<" << cacheEntry->realPayloadSize << ">!<0>!<"
+            << currentCacheSize << ">!<0>!<0>!<" << cacheEntry->hopsTravelled << "\n";}
+    } else {
+        if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<" 
+            << omnetDataMsg->getDataName() << ">!<" << cacheEntry->realPayloadSize << ">!<0>!<"
+            << currentCacheSize << ">!<0>!<0>!<" << cacheEntry->hopsTravelled << "\n";}
+    }
 
     delete msg;
 }
@@ -409,10 +424,9 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
             // apply caching policy if limited cache and cache is full
             if (maximumCacheSize != 0
-                && (currentCacheSize + omnetDataMsg->getRealPacketSize()) > maximumCacheSize
+                && (currentCacheSize + omnetDataMsg->getRealPayloadSize()) > maximumCacheSize
                 && cacheList.size() > 0) {
                 iteratorCache = cacheList.begin();
-                advance(iteratorCache, 0);
                 CacheEntry *removingCacheEntry = *iteratorCache;
                 iteratorCache = cacheList.begin();
                 while (iteratorCache != cacheList.end()) {
@@ -422,10 +436,14 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                     }
                     iteratorCache++;
                 }
-                currentCacheSize -= removingCacheEntry->realPacketSize;
+                currentCacheSize -= removingCacheEntry->realPayloadSize;
                 cacheList.remove(removingCacheEntry);
-                delete removingCacheEntry;
 
+                if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<" 
+                    << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
+                    << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << "\n";}
+
+                delete removingCacheEntry;
             }
 
             cacheEntry = new CacheEntry;
@@ -442,19 +460,30 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
             }
             cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
-            
+
             cacheEntry->createdTime = simTime().dbl();
             cacheEntry->updatedTime = simTime().dbl();
 
             cacheList.push_back(cacheEntry);
 
-            currentCacheSize += cacheEntry->realPacketSize;
+            currentCacheSize += cacheEntry->realPayloadSize;
 
         }
 
         cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
         cacheEntry->hopCount = omnetDataMsg->getHopCount();
         cacheEntry->lastAccessedTime = simTime().dbl();
+
+        // log cache update or add
+        if (found) {
+            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<" 
+                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
+                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+        } else {
+            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<" 
+                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
+                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+        }
     }
 
     // if registered app exist, send data msg to app
