@@ -5,11 +5,13 @@
 #
 # @author: Asanga Udugama (adu@comnets.uni-bremen.de)
 # @author: Jens Dede (jd@comnets.uni-bremen.de)
-# @date: 10-January-2018
+# @date: 15-January-2018
 #
 source ./tools/shell-functions.sh
 
 loadSettings
+
+PARSERS_FILE="parsers.txt"
 
 # Show help message
 showUsage(){
@@ -19,6 +21,7 @@ showUsage(){
     echo "  -m cmdenv|tkenv : Mandatory, set the simulation type (command line vs. GUI)"
     echo "  -c <ini file>   : Optional, set the simulation ini file"
     echo "  -o <output dir> : Optional, set the simulation output directory"
+    echo "  -p              : Optional, perform some post-processing steps"
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -34,6 +37,8 @@ else
     echo "Cannot find the simulation executable \"./$OPS_MODEL_NAME\". Have you run \"make\"?"
     exit 1
 fi
+
+DO_POST_PROCESSING=0
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -74,6 +79,10 @@ while [ "$#" -gt 0 ]; do
             shift 2
             ;;
 
+        -p)
+            DO_POST_PROCESSING=1
+            shift 1
+            ;;
 
         *)
             echo "Unknown option: $1" >&2
@@ -126,6 +135,8 @@ echo "# \$SIM_OUTPUT_DIR : simulations/$SIM_OUTPUT_DIR"
 echo "#"
 echo "# Simulation mode : $SIMTYPE"
 echo "#"
+echo "# Post processing : $DO_POST_PROCESSING"
+echo "#"
 echo "# Simulation command:"
 echo "# ./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR" | tee simulations/$SIM_OUTPUT_DIR/sim_command.txt
 echo "#"
@@ -136,10 +147,52 @@ echo ""
 ret=$?
 
 # Did the simulation return something else than "0"? -> Error
-if [ $ret -eq 0 ]; then
-    echo "Simulation ended successfully"
-    exit 0
+if [ $ret -ne 0 ]; then
+    echo "Error during simulation run. Simulation returned code $ret"
+    exit $ret
 fi
 
-echo "Error during simulation run. Simulation returned code $ret"
-exit $ret
+# Simulation done. Perform post-processing steps
+echo "Simulation ended successfully"
+
+
+if [ $DO_POST_PROCESSING -ne 0 ]; then
+    # Post processing activated? Do the following:
+    # 1) check if the file $PARSERS_FILE exists
+    # 2) Get all the simulation logfiles
+    # 3) For each logfile, run the parsers defined in §PARSERS_FILE
+    #
+
+    if [ ! -f $PARSERS_FILE ]; then
+        echo "$PARSERS_FILE not found. Aborting..."
+        exit 1
+    else
+        echo "Using parsers from file $PARSERS_FILE"
+    fi
+
+    # We assume that each logfile starts with "General" and ends with ".txt"...
+    for logfile in simulations/$SIM_OUTPUT_DIR/General*.txt; do
+        echo "Processing file $logfile"
+        cat $PARSERS_FILE | \
+            while read CMD; do
+                if [[ ${CMD:0:1} == "#" ]]; then
+                    # Commented out line
+                    continue
+                fi
+
+                if [ -z "$CMD" ]; then
+                    # Empty line
+                    continue
+                fi
+
+                echo "Running $CMD $logfile"
+
+                ./$CMD $logfile
+
+                if [ $? -ne 0 ]; then
+                    echo "Error running $CMD $logfile. Aborting"
+                    exit 1
+                fi
+            done
+    done
+fi

@@ -1,0 +1,7 @@
+# Parsers for the post-execution. This file is used if "ops-simu-run.sh" is
+# run with the parameter "-p"
+# Put one parser command per line. Lines starting with hashes (#) are ignored
+# The logfile name is appended at the end of the parser command line
+# The parsers are executed in the order listed in this file
+
+parsers/s05-keetchi-evaluation-parsers/s05-packets-sent-per-node-stats-ng.py
