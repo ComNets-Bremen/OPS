@@ -21,7 +21,7 @@ showUsage(){
     echo "  -m cmdenv|tkenv : Mandatory, set the simulation type (command line vs. GUI)"
     echo "  -c <ini file>   : Optional, set the simulation ini file"
     echo "  -o <output dir> : Optional, set the simulation output directory"
-    echo "  -p              : Optional, perform some post-processing steps"
+    echo "  -p              : Optional, perform some post-processing steps (beta)"
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
