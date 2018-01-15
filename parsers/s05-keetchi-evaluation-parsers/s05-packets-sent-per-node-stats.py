@@ -4,184 +4,162 @@
 #
 # Author: Asanga Udugama (adu@comnets.uni-bremen.de)
 # Date: 17-sep-2017
+#
+# Author: Jens Dede (jd@comnets.uni-bremen.de)
+# Date: 15-jan-2018
 
-import sys, getopt, re, tempfile
+import argparse
+import csv
+import pickle
+from helper import NodeHelpers, FileHelpers
 
-inputfile = 0
-outputfile1 = 0
-outputfile2 = 0
+# Keys and default values required by this parser
+REQUIRED_KEYS = {
+        "data_sent"         : 0,
+        "data_sent_bytes"   : 0,
+        "feedback_sent"     : 0,
+        "feedback_sent_bytes": 0,
+        "svm_sent"          : 0,
+        "svm_sent_bytes"    : 0,
+        "drm_sent"          : 0,
+        "drm_sent_bytes"    : 0,
+        }
 
-nodes = []
-excluded_nodes = ["abc", "xyz"]
+# Names of nodes to be ignored
+IGNORED_NODES = []
 
-total_data_sent = 0
-total_data_sent_bytes = 0
-total_feedback_sent = 0
-total_feedback_sent_bytes = 0
-total_svm_sent = 0
-total_svm_sent_bytes = 0
-total_drm_sent = 0
-total_drm_sent_bytes = 0
+# Parse the lines and store the data in the corresponding node object
+def parseLine(line, nodeObjects):
+    if "INFO" in line and ("KKeetchiLayer" in line or "KRRSLayer" in line) and ">!<LO>!<DM>!<" in line:
+        words = line.split(">!<")
+        node = nodeObjects.getNode(words[2].strip())
+        node["data_sent"] += 1
+        node["data_sent_bytes"] += int(words[10].strip())
 
-class Node:
+    elif "INFO" in line and "KEpidemicRoutingLayer" in line and ">!<LO>!<DM>!<" in line:
+        words = line.split(">!<")
+        node = nodeObjects.getNode(words[2].strip())
+        node["data_sent"] += 1
+        node["data_sent_bytes"] += int(words[8].strip())
 
-    def __init__(self, name):
-        self.name = name
-        self.data_sent = 0
-        self.data_sent_bytes = 0
-        self.feedback_sent = 0
-        self.feedback_sent_bytes = 0
-        self.svm_sent = 0
-        self.svm_sent_bytes = 0
-        self.drm_sent = 0
-        self.drm_sent_bytes = 0
+    elif "INFO" in line and "KKeetchiLayer" in line and ">!<LO>!<FM>!<" in line:
+        words = line.split(">!<")
+        node = nodeObjects.getNode(words[2].strip())
+        node["feedback_sent"] += 1
+        node["feedback_sent_bytes"] += int(words[11].strip())
 
-def parse_param_n_open_files(argv):
-    global inputfile
-    global outputfile1
-    global outputfile2
+    elif "INFO" in line and "KEpidemicRoutingLayer" in line and ">!<LO>!<SVM>!<" in line:
+        words = line.split(">!<")
+        node = nodeObjects.getNode(words[2].strip())
+        node["svm_sent"] += 1
+        node["svm_sent_bytes"] += int(words[10].strip())
 
-    try:
-        opts, args = getopt.getopt(argv,"hi:",["ifile="])
-    except getopt.GetoptError:
-        print "s05-packets-sent-per-node-stats.py -i <inputfile>"
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt == '-h':
-            print 's05-packets-sent-per-node-stats.py -i <inputfile>'
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            inputfilename = arg
-
-    newfilename = re.sub(':', '_', inputfilename)
-    newfilename = re.sub('-', '_', newfilename)
-
-    inputfile = open(inputfilename, "r")
-    outputfile1 = open(re.sub('.txt', '_ps.txt', newfilename), "w+")
-    outputfile2 = open(re.sub('.txt', '_pst.txt', newfilename), "w+")
-
-    print "Input File:                ", inputfile.name
-    print "Packets Sent Per Node:     ", outputfile1.name
-    print "Packets Sent by All Nodes: ", outputfile2.name
-
-def get_node(node_name):
-    global nodes
-    
-    node_found = False
-    for node in nodes:
-        if node.name == node_name:
-            node_found = True
-            break
-
-    if not node_found:
-        node = Node(node_name)
-        nodes.append(node)
-
-    return(node)
-
-def extract_from_log_and_accumilate():
-    global inputfile
-    
-    global total_data_sent
-    global total_data_sent_bytes
-    global total_feedback_sent
-    global total_feedback_sent_bytes
-    global total_svm_sent
-    global total_svm_sent_bytes
-    global total_drm_sent
-    global total_drm_sent_bytes
-
-    global nodes
-    
-    for line in inputfile:
-        if "INFO" in line and ("KKeetchiLayer" in line or "KRRSLayer" in line) and ">!<LO>!<DM>!<" in line:
-            words = line.split(">!<")
-            node = get_node(words[2].strip())
-            total_data_sent += 1
-            total_data_sent_bytes += int(words[10].strip())
-            node.data_sent += 1
-            node.data_sent_bytes += int(words[10].strip())
-
-        elif "INFO" in line and "KEpidemicRoutingLayer" in line and ">!<LO>!<DM>!<" in line:
-            words = line.split(">!<")
-            node = get_node(words[2].strip())
-            total_data_sent += 1
-            total_data_sent_bytes += int(words[8].strip())
-            node.data_sent += 1
-            node.data_sent_bytes += int(words[8].strip())
-            
-        elif "INFO" in line and "KKeetchiLayer" in line and ">!<LO>!<FM>!<" in line:
-            words = line.split(">!<")
-            node = get_node(words[2].strip())
-            total_feedback_sent += 1
-            total_feedback_sent_bytes += int(words[11].strip())
-            node.feedback_sent += 1
-            node.feedback_sent_bytes += int(words[11].strip())
-
-        elif "INFO" in line and "KEpidemicRoutingLayer" in line and ">!<LO>!<SVM>!<" in line:
-            words = line.split(">!<")
-            node = get_node(words[2].strip())
-            total_svm_sent += 1
-            total_svm_sent_bytes += int(words[10].strip())
-            node.svm_sent += 1
-            node.svm_sent_bytes += int(words[10].strip())
-
-        elif "INFO" in line and "KEpidemicRoutingLayer" in line and ">!<LO>!<DRM>!<" in line:
-            words = line.split(">!<")
-            node = get_node(words[2].strip())
-            total_drm_sent += 1
-            total_drm_sent_bytes += int(words[8].strip())
-            node.drm_sent += 1
-            node.drm_sent_bytes += int(words[8].strip())
-
-def print_values():
-    outputfile1.write("# seq >!< node name >!< total sent count >!< total sent bytes >!< " + \
-                     " data sent count >!< data sent bytes >!< feedback sent count >!< feedback sent bytes >!<" + \
-                     " svm send count >!< svm sent bytes >!< drm sent count >!< drm sent bytes \n")
-    i = 0
-    for node in nodes:
-        if any(node.name in ex_node_name for ex_node_name in excluded_nodes):
-            continue
-        
-        i += 1
-        total_node_sent = node.data_sent + node.feedback_sent + node.svm_sent + node.drm_sent
-        total_node_sent_bytes = node.data_sent_bytes + node.feedback_sent_bytes + node.svm_sent_bytes + node.drm_sent_bytes
-
-        outputfile1.write(str(i) + " >!< " + node.name + " >!< " +  str(total_node_sent) + " >!< " + str(total_node_sent_bytes) + " >!< " +\
-                            str(node.data_sent) + " >!< " + str(node.data_sent_bytes) + " >!< " +\
-                            str(node.feedback_sent) + " >!< " + str(node.feedback_sent_bytes) + " >!< " +\
-                            str(node.svm_sent) + " >!< " + str(node.svm_sent_bytes) + " >!< " +\
-                            str(node.drm_sent) + " >!< " + str(node.drm_sent_bytes) + "\n")
-    
-    total_sent = total_data_sent + total_feedback_sent + total_svm_sent + total_drm_sent
-    total_sent_bytes = total_data_sent_bytes + total_feedback_sent_bytes + total_svm_sent_bytes + total_drm_sent_bytes
-
-    outputfile2.write("# totals >!< total sent count >!< total sent bytes >!< " + \
-                     " data sent count >!< data sent bytes >!< feedback sent count >!< feedback sent bytes >!<" + \
-                     " svm send count >!< svm sent bytes >!< drm sent count >!< drm sent bytes \n")
-    outputfile2.write(" totals >!< " +  str(total_sent) + " >!< " + str(total_sent_bytes) + " >!< " +\
-                            str(total_data_sent) + " >!< " + str(total_data_sent_bytes) + " >!< " + \
-                            str(total_feedback_sent) + " >!< " + str(total_feedback_sent_bytes) + " >!< " +\
-                            str(total_svm_sent) + " >!< " + str(total_svm_sent_bytes) + " >!< " +\
-                            str(total_drm_sent) + " >!< " + str(total_drm_sent_bytes) + "\n")
-
-def close_files():
-    global inputfile
-    global outputfile1
-    global outputfile2
-
-    inputfile.close()
-    outputfile1.close()
-    outputfile2.close()
+    elif "INFO" in line and "KEpidemicRoutingLayer" in line and ">!<LO>!<DRM>!<" in line:
+        words = line.split(">!<")
+        node = nodeObjects.getNode(words[2].strip())
+        node["drm_sent"] += 1
+        node["drm_sent_bytes"] += int(words[8].strip())
 
 
-def main(argv):
-    parse_param_n_open_files(argv)
-    extract_from_log_and_accumilate()
-    print_values()
-    close_files()
+# Main function
+def main():
+    parser = argparse.ArgumentParser(description='Create statistics: Number of packets per node')
+    parser.add_argument('logfiles', type=str, nargs="+", help="The logfiles")
+    args = parser.parse_args()
+
+    for inputfile in args.logfiles:
+        print "Processing", inputfile
+        fileHelper = FileHelpers.FileHelper(inputfile)
+
+        # Initialize the helper to handle the node information
+        nodes = NodeHelpers.NodeInformationHandler()
+        for key in REQUIRED_KEYS:
+            nodes.addKey(key, REQUIRED_KEYS[key])
+
+        # Get all data from the logfile and store it to the node object
+        with open(fileHelper.getInputFile()) as iFile:
+            for line in iFile:
+                parseLine(line, nodes)
+
+        # Store the per node statistics
+        with open(fileHelper.getGenericOutput(suffix="_ps"), "wb") as nodeOutput:
+            print "Writing file", nodeOutput.name
+
+            # Heading
+            nodeOutput.write(" >!< ".join([
+                    "# seq",
+                    "node name",
+                    "total sent count",
+                    "total sent bytes",
+                    "data sent count",
+                    "data sent bytes",
+                    "feedback sent count",
+                    "feedback sent bytes",
+                    "svm sent count",
+                    "svm sent bytes",
+                    "drm sent count",
+                    "drm sent bytes"
+                ])+"\n")
+
+            # Data
+            for number, key in enumerate(nodes.getKnownNodes()):
+                if key in IGNORED_NODES:
+                    continue
+                node = nodes.getNode(key)
+                nodeOutput.write(" >!< ".join([
+                    str(number+1),
+                    str(node["name"]),
+                    str(node["data_sent"] + node["feedback_sent"] + node["svm_sent"] + node["drm_sent"]),
+                    str(node["data_sent_bytes"] + node["feedback_sent_bytes"] + node["svm_sent_bytes"] + node["drm_sent_bytes"]),
+                    str(node["data_sent"]),
+                    str(node["data_sent_bytes"]),
+                    str(node["feedback_sent"]),
+                    str(node["feedback_sent_bytes"]),
+                    str(node["svm_sent"]),
+                    str(node["svm_sent_bytes"]),
+                    str(node["drm_sent"]),
+                    str(node["drm_sent_bytes"])
+                    ])+"\n")
+
+        # Total statistics
+        with open(fileHelper.getGenericOutput(suffix="_pst"), "wb") as totalOutput:
+            print "Writing file", totalOutput.name
+
+            # Heading
+            totalOutput.write(" >!< ".join([
+                    "# totals",
+                    "total sent count",
+                    "total sent bytes",
+                    "data sent count",
+                    "data sent bytes",
+                    "feedback sent count",
+                    "feedback sent bytes",
+                    "svm send count",
+                    "svm sent bytes",
+                    "drm sent count",
+                    "drm sent bytes"
+                ])+"\n")
+
+            allData = nodes.getTotalData(IGNORED_NODES)
+            totalOutput.write(" >!< ".join([
+                    "totals",
+                    str(allData["data_sent"] + allData["feedback_sent"] + allData["svm_sent"] + allData["drm_sent"]),
+                    str(allData["data_sent_bytes"] + allData["feedback_sent_bytes"] + allData["svm_sent_bytes"] + allData["drm_sent_bytes"]),
+                    str(allData["data_sent"]),
+                    str(allData["data_sent_bytes"]),
+                    str(allData["feedback_sent"]),
+                    str(allData["feedback_sent_bytes"]),
+                    str(allData["svm_sent"]),
+                    str(allData["svm_sent_bytes"]),
+                    str(allData["drm_sent"]),
+                    str(allData["drm_sent_bytes"])
+                    ])+"\n")
+
+        # Everything important to a pickle file
+        with open(fileHelper.getPickleFilename(), "wb") as pickleOutput:
+            print "Writing file", pickleOutput.name
+            pickle.dump(nodes.getAllData(), pickleOutput)
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
 
