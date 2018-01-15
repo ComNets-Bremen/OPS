@@ -143,6 +143,7 @@ echo "#"
 echo "###############################################################################"
 echo ""
 
+SIM_START_DAY=$(date +%Y%m%d) # For later logfile localization
 ./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR
 ret=$?
 
@@ -170,8 +171,9 @@ if [ $DO_POST_PROCESSING -ne 0 ]; then
         echo "Using parsers from file $PARSERS_FILE"
     fi
 
-    # We assume that each logfile starts with "General" and ends with ".txt"...
-    for logfile in simulations/$SIM_OUTPUT_DIR/General*.txt; do
+    # We assume that each logfile has a "$resuldir-like"-format and ends
+    # with ".txt"...
+    for logfile in simulations/$SIM_OUTPUT_DIR/*-$SIM_START_DAY-*.txt; do
         echo "Processing file $logfile"
         cat $PARSERS_FILE | \
             while read CMD; do
@@ -186,8 +188,9 @@ if [ $DO_POST_PROCESSING -ne 0 ]; then
                 fi
 
                 echo "Running $CMD $logfile"
-
+                echo "##### Start of parser output #####"
                 ./$CMD $logfile
+                echo "*****  End of parser output  *****"
 
                 if [ $? -ne 0 ]; then
                     echo "Error running $CMD $logfile. Aborting"
