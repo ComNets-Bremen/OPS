@@ -4,4 +4,4 @@
 # The logfile name is appended at the end of the parser command line
 # The parsers are executed in the order listed in this file
 
-parsers/s05-keetchi-evaluation-parsers/s05-packets-sent-per-node-stats-ng.py
+parsers/s05-keetchi-evaluation-parsers/s05-packets-sent-per-node-stats.py
