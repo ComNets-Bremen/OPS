@@ -158,7 +158,7 @@ def main():
         # Everything important to a pickle file
         with open(fileHelper.getPickleFilename(), "wb") as pickleOutput:
             print "Writing file", pickleOutput.name
-            pickle.dump(nodes.getAllData(), pickleOutput)
+            pickle.dump(nodes.exportData(), pickleOutput)
 
 if __name__ == "__main__":
     main()

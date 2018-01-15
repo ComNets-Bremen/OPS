@@ -12,6 +12,11 @@ class NodeInformationHandler:
     m_nodes = {}    # Dict to store the node information
     m_node_data_structure = {}
 
+    def __init__(self, initDict=None):
+        if initDict:
+            self.m_nodes = initDict["node_data"]
+            self.m_node_data_structure = initDict["data_structure"]
+
     ## Return the current defined base dictionary used by the instance
     #
     # @param name name  The name of the object
@@ -30,7 +35,7 @@ class NodeInformationHandler:
     ## String representation to get some meaningful printout information
     #
     def __str__(self):
-        return "NodeHandler with " + str(len(self.m_nodes)) + " nodes"
+        return "NodeInformationHandler with " + str(len(self.m_nodes)) + " nodes"
 
     ## Get a certain node dict by name
     #
@@ -67,7 +72,7 @@ class NodeInformationHandler:
 
     ## Return all data stored in this instance
     #
-    def getAllData(self):
+    def exportData(self):
         return {
                 "node_data": self.m_nodes,
                 "data_structure" : self.m_node_data_structure
@@ -100,3 +105,10 @@ if __name__ == "__main__":
 
     print myNodes.getTotalData()
     print myNodes.getTotalData(["Test",])
+
+    # Export Data to dict
+    exportDict = myNodes.exportData()
+
+    # Create a new instance based on exported data
+    mySecondDict = NodeInformationHandler(exportDict)
+    print mySecondDict
