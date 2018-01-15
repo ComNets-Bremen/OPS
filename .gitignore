@@ -48,3 +48,6 @@ simulations/results/
 # Misc
 *.swp
 .cmdenv-log
+
+# Ignore Python compiled module files
+*.pyc
