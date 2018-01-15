@@ -386,7 +386,9 @@ total simulation time (-s), simulation period (i.e., the range as -p) and the ti
 to consider for a unit of communications (-r). The -s, -p and -r are given in seconds.
 
 
-
+- `s05-keetchi-evaluation-parsers` - This is folder that contains a set of scripts used
+in evaluating Keetchi and Epidemic Routing. As before, the `...-stats.py` files extract the
+data from the logs and `...-plot.py` files generate the graphs.
 
 
 
