@@ -5,3 +5,5 @@
 # The parsers are executed in the order listed in this file
 
 parsers/s05-keetchi-evaluation-parsers/s05-packets-sent-per-node-stats.py
+parsers/s05-keetchi-evaluation-parsers/s05-loved-received-progress-stats.py
+parsers/s05-keetchi-evaluation-parsers/s05-message-delay-and-ratio-stats.py
