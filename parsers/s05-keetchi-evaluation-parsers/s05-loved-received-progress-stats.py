@@ -1,26 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Script to extract and process progress of liked (loved)
 # message receipts
 #
 # Author: Asanga Udugama (adu@comnets.uni-bremen.de)
 # Date: 11-oct-2017
+#
+# Author: Jens Dede (jd@comnets.uni-bremen.de)
+# Date: 16-jan-2017
+#
+# TODO:
+#
+# - Do not create an output file in case of no results (wrong input file
+#       format)
+# - Store the information in a more generic way (-> NodeInformationHelpers)
+# - ...
 
-import sys, getopt, re, tempfile
+import sys, os, re
+import argparse
 
-inputfile = 0
-outputfile1 = 0
+# Include the upper directory to access the helper module
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 
-nodes = []
+from helper import NodeHelpers, FileHelpers
+
+
 excluded_nodes = ["abc", "xyz"]
 dump_frequency = 3600.0
-
-last_dump_time = dump_frequency
-total_loved_first_copy = 0
-total_loved_additional_copies = 0
-
-last_loved_first_copy = 0
-last_loved_additional_copies = 0
 
 
 class Event:
@@ -34,9 +40,9 @@ class Node:
     def __init__(self, node_name):
         self.node_name = node_name
         self.events = []
-        
 
-def get_node(nodes, node_name):    
+
+def get_node(nodes, node_name):
     node_found = False
     for node in nodes:
         if node.node_name == node_name:
@@ -50,7 +56,7 @@ def get_node(nodes, node_name):
         return node
 
 
-def add_node(nodes, node_name):    
+def add_node(nodes, node_name):
     node_found = False
     for node in nodes:
         if node.node_name == node_name:
@@ -60,7 +66,7 @@ def add_node(nodes, node_name):
     if not node_found:
         node = Node(node_name)
         nodes.append(node)
-        
+
     return node
 
 
@@ -94,112 +100,88 @@ def add_event(node, event_name, event_type):
         sys.exit(2)
 
 
+def extract_from_log_and_accumilate_and_print(inputfilename, outputfilename):
+    nodes = []
 
-def parse_param_n_open_files(argv):
-    global inputfile
-    global outputfile1
+    last_dump_time = dump_frequency
+    total_loved_first_copy = 0
+    total_loved_additional_copies = 0
 
-    try:
-        opts, args = getopt.getopt(argv,"hi:",["ifile="])
-    except getopt.GetoptError:
-        print "s05-loved-received-progress-stats.py -i <inputfile>"
-        sys.exit(2)
+    last_loved_first_copy = 0
+    last_loved_additional_copies = 0
 
-    for opt, arg in opts:
-        if opt == '-h':
-            print 's05-loved-received-progress-stats.py -i <inputfile>'
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            inputfilename = arg
-
-    newfilename = re.sub(':', '_', inputfilename)
-    newfilename = re.sub('-', '_', newfilename)
-
-    inputfile = open(inputfilename, "r")
-    outputfile1 = open(re.sub('.txt', '_lrp.txt', newfilename), "w+")
-
-    print "Input File:               ", inputfile.name
-    print "Loved Received Progress:  ", outputfile1.name
+    with open(inputfilename, "r") as inputfile, open(outputfilename, "w+") as outputfile:
+        print "Input File:               ", inputfile.name
+        print "Loved Received Progress:  ", outputfile.name
 
 
-def extract_from_log_and_accumilate_and_print():
-    global inputfile
-    
-    global nodes
-    
-    global total_loved_first_copy
-    global total_loved_additional_copies
-    global last_loved_first_copy
-    global last_loved_additional_copies
-    
-    global last_dump_time
-    global dump_frequency
-    
-    outputfile1.write("# sim time >!< total loved 1st copy >!< total loved 1st copies >!< last loved 1st copy >!< last loved 1st copies\n")
 
-    current_time = 0.0
-    for line in inputfile:
-        
-        if "INFO" in line and ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) \
-            and ">!<LI>!<DM>!<" in line:
-            words = line.split(">!<")
-            current_time = float(words[1].strip())
-        
-        # check dump period and dump
-        while last_dump_time < current_time:
+        outputfile.write("# sim time >!< total loved 1st copy >!< total loved 1st copies >!< last loved 1st copy >!< last loved 1st copies\n")
 
-            outputfile1.write(str(last_dump_time) + " >!< " +  str(total_loved_first_copy) + " >!< " 
-                                + str(total_loved_additional_copies) + " >!< " + str(last_loved_first_copy) 
-                                + " >!< " + str(last_loved_additional_copies) + "\n")
-            last_loved_first_copy = 0
-            last_loved_additional_copies = 0
-            
-            last_dump_time += dump_frequency
-                
-        # identify events or accumilate
-        if "INFO" in line and "KHeraldApp" in line and ">!<NE>!<" in line:
-            words = line.split(">!<")
+        current_time = 0.0
+        for line in inputfile:
 
-            if any(words[2].strip() in ex_node_name for ex_node_name in excluded_nodes):
-                continue
-            else:
-                node = add_node(nodes, words[2].strip())
-                add_event(node, words[4].strip(), words[8].strip())
+            if "INFO" in line and ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) \
+                and ">!<LI>!<DM>!<" in line:
+                words = line.split(">!<")
+                current_time = float(words[1].strip())
 
-        elif "INFO" in line and ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) \
-            and ">!<LI>!<DM>!<" in line:
-            words = line.split(">!<")
+            # check dump period and dump
+            while last_dump_time < current_time:
 
-            # accumilate
-            if any(words[2].strip() in ex_node_name for ex_node_name in excluded_nodes):
-                pass
-            else:
-                node = get_node(nodes, words[2].strip())
-                event = get_event(node, words[8].strip())
-                
-                if event.event_type == "L":
-                    if event.times_received == 0:
-                        total_loved_first_copy += 1
-                        last_loved_first_copy += 1
-                    else:
-                        total_loved_additional_copies += 1
-                        last_loved_additional_copies += 1
-                event.times_received += 1
+                outputfile.write(str(last_dump_time) + " >!< " +  str(total_loved_first_copy) + " >!< "
+                                    + str(total_loved_additional_copies) + " >!< " + str(last_loved_first_copy)
+                                    + " >!< " + str(last_loved_additional_copies) + "\n")
+                last_loved_first_copy = 0
+                last_loved_additional_copies = 0
+
+                last_dump_time += dump_frequency
+
+            # identify events or accumilate
+            if "INFO" in line and "KHeraldApp" in line and ">!<NE>!<" in line:
+                words = line.split(">!<")
+
+                if any(words[2].strip() in ex_node_name for ex_node_name in excluded_nodes):
+                    continue
+                else:
+                    node = add_node(nodes, words[2].strip())
+                    add_event(node, words[4].strip(), words[8].strip())
+
+            elif "INFO" in line and ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) \
+                and ">!<LI>!<DM>!<" in line:
+                words = line.split(">!<")
+
+                # accumilate
+                if any(words[2].strip() in ex_node_name for ex_node_name in excluded_nodes):
+                    pass
+                else:
+                    node = get_node(nodes, words[2].strip())
+                    event = get_event(node, words[8].strip())
+
+                    if event.event_type == "L":
+                        if event.times_received == 0:
+                            total_loved_first_copy += 1
+                            last_loved_first_copy += 1
+                        else:
+                            total_loved_additional_copies += 1
+                            last_loved_additional_copies += 1
+                    event.times_received += 1
 
 
-def close_files():
-    global inputfile
-    global outputfile1
 
-    inputfile.close()
-    outputfile1.close()
+parser = argparse.ArgumentParser(description='Create statistics: process of progressing liked (loved) message receipts')
+parser.add_argument('logfiles', type=str, nargs="+", help="The logfiles")
+args = parser.parse_args()
 
 
-def main(argv):
-    parse_param_n_open_files(argv)
-    extract_from_log_and_accumilate_and_print()
-    close_files()
+for inputfile in args.logfiles:
+    print "Processing", inputfile
 
-if __name__ == "__main__":
-    main(sys.argv[1:])
+    fileHelper = FileHelpers.FileHelper(inputfile)
+
+    extract_from_log_and_accumilate_and_print(
+            fileHelper.getInputFile(),
+            fileHelper.getGenericOutput(suffix="_lrp")
+            )
+
 
