@@ -11,6 +11,11 @@
 import argparse
 import csv
 import pickle
+import os.path, sys
+
+# Include the upper directory to access the helper module
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+
 from helper import NodeHelpers, FileHelpers
 
 # Keys and default values required by this parser
