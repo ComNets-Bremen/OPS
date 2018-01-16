@@ -86,6 +86,10 @@ def main():
             for line in iFile:
                 parseLine(line, nodes)
 
+        if nodes.getLength() < 1:
+            print "Got no information from this input file. Continuing with next one"
+            continue
+
         # Store the per node statistics
         with open(fileHelper.getGenericOutput(suffix="_ps"), "wb") as nodeOutput:
             print "Writing file", nodeOutput.name
