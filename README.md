@@ -1,10 +1,10 @@
 # OPS
-The Opportunistic Protocol Simulator (OPS, pronounced as oops!!!) is a set of 
-simulation models in OMNeT++ to simulate opportunistic networks. It has a 
-modular architecture where different protocols relevant to opportunistic networks 
-can be developed and plugged in. The details of current models available 
+The Opportunistic Protocol Simulator (OPS, pronounced as oops!!!) is a set of
+simulation models in OMNeT++ to simulate opportunistic networks. It has a
+modular architecture where different protocols relevant to opportunistic networks
+can be developed and plugged in. The details of current models available
 are given in the following sections. The immediately following section is a
-`tl;dr` for anyone who wishes to get it up and running without going through 
+`tl;dr` for anyone who wishes to get it up and running without going through
 all the explanations.    
 
 tl;dr
@@ -27,19 +27,19 @@ For Linux or MacOS:
 Introduction
 ------------
 
-The number of computing devices of the Internet of Things (IoT) are expected 
-to grow exponentially. To address the communication needs of the IoT, research 
-is being done to develop new networking architectures and to extend existing 
-architectures. 
+The number of computing devices of the Internet of Things (IoT) are expected
+to grow exponentially. To address the communication needs of the IoT, research
+is being done to develop new networking architectures and to extend existing
+architectures.
 
 Opportunistic Networking is an architecture that is currently being considered for
-communications in the IoT. The Sustainable Communication Networks group (ComNets) 
-at the University of Bremen has developed a simulator called the Opportunistic 
-Protocol Simulator (OPS) to evaluate protocols and mechanisms for opportunistic 
+communications in the IoT. The Sustainable Communication Networks group (ComNets)
+at the University of Bremen has developed a simulator called the Opportunistic
+Protocol Simulator (OPS) to evaluate protocols and mechanisms for opportunistic
 networks in the context of the IoT.
 
-This repository contains the OMNeT++ based models of OPS. OPS consist of nodes, 
-each of which implements a protocol stack with the functionality required to 
+This repository contains the OMNeT++ based models of OPS. OPS consist of nodes,
+each of which implements a protocol stack with the functionality required to
 perform opportunistic networking. This release of the models consist of
 models relevant to each protocol layer.
 
@@ -47,12 +47,12 @@ models relevant to each protocol layer.
 Prerequisites I (MUST for All Users)
 ------------------------------------
 
-OPS requires the following software to be installed and operational in the systems 
+OPS requires the following software to be installed and operational in the systems
 on which it is run.
 
 
 
-### OMNeT++ 5.0 
+### OMNeT++ 5.0
 
 OMNeT++ 5.0 version must be installed and the PATH variable must be
 set to run all the binaries of OMNeT++.
@@ -66,7 +66,7 @@ Use the Installation Guide of ONNeT++.
 
 ###  Python
 
-The log files of the simulations are parsed using Python to obtain the statistics. Once the statistics are 
+The log files of the simulations are parsed using Python to obtain the statistics. Once the statistics are
 obtained, another set of Python scripts are used to plot the graphs. Therefore, for parsing logs and plotting
 graphs, the following are required.
 
@@ -76,8 +76,8 @@ graphs, the following are required.
 
 ###  Automake Tools
 
-KeetchiLib require automake tools. Therefore, before pulling the OPS code 
-from Github, install `autoconf`, `automake` and `libtool`. Check the 
+KeetchiLib require automake tools. Therefore, before pulling the OPS code
+from Github, install `autoconf`, `automake` and `libtool`. Check the
 [README](https://github.com/ComNets-Bremen/KeetchiLib/blob/master/README.md) of `KeetchiLib`
 
 
@@ -91,7 +91,7 @@ if different versions of the following software needs to be installed and config
 
 ### INET 3.4.0
 
-OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate 
+OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate
 mobility and checks out an own version of INET where running `./bootstrap.sh`.
 As downloading and compiling INET takes a while, you might prefer using your
 own checkout of INET. To do so, please change the following values in the file
@@ -106,11 +106,11 @@ When building the `INET Framework`, make sure to build and use the `release` ver
 
 ###  KeetchiLib
 
-An external library called `KeetchiLib` is used by the `KKeetchiLayer` model to handle all the functionality 
-related to the [Organic Data Dissemination](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18) 
-forwarding model. The code for this library is available at Github and pulled for building by OPS. OPS builds 
-this library automatically, but if the build environment is not setup properly, the build will fail. Check the 
-[README](https://github.com/ComNets-Bremen/KeetchiLib/blob/master/README.md) of `KeetchiLib` to see what is 
+An external library called `KeetchiLib` is used by the `KKeetchiLayer` model to handle all the functionality
+related to the [Organic Data Dissemination](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18)
+forwarding model. The code for this library is available at Github and pulled for building by OPS. OPS builds
+this library automatically, but if the build environment is not setup properly, the build will fail. Check the
+[README](https://github.com/ComNets-Bremen/KeetchiLib/blob/master/README.md) of `KeetchiLib` to see what is
 required to be done to setup the build environment.
 
 
@@ -168,8 +168,8 @@ Building the Model
 1. Run `bootstrap.sh` to build the INET if you are not using your own version.
 
 2. Run the `ops-makefile-setup.sh` script. This will result in the creation of
-the Makefiles in all the relevant folders, pulling the dependents linked in the 
-`./modules/` folder and building these dependents. 
+the Makefiles in all the relevant folders, pulling the dependents linked in the
+`./modules/` folder and building these dependents.
 
 3. Run make from the root folder of OPS.
 
@@ -209,6 +209,7 @@ previous step.
 
 
 The results files and the log files are created in the `simulations/out/` folder.
+For a detailed description of the `ops-simu-run.sh`-script, please refer to [README_ops-simu-run.md](./README_ops-simu-run.md)
 
 
 Creating Your Own Scenarios
@@ -269,13 +270,13 @@ to the specific layer as listed below.
    - `KRRSLayer` - Implements a simple forwarding strategy based on the Randomised
      Rumor Spreading (RRS) algorithm which randomly selects a data item to broadcast
      to a node's neighbourhood
-   - `KKeetchiLayer` - Implements the Organic Data Dissemination algorithm as described 
+   - `KKeetchiLayer` - Implements the Organic Data Dissemination algorithm as described
      in the publication [A Novel Data Dissemination Model for Organic Data Flows](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18) by
      A. Foerster et al
-   - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described 
+   - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described
      in the publication [Epidemic Routing for Partially-Connected Ad Hoc Networks](http://issg.cs.duke.edu/epidemic/epidemic.pdf)
      by A. Vahdat and D. Becker
- 
+
 3. Link Adaptation Layer - Tasked with converting packets sent by the Opportunistic
    Networking Layer to the specific link technology used (at Link Layer). Currently
    implemented has a simple pass-through layer.
@@ -304,10 +305,10 @@ consider.
 - `numNodes` - The number of nodes in the network
 - `wirelessRange` - The wireless coverage range. The default is 100 meters
 - `forwardingLayer` - The forwarding layer to use
-- `mobilityType` - The mobility model used to move the nodes 
+- `mobilityType` - The mobility model used to move the nodes
 
-There are many more parameters that need to be set according to the scenario to be simulated. Most 
-of these parameters have default values. Check the sample .ini files in `simulations/` folder to 
+There are many more parameters that need to be set according to the scenario to be simulated. Most
+of these parameters have default values. Check the sample .ini files in `simulations/` folder to
 see what parameters are usually set to run a simulation.
 
 
@@ -315,9 +316,9 @@ see what parameters are usually set to run a simulation.
 Logging
 -------
 
-Simulation runs result in the creation of logs that  dumps information about the activities of a 
-model. These logs are used by the parsers described below. The contents of these logs are coded 
-to reduce the sizes of the logs. The codes used are listed here [here](./LOGENCODINGS.md). When 
+Simulation runs result in the creation of logs that  dumps information about the activities of a
+model. These logs are used by the parsers described below. The contents of these logs are coded
+to reduce the sizes of the logs. The codes used are listed here [here](./LOGENCODINGS.md). When
 developing new models, please check these encodings to see what can be used.
 
 
@@ -327,9 +328,9 @@ developing new models, please check these encodings to see what can be used.
 Parsers
 -------
 
-The `parsers/` folder provides a number of sub folders that include Python scripts 
+The `parsers/` folder provides a number of sub folders that include Python scripts
 to parse the logs created to generate statistics and generate plots. The script names
-that end with the `...stats.py` are the parsers that generate the statistics while 
+that end with the `...stats.py` are the parsers that generate the statistics while
 the scripts that end with `...plot.py` will plot the graphs.
 
 __IMPORTANT:__ The `...plot.py` scripts must be changed manually to include the statistic
@@ -338,7 +339,7 @@ values generated by the `...stats.py` scripts.
 The general workflow of generating the statistics and the plots are as follows (using an
 example).
 
-- Once a simulation is run, the simulation will generate a log file with a name starting with 
+- Once a simulation is run, the simulation will generate a log file with a name starting with
 `General...` such as  `General-0-20170822-12:23:43-56750-log2.txt`
 
 - Use this log file as input to the parser (with `...stats.py`) you require to use
@@ -346,25 +347,25 @@ example).
 `s01-liked-data-stats.py -i General-0-20170822-12:23:43-56750-log2.txt`
 
 - The above parser will create one or more text files with data. Use a text editor to view
-the data in those files and use this data to modify the required `...plot.py` files. 
+the data in those files and use this data to modify the required `...plot.py` files.
 
 - Run the modified `...plot.py` scripts to obtain the graphs
 
-__IMPORTANT:__ These scripts require Python 3.0 or above and the `numpy` and `matplotlib` 
+__IMPORTANT:__ These scripts require Python 3.0 or above and the `numpy` and `matplotlib`
 packages
 
 In the following is a description of what the `...stats.py` scripts generate.  
 
 - `s01-liked-data-stats.py` - This script generates stats related to liked and non-liked data.
 The KHeraldApp pre-classifies data as liked or non-liked (ignored) for each node. This information
-is later used to identify what data was received. The script requires the log file created in 
-`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As 
+is later used to identify what data was received. The script requires the log file created in
+`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As
 output, this script creates text files with the computed stats.
 
 - `s01-liked-data-progress-stats.py` - This script generates stats related to liked and non-liked data
-for every hour. The KHeraldApp pre-classifies data as liked or non-liked (ignored) for each node. This 
-information is later used to identify what data was received. The script requires the log file created in 
-`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As 
+for every hour. The KHeraldApp pre-classifies data as liked or non-liked (ignored) for each node. This
+information is later used to identify what data was received. The script requires the log file created in
+`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As
 output, this script creates text files with the computed stats.
 
 - `s02-traffic-spread-stats.py` - This script generates stats related to total packets generated
@@ -374,13 +375,13 @@ compute these stat values (i.e., using the `-i` switch). As output, this script 
 text files with the computed stats.
 
 - `s03-delivery-ratio-stats.py` - This script generates stats related to delivery ratio and the
-average delivery time. The script requires the log file created in `simulations/out/` as 
-input to compute these stat values (i.e., using the `-i` switch) and the optional maximum 
+average delivery time. The script requires the log file created in `simulations/out/` as
+input to compute these stat values (i.e., using the `-i` switch) and the optional maximum
 simulation time to consider (i.e., using the `-m` switch). As output, this script creates
 text files with the computed stats.
 
 - `s04-contact-times.py` - This script generates the stats related to contact times (number
-of contacts and average contact time). The script requires the log file created in 
+of contacts and average contact time). The script requires the log file created in
 `simulations/out/` as input to compute these stat values (i.e., using the `-i` switch),
 total simulation time (-s), simulation period (i.e., the range as -p) and the time resolution
 to consider for a unit of communications (-r). The -s, -p and -r are given in seconds.
@@ -395,7 +396,7 @@ data from the logs and `...-plot.py` files generate the graphs.
 Use of Mobility Models with OPS
 -------------------------------
 
-OPS can be configured to use any INET based mobility model. Here are 2 special mobility 
+OPS can be configured to use any INET based mobility model. Here are 2 special mobility
 models that we have used in our work.
 
 
@@ -403,14 +404,14 @@ models that we have used in our work.
 ###  SWIM Mobility Model
 
 [Small Worlds in Motion](https://arxiv.org/pdf/0809.2730.pdf) (SWIM) is a mobility model
-developed by A. Mei and J. Stefa. The INET code for the SWIM was developed by our research 
+developed by A. Mei and J. Stefa. The INET code for the SWIM was developed by our research
 group. If you wish to use this mobility model, follow the following steps.
 
 1. Download the OMNeT++ INET SWIM mobility model from following Github repository.
- 
+
 `https://github.com/ComNets-Bremen/SWIMMobility.git`
 
-2. Place the downloaded files in the following folder of local INET copy which was created 
+2. Place the downloaded files in the following folder of local INET copy which was created
 when the `bootstrap.sh` was run.
 
 `./modules/inet/src/inet/mobility/single/`
@@ -432,7 +433,7 @@ Another mobility model that we have used extensively is the Bonn Motion model. T
 (which is available in INET) requires a trace to move nodes in a network. The trace files
 are generated using a tool provided by the authors of the Bonn Motion model. The tool can
 be requested to generate traces based on synthetic mobility models (e.g., Random Way Point
-mobility model) or from an actual mobility trace (e.g., San Fransisco Taxi trace at 
+mobility model) or from an actual mobility trace (e.g., San Fransisco Taxi trace at
 www.crawdad.org).
 
 If you look at some of the `.ini` files in `./simulations/` folder, you see that we refer
@@ -453,7 +454,7 @@ Questions or Comments
 ---------------------
 
 Firstly, if you have any questions, please check the FAQ (linked above) and if you cannot find answers there, then
-write to us. Secondly, if you have any comments or suggestions, we are very glad to hear them. In both cases, please 
+write to us. Secondly, if you have any comments or suggestions, we are very glad to hear them. In both cases, please
 write to us using any of the e-mail adresses below.
 
   - Asanga Udugama (adu@comnets.uni-bremen.de)
@@ -461,8 +462,3 @@ write to us using any of the e-mail adresses below.
   - Anna Förster (anna.foerster@comnets.uni-bremen.de)
   - Anas bin Muslim (anas1@uni-bremen.de)
   - Vishnupriya Parimalam (vp@fb1.uni-bremen.de)
-
-
-
-
-
