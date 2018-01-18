@@ -8,7 +8,7 @@
 
 package ops;
 
-simple KRRSLayer
+simple KRRSLayer like IForwardingLayer
 {
      parameters:
          
