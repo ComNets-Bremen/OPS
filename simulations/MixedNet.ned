@@ -20,7 +20,7 @@ network MixedNet
 
         // mobile nodes of the network without the app deployed
         nodeM2[numNodesM2]: KPromoteNode {
-            nodeID = index;
+            nodeID = numNodesM1 + index;
 			promoteAppDeployed = 0;
         }
 
