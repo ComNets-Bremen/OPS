@@ -10,11 +10,26 @@
 
 Define_Module(KHeraldApp);
 
+struct CommonNotificationItem {
+    int itemNumber;
+    char dataName[128];
+    char dummyPayloadContent[128];
+    char dataMsgName[128];
+    char feedbackMsgName[128];
+
+    int realPayloadSize;
+    int dataByteLength;
+    int feedbackByteLength;
+
+    double validUntilTime;
+};
+
 list<int> popularityList;
 list<int> nodeIndexList;
 int nextGeneratorNodeIndex;
 int nextGenerationNotification;
 double nextGenerationTime;
+list <CommonNotificationItem*> commonNotificationList;
 
 void KHeraldApp::initialize(int stage)
 {
@@ -68,18 +83,33 @@ void KHeraldApp::initialize(int stage)
                 // }
 
                 popularityList.push_back(popularity);
+                
+
+                // create common information
+                CommonNotificationItem *commonNotificationItem = new CommonNotificationItem();
+                
+                int itemNumber = KHERALDAPP_START_ITEM_ID + i;
+                commonNotificationItem->itemNumber = itemNumber;
+                sprintf(commonNotificationItem->dataName, "/herald/item-%0d", itemNumber);
+                sprintf(commonNotificationItem->dummyPayloadContent, "Details of item-%0d", itemNumber);
+                sprintf(commonNotificationItem->dataMsgName, "D item-%0d", itemNumber);
+                sprintf(commonNotificationItem->feedbackMsgName, "F item-%0d", itemNumber);
+
+                commonNotificationItem->realPayloadSize = dataSizeInBytes;
+                commonNotificationItem->dataByteLength = dataSizeInBytes;
+                commonNotificationItem->feedbackByteLength = 78;
+                commonNotificationItem->validUntilTime = 99999999.0;
+
+                commonNotificationList.push_back(commonNotificationItem);
             }
+            
         }
 
         // setup the event notification array
         for (int i = 0; i < notificationCount; i++) {
             NotificationItem *notificationItem = new NotificationItem();
 
-            notificationItem->itemNumber = 22000 + i;
-            sprintf(notificationItem->dataName, "/herald/item-%0d", notificationItem->itemNumber);
-            sprintf(notificationItem->dummyPayloadContent, "Details of item-%0d", notificationItem->itemNumber);
-            sprintf(notificationItem->dataMsgName, "D item-%0d", notificationItem->itemNumber);
-            sprintf(notificationItem->feedbackMsgName, "F item-%0d", notificationItem->itemNumber);
+            notificationItem->itemNumber = KHERALDAPP_START_ITEM_ID + i;
 
             list<int>::iterator iteratorPopularity = popularityList.begin();
             advance(iteratorPopularity, i);
@@ -98,10 +128,6 @@ void KHeraldApp::initialize(int stage)
                 notificationItem->goodnessValue = 0;
             }
 
-            notificationItem->realPayloadSize = dataSizeInBytes;
-            notificationItem->dataByteLength = dataSizeInBytes;
-            notificationItem->feedbackByteLength = 78;
-            notificationItem->validUntilTime = 99999999.0;
             notificationItem->timesDataMsgReceived = 0;
             notificationItem->feedbackGenerated = FALSE;
 
@@ -122,12 +148,16 @@ void KHeraldApp::initialize(int stage)
             list<NotificationItem*>::iterator it = notificationList.begin();
             advance(it, i);
             NotificationItem *notificationItem = *it;
+            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
+            advance(it2, i);
+            CommonNotificationItem *commonNotificationItem = *it2;
 
-            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NE>!<" << notificationItem->dataName << ">!<"
+
+            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NE>!<" << commonNotificationItem->dataName << ">!<"
                 << notificationItem->popularity << ">!<" << notificationItem->likeness << ">!<"
                 << notificationItem->goodnessValue << ">!<"
                 << (notificationItem->goodnessValue == 100 ? "L" : "I") << ">!<"
-                << notificationItem->validUntilTime << "\n";}
+                << commonNotificationItem->validUntilTime << "\n";}
         }
         if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
 
@@ -200,19 +230,24 @@ void KHeraldApp::handleMessage(cMessage *msg)
                 advance(it, nextGenerationNotification);
                 NotificationItem *notificationItem = *it;
 
+                list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
+                advance(it2, nextGenerationNotification);
+                CommonNotificationItem *commonNotificationItem = *it2;
+
+
                 notificationItem->timesDataMsgReceived = 1;
 
-                KDataMsg *dataMsg = new KDataMsg(notificationItem->dataMsgName);
+                KDataMsg *dataMsg = new KDataMsg(commonNotificationItem->dataMsgName);
 
                 dataMsg->setSourceAddress("");
                 dataMsg->setDestinationAddress("");
-                dataMsg->setDataName(notificationItem->dataName);
+                dataMsg->setDataName(commonNotificationItem->dataName);
                 dataMsg->setGoodnessValue(notificationItem->goodnessValue);
-                dataMsg->setRealPayloadSize(notificationItem->realPayloadSize);
-                dataMsg->setDummyPayloadContent(notificationItem->dummyPayloadContent);
-                dataMsg->setByteLength(notificationItem->dataByteLength);
+                dataMsg->setRealPayloadSize(commonNotificationItem->realPayloadSize);
+                dataMsg->setDummyPayloadContent(commonNotificationItem->dummyPayloadContent);
+                dataMsg->setByteLength(commonNotificationItem->dataByteLength);
                 dataMsg->setMsgType(0);
-                dataMsg->setValidUntilTime(notificationItem->validUntilTime);
+                dataMsg->setValidUntilTime(commonNotificationItem->validUntilTime);
 
                 send(dataMsg, "lowerLayerOut");
 
@@ -245,8 +280,12 @@ void KHeraldApp::handleMessage(cMessage *msg)
             list<NotificationItem*>::iterator it = notificationList.begin();
             advance(it, i);
             NotificationItem *notificationItem = *it;
+            
+            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
+            advance(it2, i);
+            CommonNotificationItem *commonNotificationItem = *it2;
 
-            if (notificationItem->timesDataMsgReceived > 0 && notificationItem->validUntilTime > simTime().dbl()
+            if (notificationItem->timesDataMsgReceived > 0 && commonNotificationItem->validUntilTime > simTime().dbl()
                 && !notificationItem->feedbackGenerated) {
                 found = TRUE;
                 notificationIndex = i;
@@ -259,13 +298,18 @@ void KHeraldApp::handleMessage(cMessage *msg)
             advance(it, notificationIndex);
             NotificationItem *notificationItem = *it;
 
-            KFeedbackMsg *feedbackMsg = new KFeedbackMsg(notificationItem->feedbackMsgName);
+            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
+            advance(it2, notificationIndex);
+            CommonNotificationItem *commonNotificationItem = *it2;
+
+
+            KFeedbackMsg *feedbackMsg = new KFeedbackMsg(commonNotificationItem->feedbackMsgName);
 
             feedbackMsg->setSourceAddress("");
             feedbackMsg->setDestinationAddress("");
-            feedbackMsg->setDataName(notificationItem->dataName);
+            feedbackMsg->setDataName(commonNotificationItem->dataName);
             feedbackMsg->setGoodnessValue(notificationItem->goodnessValue);
-            feedbackMsg->setByteLength(notificationItem->feedbackByteLength);
+            feedbackMsg->setByteLength(commonNotificationItem->feedbackByteLength);
             feedbackMsg->setFeedbackType(KHERALDAPP_MSGTYPE_PREFERENCE);
 
             send(feedbackMsg, "lowerLayerOut");
@@ -289,11 +333,11 @@ void KHeraldApp::handleMessage(cMessage *msg)
         // check if data seen before
         int notificationIndex = -1;
         for (int i = 0; i < notificationCount; i++) {
-            list<NotificationItem*>::iterator it = notificationList.begin();
-            advance(it, i);
-            NotificationItem *notificationItem = *it;
+            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
+            advance(it2, i);
+            CommonNotificationItem *commonNotificationItem = *it2;
 
-            if (strcmp(notificationItem->dataName, dataMsg->getDataName()) == 0) {
+            if (strcmp(commonNotificationItem->dataName, dataMsg->getDataName()) == 0) {
                 notificationIndex = i;
                 break;
             }

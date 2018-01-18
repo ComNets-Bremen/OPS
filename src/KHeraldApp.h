@@ -32,6 +32,8 @@ using namespace std;
 #define KHERALDAPP_MSGTYPE_NONE         0
 #define KHERALDAPP_MSGTYPE_IMMEDIATE    1
 #define KHERALDAPP_MSGTYPE_PREFERENCE   2
+#define KHERALDAPP_START_ITEM_ID        22000
+
 
 
 class KHeraldApp : public cSimpleModule
@@ -49,25 +51,13 @@ class KHeraldApp : public cSimpleModule
 
         struct NotificationItem {
             int itemNumber;
-            char dataName[128];
-            char dummyPayloadContent[128];
-            char dataMsgName[128];
-            char feedbackMsgName[128];
 
             int popularity;
             int likeness;
             int goodnessValue;
 
-            int realPayloadSize;
-            int dataByteLength;
-            int feedbackByteLength;
-
-            double validUntilTime;
-
             int timesDataMsgReceived;
             int feedbackGenerated;
-
-
         };
 
         int nodeIndex;

@@ -318,7 +318,7 @@ Logging
 
 Simulation runs result in the creation of logs that  dumps information about the activities of a
 model. These logs are used by the parsers described below. The contents of these logs are coded
-to reduce the sizes of the logs. The codes used are listed here [here](./LOGENCODINGS.md). When
+to reduce the sizes of the logs. The codes used are listed here [here](./LOG_ENCODINGS.md). When
 developing new models, please check these encodings to see what can be used.
 
 
