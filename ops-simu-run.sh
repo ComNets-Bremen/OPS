@@ -11,8 +11,6 @@ source ./tools/shell-functions.sh
 
 loadSettings
 
-PARSERS_FILE="parsers.txt"
-
 # Show help message
 showUsage(){
     echo "Usage:"
@@ -21,7 +19,7 @@ showUsage(){
     echo "  -m cmdenv|tkenv : Mandatory, set the simulation type (command line vs. GUI)"
     echo "  -c <ini file>   : Optional, set the simulation ini file"
     echo "  -o <output dir> : Optional, set the simulation output directory"
-    echo "  -p              : Optional, perform some post-processing steps (beta)"
+    echo "  -p <parser file>: Optional, perform some post-processing steps (beta)"
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -37,8 +35,6 @@ else
     echo "Cannot find the simulation executable \"./$OPS_MODEL_NAME\". Have you run \"make\"?"
     exit 1
 fi
-
-DO_POST_PROCESSING=0
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -80,8 +76,14 @@ while [ "$#" -gt 0 ]; do
             ;;
 
         -p)
-            DO_POST_PROCESSING=1
-            shift 1
+            if [ -z ${2+x} ]; then
+                echo "Missing parameter for \"$1\""
+                showUsage
+                exit 1
+            fi
+
+            PARSERS_FILE="$2"
+            shift 2
             ;;
 
         *)
@@ -135,7 +137,7 @@ echo "# \$SIM_OUTPUT_DIR : simulations/$SIM_OUTPUT_DIR"
 echo "#"
 echo "# Simulation mode : $SIMTYPE"
 echo "#"
-echo "# Post processing : $DO_POST_PROCESSING"
+echo "# Post processing : $PARSERS_FILE"
 echo "#"
 echo "# Simulation command:"
 echo "# ./$OPS_MODEL_NAME -u $SIMTYPE -f $OMNET_INI_FILE -n simulations/:src/:$INET_NED/ -l keetchi -l INET --result-dir=$SIM_OUTPUT_DIR" | tee simulations/$SIM_OUTPUT_DIR/sim_command.txt
@@ -157,19 +159,15 @@ fi
 echo "Simulation ended successfully"
 
 
-if [ $DO_POST_PROCESSING -ne 0 ]; then
-    # Post processing activated? Do the following:
-    # 1) check if the file $PARSERS_FILE exists
-    # 2) Get all the simulation logfiles
-    # 3) For each logfile, run the parsers defined in §PARSERS_FILE
-    #
-
-    if [ ! -f $PARSERS_FILE ]; then
-        echo "$PARSERS_FILE not found. Aborting..."
-        exit 1
-    else
-        echo "Using parsers from file $PARSERS_FILE"
-    fi
+# Post processing activated? Do the following:
+# 1) check if the file $PARSERS_FILE exists
+# 2) Get all the simulation logfiles
+# 3) For each logfile, run the parsers defined in §PARSERS_FILE
+#
+if [  -z $PARSERS_FILE ] || [ ! -f $PARSERS_FILE ] ; then
+    echo "Parser \"$PARSERS_FILE\" is not a valid parser. Skipping this step..."
+else
+    echo "Using parsers from file $PARSERS_FILE"
 
     # We assume that each logfile has a "$resuldir-like"-format and ends
     # with ".txt"...
