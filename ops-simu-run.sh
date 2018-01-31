@@ -16,7 +16,7 @@ showUsage(){
     echo "Usage:"
     echo " $0 [PARAMS]"
     echo ""
-    echo "  -m cmdenv|tkenv : Mandatory, set the simulation type (command line vs. GUI)"
+    echo "  -m cmdenv|qtenv : Mandatory, set the simulation type (command line vs. GUI)"
     echo "  -c <ini file>   : Optional, set the simulation ini file"
     echo "  -o <output dir> : Optional, set the simulation output directory"
     echo "  -p <parser file>: Optional, perform some post-processing steps (beta)"
@@ -106,8 +106,8 @@ case "$modeval" in
         SIMTYPE="Cmdenv"
         ;;
 
-    tkenv)
-        SIMTYPE="Tkenv"
+    qtenv)
+        SIMTYPE="Qtenv"
         ;;
 
     *)
