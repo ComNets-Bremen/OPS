@@ -25,15 +25,15 @@ if [ "$INET_BUILD" = true ]; then
 
     git submodule add https://github.com/inet-framework/inet.git
     cd inet
-    git submodule init
     git checkout tags/v3.6.3
+    git submodule init
     git submodule update
     echo "Building the OMNeT++ INET Framework..."
     if [ ! -f “Makefile” ]; then
         make clean
     fi
     make makefiles
-    make MODE=release -j8
+    make MODE=release
 else
     echo "Skipping OMNeT++ INET Framework"
 fi
