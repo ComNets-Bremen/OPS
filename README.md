@@ -5,14 +5,14 @@ modular architecture where different protocols relevant to opportunistic network
 can be developed and plugged in. The details of current models available
 are given in the following sections. The immediately following section is a
 `tl;dr` for anyone who wishes to get it up and running without going through
-all the explanations.    
+all the explanations.
 
 tl;dr
 -----
 
 For Linux or MacOS:
 
-- Install and setup OMNeT++ (use OMNeT++ installation Guide)
+- Install and setup OMNeT++ v5.1+ (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
 - Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS`
 - Copy the `settings.default` as `.opsSettings` to home folder (and change if required)
@@ -52,16 +52,16 @@ on which it is run.
 
 
 
-### OMNeT++ 5.0
+### OMNeT++ 5.1 or higher
 
-OMNeT++ 5.0 version must be installed and the PATH variable must be
+OMNeT++ 5.0+ version must be installed and the PATH variable must be
 set to run all the binaries of OMNeT++.
 
 e.g.,
 
-`export PATH=/Users/adu/Development/omnet/omnetpp-5.0/bin:$PATH (on a Mac OS X)`
+`export PATH=/Users/adu/Development/omnet/omnetpp-5.1/bin:$PATH (on a Mac OS X)`
 
-Use the Installation Guide of ONNeT++.
+Use the Installation Guide of OMNeT++.
 
 
 ###  Python
@@ -89,7 +89,7 @@ The software listed below are pulled automatically by OPS when setting up. Read 
 if different versions of the following software needs to be installed and configured.
 
 
-### INET 3.4.0
+### INET 3.6.0
 
 OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate
 mobility and checks out an own version of INET where running `./bootstrap.sh`.
@@ -102,7 +102,8 @@ own checkout of INET. To do so, please change the following values in the file
 
 When building the `INET Framework`, make sure to build and use the `release` version (not the `debug` version).
 
-
+Please be aware that not all INET versions are compatible with all versions of
+OMNeT++. Refer to the INET documentation for further information.
 
 ###  KeetchiLib
 
