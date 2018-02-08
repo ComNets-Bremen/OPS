@@ -1,6 +1,6 @@
-[submodule "modules/inet"]
-	path = modules/inet
-	url = https://github.com/inet-framework/inet.git
 [submodule "modules/KeetchiLib"]
 	path = modules/KeetchiLib
 	url = https://github.com/ComNets-Bremen/KeetchiLib.git
+[submodule "modules/inet"]
+	path = modules/inet
+	url = https://github.com/inet-framework/inet.git
