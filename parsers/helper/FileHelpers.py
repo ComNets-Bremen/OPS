@@ -79,7 +79,7 @@ class FileHelper(object):
         return os.path.join(self.getInputFileDir(), newFilename)
 
 if __name__ == "__main__":
-    print "Test functions in this module"
+    print("Test functions in this module")
     filenames = [
             "/home/user/myFile.ini",
             "myRelFile.log",
@@ -87,10 +87,10 @@ if __name__ == "__main__":
 
     for filename in filenames:
         fh = FileHelper(filename)
-        print 10*"#"
-        print "Input filename               :", fh.getInputFile()
-        print "Directory                    :", fh.getInputFileDir()
-        print "File with original extension :", fh.getInputFilename()
-        print "Base name (w/o extension)    :", fh.getInputFileBaseName()
-        print "Path for pickle file         :", fh.getPickleFilename()
-        print "Generic Output               :", fh.getGenericOutput()
+        print(10*"#")
+        print("Input filename               :", fh.getInputFile())
+        print("Directory                    :", fh.getInputFileDir())
+        print("File with original extension :", fh.getInputFilename())
+        print("Base name (w/o extension)    :", fh.getInputFileBaseName())
+        print("Path for pickle file         :", fh.getPickleFilename())
+        print("Generic Output               :", fh.getGenericOutput())

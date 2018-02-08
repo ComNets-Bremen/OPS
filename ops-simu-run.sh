@@ -20,6 +20,7 @@ showUsage(){
     echo "  -c <ini file>   : Optional, set the simulation ini file"
     echo "  -o <output dir> : Optional, set the simulation output directory"
     echo "  -p <parser file>: Optional, perform some post-processing steps (beta)"
+    echo "  -g Merge all log files into one file (beta)"
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -84,6 +85,11 @@ while [ "$#" -gt 0 ]; do
 
             PARSERS_FILE="$2"
             shift 2
+            ;;
+
+        -g)
+            MERGE_LOG_FILES=y
+            shift 1
             ;;
 
         *)
@@ -160,6 +166,7 @@ echo "Simulation ended successfully"
 
 
 # Post processing activated? Do the following:
+# 0) merge log files (if enabled)
 # 1) check if the file $PARSERS_FILE exists
 # 2) Get all the simulation logfiles
 # 3) For each logfile, run the parsers defined in §PARSERS_FILE
@@ -168,10 +175,23 @@ if [  -z $PARSERS_FILE ] || [ ! -f $PARSERS_FILE ] ; then
     echo "Parser \"$PARSERS_FILE\" is not a valid parser. Skipping this step..."
 else
     echo "Using parsers from file $PARSERS_FILE"
+    
+    # Merge log files into one if the flag set
+    if [ "$MERGE_LOG_FILES" == "y" ] ; then
+        echo "Merging files"
+        MAIN_LOG_FILE="$(ls simulations/$SIM_OUTPUT_DIR/*log2.txt)"
+        SECOND_LOG_FILE="$(ls simulations/$SIM_OUTPUT_DIR/*log1.txt_KeetchiLib.txt)"
+        echo $SECOND_LOG_FILE
+        echo $MAIN_LOG_FILE
+        cat $SECOND_LOG_FILE >>  $MAIN_LOG_FILE
+    else
+        echo "No request to merge files"
+    fi
 
     # We assume that each logfile has a "$resuldir-like"-format and ends
     # with ".txt"...
-    for logfile in simulations/$SIM_OUTPUT_DIR/*-$SIM_START_DAY-*.txt; do
+    # for logfile in simulations/$SIM_OUTPUT_DIR/*-$SIM_START_DAY-*.txt; do
+    for logfile in simulations/$SIM_OUTPUT_DIR/*log2.txt; do
         echo "Processing file $logfile"
         cat $PARSERS_FILE | \
             while read CMD; do

@@ -28,3 +28,7 @@ OMNET_OUTPUT_DIR=./out/
 # It is a subdirectory of $OMNET_OUTPUT_DIR
 
 #SIM_OUTPUT_DIR=mySimulationOutput
+
+# When there are multiple log files, should they be merged into the log with the
+# earliest time stamp
+MERGE_LOG_FILES="n"

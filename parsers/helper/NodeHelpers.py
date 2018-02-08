@@ -88,27 +88,27 @@ if __name__ == "__main__":
     for key in keys:
         myNodes.addKey(key)
 
-    print "Testnode 1", myNodes.getNode("Test")
-    print "Testnode 2", myNodes.getNode("Test2")
+    print("Testnode 1", myNodes.getNode("Test"))
+    print("Testnode 2", myNodes.getNode("Test2"))
 
     myNodes.getNode("Test")["data_sent"] += 2
 
-    print myNodes.getNode("Test")["data_sent"]
-    print myNodes.getNode("Test2")["data_sent"]
+    print(myNodes.getNode("Test")["data_sent"])
+    print(myNodes.getNode("Test2")["data_sent"])
 
     myNodes.getNode("Test2")["data_sent"] -= 11
 
-    print myNodes.getNode("Test")["data_sent"]
-    print myNodes.getNode("Test2")["data_sent"]
+    print(myNodes.getNode("Test")["data_sent"])
+    print(myNodes.getNode("Test2")["data_sent"])
 
-    print myNodes.getKnownNodes()
+    print(myNodes.getKnownNodes())
 
-    print myNodes.getTotalData()
-    print myNodes.getTotalData(["Test",])
+    print(myNodes.getTotalData())
+    print(myNodes.getTotalData(["Test",]))
 
     # Export Data to dict
     exportDict = myNodes.exportData()
 
     # Create a new instance based on exported data
     mySecondDict = NodeInformationHandler(exportDict)
-    print mySecondDict
+    print(mySecondDict)

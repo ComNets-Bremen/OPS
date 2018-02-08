@@ -1,8 +1,8 @@
 //
 // The model implementation for the Herald application.
 //
-// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
-// @date   : 15-aug-2016
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de), Anna Förster (afoerster@uni-bremen.de)
+// @date   : 15-aug-2016, updated 6-febr-2018
 //
 //
 
@@ -33,6 +33,8 @@ using namespace std;
 #define KHERALDAPP_MSGTYPE_IMMEDIATE    1
 #define KHERALDAPP_MSGTYPE_PREFERENCE   2
 #define KHERALDAPP_START_ITEM_ID        22000
+#define KHERALDAPP_REGISTRATION_EVENT	92
+#define KHERALDAPP_DATASEND_EVENT		93
 
 
 
@@ -49,31 +51,20 @@ class KHeraldApp : public cSimpleModule
         double totalSimulationTime;
         char prefixName[128] = "/herald";
 
-        struct NotificationItem {
-            int itemNumber;
-
-            int popularity;
-            int likeness;
-            int goodnessValue;
-
-            int timesDataMsgReceived;
-            int feedbackGenerated;
-        };
-
+		double ttl;
         int nodeIndex;
-        int dataGeneratingNodeIndex;
+        int totalNumNodes;
         double dataGenerationInterval;
-        double feedbackGenerationInterval;
-        double maxFeedbackGenerationInterval;
+        int nextGenerationNotification;
 
         int notificationCount;
-        list<NotificationItem*> notificationList;
+        vector<int> myLikenesses;
+        vector<int> timesMessagesReceived;
 
         int usedRNG;
 
         cMessage *appRegistrationEvent;
         cMessage *dataTimeoutEvent;
-        cMessage *feedbackTimeoutEvent;
 
         double popularityAssignmentPercentage;
         int dataSizeInBytes;

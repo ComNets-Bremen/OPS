@@ -50,7 +50,7 @@ def get_node(nodes, node_name):
             break
 
     if not node_found:
-        print "Node does not exist when searching - ", node_name
+        print("Node does not exist when searching - ", node_name)
         sys.exit(2)
     else:
         return node
@@ -78,7 +78,7 @@ def get_event(node, event_name):
             break
 
     if not event_found:
-        print "Event does not exist when searching - ", node.node_name, " ", event_name
+        print("Event does not exist when searching - ", node.node_name, " ", event_name)
         sys.exit(2)
     else:
         return event
@@ -96,7 +96,7 @@ def add_event(node, event_name, event_type):
         event = Event(event_name, event_type)
         node.events.append(event)
     else:
-        print "Event exist when adding - ", node.node_name, " ", event_name
+        print("Event exist when adding - ", node.node_name, " ", event_name)
         sys.exit(2)
 
 
@@ -111,8 +111,8 @@ def extract_from_log_and_accumilate_and_print(inputfilename, outputfilename):
     last_loved_additional_copies = 0
 
     with open(inputfilename, "r") as inputfile, open(outputfilename, "w+") as outputfile:
-        print "Input File:               ", inputfile.name
-        print "Loved Received Progress:  ", outputfile.name
+        print("Input File:               ", inputfile.name)
+        print("Loved Received Progress:  ", outputfile.name)
 
 
 
@@ -175,7 +175,7 @@ args = parser.parse_args()
 
 
 for inputfile in args.logfiles:
-    print "Processing", inputfile
+    print("Processing", inputfile)
 
     fileHelper = FileHelpers.FileHelper(inputfile)
 

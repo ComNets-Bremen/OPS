@@ -1,8 +1,8 @@
 //
 // The model implementation for the Herald application.
 //
-// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
-// @date   : 15-aug-2016
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de), Anna Förster (afoerster@uni-bremen.de)
+// @date   : 15-aug-2016, updated 6-febr-2018
 //
 //
 
@@ -10,26 +10,8 @@
 
 Define_Module(KHeraldApp);
 
-struct CommonNotificationItem {
-    int itemNumber;
-    char dataName[128];
-    char dummyPayloadContent[128];
-    char dataMsgName[128];
-    char feedbackMsgName[128];
+vector<int> popularityList;
 
-    int realPayloadSize;
-    int dataByteLength;
-    int feedbackByteLength;
-
-    double validUntilTime;
-};
-
-list<int> popularityList;
-list<int> nodeIndexList;
-int nextGeneratorNodeIndex;
-int nextGenerationNotification;
-double nextGenerationTime;
-list <CommonNotificationItem*> commonNotificationList;
 
 void KHeraldApp::initialize(int stage)
 {
@@ -37,19 +19,18 @@ void KHeraldApp::initialize(int stage)
 
         // get parameters
         nodeIndex = par("nodeIndex");
-        notificationCount = par("notificationCount");
         usedRNG = par("usedRNG");
         dataGenerationInterval = par("dataGenerationInterval");
-        dataGeneratingNodeIndex = par("dataGeneratingNodeIndex");
         popularityAssignmentPercentage = par("popularityAssignmentPercentage");
         dataSizeInBytes = par("dataSizeInBytes");
         logging = par("logging");
-
+        ttl = par("ttl");
         totalSimulationTime = SimTime::parse(getEnvir()->getConfig()->getConfigValue("sim-time-limit")).dbl();
-
+		notificationCount = totalSimulationTime/dataGenerationInterval;
+		totalNumNodes = getParentModule()->getParentModule()->par("numNodes");
+		
         // setup prefix
         strcpy(prefixName, "/herald");
-
 
         // The following procedure is followed when assigning goodness values to each notification
         // - introduce popularity of messages. The “pop” value represents the percentage of the complete
@@ -60,7 +41,7 @@ void KHeraldApp::initialize(int stage)
         //   likes the message or not. There are only two decisions possible: IGNORE (corresponds to a value
         //   of 0) and LOVE (correponds to a value of 100).
         // - the decision itself is taken according to Fig. 3b and Equation (2) of the UBM paper. The
-        //   resulting value is compared to 90: if the value is greater or equal to 90, LOVE. If not, IGNORE.
+        //   resulting value is compared to 90: if the value is greater or equal to 90, LOVE (100). If not, IGNORE (0).
         // - The final “like” values (only 0 and 100s possible) are stored and used later at simulation time
         //   to represent the reaction of the user and to send to Keetchi as goodness values.
 
@@ -68,7 +49,6 @@ void KHeraldApp::initialize(int stage)
         // assign popularity values for the popularityAssignmentPercentage of notificationCount
         if (popularityList.size() == 0) {
             for (int i = 0; i < notificationCount; i++) {
-                // double perc = (double) (i + 1) / notificationCount * 100.0;
                 double perc = uniform(0.0, 100.0, usedRNG);
                 int popularity = 0;
 
@@ -76,126 +56,67 @@ void KHeraldApp::initialize(int stage)
                     popularity = 100;
                 }
 
-                //
-                //
-                // if (perc <= popularityAssignmentPercentage) {
-                //     popularity = intuniform(1, 20, usedRNG);
-                // }
-
                 popularityList.push_back(popularity);
-                
-
-                // create common information
-                CommonNotificationItem *commonNotificationItem = new CommonNotificationItem();
-                
-                int itemNumber = KHERALDAPP_START_ITEM_ID + i;
-                commonNotificationItem->itemNumber = itemNumber;
-                sprintf(commonNotificationItem->dataName, "/herald/item-%0d", itemNumber);
-                sprintf(commonNotificationItem->dummyPayloadContent, "Details of item-%0d", itemNumber);
-                sprintf(commonNotificationItem->dataMsgName, "D item-%0d", itemNumber);
-                sprintf(commonNotificationItem->feedbackMsgName, "F item-%0d", itemNumber);
-
-                commonNotificationItem->realPayloadSize = dataSizeInBytes;
-                commonNotificationItem->dataByteLength = dataSizeInBytes;
-                commonNotificationItem->feedbackByteLength = 78;
-                commonNotificationItem->validUntilTime = 99999999.0;
-
-                commonNotificationList.push_back(commonNotificationItem);
             }
             
         }
 
+		if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
+		
         // setup the event notification array
-        for (int i = 0; i < notificationCount; i++) {
-            NotificationItem *notificationItem = new NotificationItem();
-
-            notificationItem->itemNumber = KHERALDAPP_START_ITEM_ID + i;
-
-            list<int>::iterator iteratorPopularity = popularityList.begin();
-            advance(iteratorPopularity, i);
-            notificationItem->popularity = *iteratorPopularity;
-            
-            notificationItem->likeness = 0;
-            if (notificationItem->popularity == 100) {
-                notificationItem->likeness = 100;
-            }
-            
-            //
-            // notificationItem->likeness = intuniform(notificationItem->popularity, 100, usedRNG);
-            if (notificationItem->likeness >= 90) {
-                notificationItem->goodnessValue = 100;
-            } else {
-                notificationItem->goodnessValue = 0;
-            }
-
-            notificationItem->timesDataMsgReceived = 0;
-            notificationItem->feedbackGenerated = FALSE;
-
-            notificationList.push_back(notificationItem);
+        for (int i = 0; i < notificationCount; i++)
+        {
+        	int like = 0;
+        	if (popularityList[i] > 90)
+        		like = 100;
+        	myLikenesses.push_back(like);
+        	timesMessagesReceived.push_back(0);
+        	
+        	int goodness = like;
+        	
+        	if(logging)
+        	{
+        		char dataName[128];
+        		sprintf(dataName, "/herald/item-%0d", KHERALDAPP_START_ITEM_ID + i);
+        		EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NE>!<" 
+        			<< dataName << ">!<"
+                	<< popularityList[i] << ">!<" << like << ">!<"
+                	<< goodness << ">!<"
+                	<< (goodness == 100 ? "L" : "I") << ">!<"
+                	<< ttl << "\n";
+        	}
         }
         
-        // update current node index (used to generate notifications later)
-        nodeIndexList.push_back(nodeIndex);
-        nextGeneratorNodeIndex = 0;
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
+        
         nextGenerationNotification = 0;
-        nextGenerationTime = dataGenerationInterval;
+  
 
     } else if (stage == 1) {
-
-        // dump the notification list with given popularity, likeness and goodness value
-        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
-        for (int i = 0; i < notificationCount; i++) {
-            list<NotificationItem*>::iterator it = notificationList.begin();
-            advance(it, i);
-            NotificationItem *notificationItem = *it;
-            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
-            advance(it2, i);
-            CommonNotificationItem *commonNotificationItem = *it2;
-
-
-            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NE>!<" << commonNotificationItem->dataName << ">!<"
-                << notificationItem->popularity << ">!<" << notificationItem->likeness << ">!<"
-                << notificationItem->goodnessValue << ">!<"
-                << (notificationItem->goodnessValue == 100 ? "L" : "I") << ">!<"
-                << commonNotificationItem->validUntilTime << "\n";}
-        }
-        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
 
 
     } else if (stage == 2) {
 
         // create and setup app registration trigger
         appRegistrationEvent = new cMessage("App Registration Event");
-        appRegistrationEvent->setKind(92);
+        appRegistrationEvent->setKind(KHERALDAPP_REGISTRATION_EVENT);
         scheduleAt(simTime(), appRegistrationEvent);
 
-        // create and setup data generation trigger
-        // == -1 -> every node gets a chance to generate one or more
-        // >=  0 -> only the given node
-        if (dataGeneratingNodeIndex == -1 || nodeIndex == dataGeneratingNodeIndex) {
+        // this is a round-robin scheduling of traffic: in a row, everybody gets a chance to send the next packet.
             
-            dataTimeoutEvent = new cMessage("Data Timeout Event");
-            dataTimeoutEvent->setKind(93);
-            scheduleAt(simTime() + dataGenerationInterval, dataTimeoutEvent);
+    	dataTimeoutEvent = new cMessage("Data Timeout Event");
+        dataTimeoutEvent->setKind(KHERALDAPP_DATASEND_EVENT);
+        // add 0.1 secs to the first sending to avoid the simulation to send one more message than expected.
+        scheduleAt(simTime() + dataGenerationInterval*nodeIndex + 0.1, dataTimeoutEvent);
+        nextGenerationNotification = nodeIndex;
 
-            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<SUTG "<< notificationCount << " DI" << "\n";}
-        }
-
-        // create and setup feedback generation trigger
-        maxFeedbackGenerationInterval = totalSimulationTime / notificationCount;
-        feedbackGenerationInterval = uniform(1.0, maxFeedbackGenerationInterval, usedRNG);
-        feedbackTimeoutEvent = new cMessage("Feedback Timeout Event");
-        feedbackTimeoutEvent->setKind(94);
-        // feedback sending stopped
-        // scheduleAt(simTime() + feedbackGenerationInterval, feedbackTimeoutEvent);
+        if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<SUTG "<< notificationCount << " DI" << "\n";}
 
 
     } else {
         EV_FATAL << KHERALDAPP_SIMMODULEINFO << "Something is radically wrong\n";
     }
 
-
-    //cout << "Coming out of BruitclerApp::initialize" << "\n";
 }
 
 int KHeraldApp::numInitStages() const
@@ -207,7 +128,7 @@ void KHeraldApp::handleMessage(cMessage *msg)
 {
 
     // check message
-    if (msg->isSelfMessage() && msg->getKind() == 92) {
+    if (msg->isSelfMessage() && msg->getKind() == KHERALDAPP_REGISTRATION_EVENT) {
         // send app registration message the forwarding layer
         KRegisterAppMsg *regAppMsg = new KRegisterAppMsg("Herald App Registration");
         regAppMsg->setAppName("Herald");
@@ -217,111 +138,42 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
         if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
 
-    } else if (msg->isSelfMessage() && msg->getKind() == 93) {
+    } else if (msg->isSelfMessage() && msg->getKind() == KHERALDAPP_DATASEND_EVENT) {
 
-        // timeout for data (notification) send event occured
-        // so, generate a data message
-        if ((nextGenerationNotification < notificationCount)
-            && (nodeIndex == dataGeneratingNodeIndex 
-                || (dataGeneratingNodeIndex == -1 && nodeIndex == nextGeneratorNodeIndex))
-            && simTime().dbl() >= nextGenerationTime) {
+		// mark this message as received by this node
+		timesMessagesReceived[nextGenerationNotification]++;
+		
+		//setup the data message for sending down to forwarding layer
+		char tempString[128];
+		sprintf(tempString, "D item-%0d", KHERALDAPP_START_ITEM_ID + nextGenerationNotification);
+		
+		KDataMsg *dataMsg = new KDataMsg(tempString);
 
-                list<NotificationItem*>::iterator it = notificationList.begin();
-                advance(it, nextGenerationNotification);
-                NotificationItem *notificationItem = *it;
+		dataMsg->setSourceAddress("");
+		dataMsg->setDestinationAddress("");
+		
+		sprintf(tempString, "/herald/item-%0d", KHERALDAPP_START_ITEM_ID + nextGenerationNotification);
+		
+		dataMsg->setDataName(tempString);
+		dataMsg->setGoodnessValue(myLikenesses[nextGenerationNotification]);
+		dataMsg->setRealPayloadSize(dataSizeInBytes);
+		dataMsg->setMsgUniqueID(nextGenerationNotification);
+		
+		sprintf(tempString, "Details of item-%0d", KHERALDAPP_START_ITEM_ID + nextGenerationNotification);
+		dataMsg->setDummyPayloadContent(tempString);
+		
+		dataMsg->setByteLength(dataSizeInBytes);
+		dataMsg->setMsgType(0);
+		dataMsg->setValidUntilTime(ttl);
 
-                list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
-                advance(it2, nextGenerationNotification);
-                CommonNotificationItem *commonNotificationItem = *it2;
+		send(dataMsg, "lowerLayerOut");
 
+		if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << "\n";}
+		
+		// schedule again after a complete round robin of all nodes
+		nextGenerationNotification += totalNumNodes;	
+	    scheduleAt(simTime() + dataGenerationInterval*totalNumNodes, msg);
 
-                notificationItem->timesDataMsgReceived = 1;
-
-                KDataMsg *dataMsg = new KDataMsg(commonNotificationItem->dataMsgName);
-
-                dataMsg->setSourceAddress("");
-                dataMsg->setDestinationAddress("");
-                dataMsg->setDataName(commonNotificationItem->dataName);
-                dataMsg->setGoodnessValue(notificationItem->goodnessValue);
-                dataMsg->setRealPayloadSize(commonNotificationItem->realPayloadSize);
-                dataMsg->setDummyPayloadContent(commonNotificationItem->dummyPayloadContent);
-                dataMsg->setByteLength(commonNotificationItem->dataByteLength);
-                dataMsg->setMsgType(0);
-                dataMsg->setValidUntilTime(commonNotificationItem->validUntilTime);
-
-                send(dataMsg, "lowerLayerOut");
-
-                if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << "\n";}
-                
-                nextGeneratorNodeIndex++;
-                if (nextGeneratorNodeIndex >= nodeIndexList.size()) {
-                    nextGeneratorNodeIndex = 0;
-                }
-                nextGenerationNotification++;
-                nextGenerationTime = simTime().dbl() + dataGenerationInterval;
-        }
-        
-        // setup next data generation trigger
-        scheduleAt(simTime() + dataGenerationInterval, msg);
-
-        // if (lastGeneratedNotification == (notificationCount - 1)) {
-            // cout << simTime() << " " << getParentModule()->getFullName() << " " << "message generated - " << lastGeneratedNotification << "\n";
-        // }
-
-    } else if (msg->isSelfMessage() && msg->getKind() == 94) {
-        // timeout for feedback send event occured so, generate a feedback message
-
-
-        // randomly select a received notification to send a feedback
-        int notificationIndex = -1;
-        int found = FALSE;
-        for (int i = 0; i < notificationCount; i++) {
-
-            list<NotificationItem*>::iterator it = notificationList.begin();
-            advance(it, i);
-            NotificationItem *notificationItem = *it;
-            
-            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
-            advance(it2, i);
-            CommonNotificationItem *commonNotificationItem = *it2;
-
-            if (notificationItem->timesDataMsgReceived > 0 && commonNotificationItem->validUntilTime > simTime().dbl()
-                && !notificationItem->feedbackGenerated) {
-                found = TRUE;
-                notificationIndex = i;
-                break;
-            }
-        }
-
-        if (found) {
-            list<NotificationItem*>::iterator it = notificationList.begin();
-            advance(it, notificationIndex);
-            NotificationItem *notificationItem = *it;
-
-            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
-            advance(it2, notificationIndex);
-            CommonNotificationItem *commonNotificationItem = *it2;
-
-
-            KFeedbackMsg *feedbackMsg = new KFeedbackMsg(commonNotificationItem->feedbackMsgName);
-
-            feedbackMsg->setSourceAddress("");
-            feedbackMsg->setDestinationAddress("");
-            feedbackMsg->setDataName(commonNotificationItem->dataName);
-            feedbackMsg->setGoodnessValue(notificationItem->goodnessValue);
-            feedbackMsg->setByteLength(commonNotificationItem->feedbackByteLength);
-            feedbackMsg->setFeedbackType(KHERALDAPP_MSGTYPE_PREFERENCE);
-
-            send(feedbackMsg, "lowerLayerOut");
-
-            if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GF>!<" << feedbackMsg->getDataName() << ">!<T-Pre\n";}
-
-            notificationItem->feedbackGenerated = TRUE;
-        }
-
-        // setup next feedback generation trigger
-        feedbackGenerationInterval = uniform(1.0, maxFeedbackGenerationInterval, usedRNG);
-        scheduleAt(simTime() + feedbackGenerationInterval, msg);
 
     } else if (dynamic_cast<KDataMsg*>(msg) != NULL) {
 
@@ -330,42 +182,9 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
         if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
 
-        // check if data seen before
-        int notificationIndex = -1;
-        for (int i = 0; i < notificationCount; i++) {
-            list<CommonNotificationItem*>::iterator it2 = commonNotificationList.begin();
-            advance(it2, i);
-            CommonNotificationItem *commonNotificationItem = *it2;
-
-            if (strcmp(commonNotificationItem->dataName, dataMsg->getDataName()) == 0) {
-                notificationIndex = i;
-                break;
-            }
-        }
-
-        if (notificationIndex >= 0) {
-            list<NotificationItem*>::iterator it = notificationList.begin();
-            advance(it, notificationIndex);
-            NotificationItem *notificationItem = *it;
-
-            notificationItem->timesDataMsgReceived++;
-        }
-
-        // feedback sending stopped
-        //
-        // KFeedbackMsg *feedbackMsg = new KFeedbackMsg(dataMsg->getDataName());
-        //
-        // feedbackMsg->setSourceAddress("");
-        // feedbackMsg->setDestinationAddress("");
-        // feedbackMsg->setDataName(dataMsg->getDataName());
-        // feedbackMsg->setGoodnessValue(dataMsg->getGoodnessValue());
-        // feedbackMsg->setByteLength(78);
-        // feedbackMsg->setFeedbackType(KHERALDAPP_MSGTYPE_IMMEDIATE);
-        //
-        // send(feedbackMsg, "lowerLayerOut");
-        //
-        // if (logging) {EV_INFO << KHERALDAPP_SIMMODULEINFO << ">!<GF>!<" << feedbackMsg->getDataName() << ">!<T-Imm\n";}
-
+        // increment number of times seen
+        timesMessagesReceived[dataMsg->getMsgUniqueID()]++;
+        
         delete msg;
 
     } else {
@@ -380,29 +199,14 @@ void KHeraldApp::finish()
 {
     delete appRegistrationEvent;
 
-    // remove data generation event
-    if (nodeIndex == dataGeneratingNodeIndex || dataGeneratingNodeIndex == -1) {
-        cancelEvent(dataTimeoutEvent);
-        delete dataTimeoutEvent;
-    }
+    cancelEvent(dataTimeoutEvent);
+    delete dataTimeoutEvent;
 
-    // remove feedback generation event
-    cancelEvent(feedbackTimeoutEvent);
-    delete feedbackTimeoutEvent;
 
-    // remove notification events
-    while (notificationList.size() > 0) {
-        list<NotificationItem*>::iterator it = notificationList.begin();
-        advance(it, 0);
-        NotificationItem *notificationItem = *it;
-
-        notificationList.remove(notificationItem);
-        delete notificationItem;
-    }
-    
-    // remove popularity values
-    
-    // remove node numbers
+    myLikenesses.clear();
+    if (popularityList.size() > 0)
+    	popularityList.clear();
+    timesMessagesReceived.clear();
 
 }
 
