@@ -16,7 +16,7 @@ simple KRRSLayer like IForwardingLayer
 		string ownMACAddress;
         
         // size of cache in bytes - zero means unlimited caching
-        int maximumCacheSize @unit(byte) = default(0byte);
+        int maximumCacheSize @unit(byte) = default(5000000 byte);
         		
         // logging at layer - 0 = disabled, 1 = enabled
         int logging = default(1);

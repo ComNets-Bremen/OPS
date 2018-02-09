@@ -14,11 +14,11 @@ simple KWirelessInterface
     parameters:
         string ownMACAddress;
         string interfaceTypeName = default("wireless");
-        double wirelessRange @unit(m) = default(100m);
+        double wirelessRange @unit(m) = default(30m);
         string expectedNodeTypes = default("KNode, KHeraldNode, KUBMNode, KPromoteNode");
-        double neighbourScanInterval @unit(s) = default(5s);
-        double bandwidthBitRate @unit(bps) = default(10000000bps); // 10Mbps
-        int wirelessHeaderSize @unit(byte) = default(32byte); // 32byte = 802.11 a/b/g, 16byte = BT
+        double neighbourScanInterval @unit(s) = default(1s);
+        double bandwidthBitRate @unit(bps) = default(100000bps); // 100 Kbps
+        int wirelessHeaderSize @unit(byte) = default(16byte); // 32byte = 802.11 a/b/g, 16byte = BT
         
         // logging at layer - 0 = disabled, 1 = enabled
         int logging = default(1);

@@ -16,10 +16,10 @@ simple KKeetchiLayer like IForwardingLayer
         string ownMACAddress;
 
         // interval for reducing (by 1) the goodness value of data (i.e., age data)
-        double agingInterval @unit(s) = default(300s);
+        double agingInterval @unit(s) = default(600s);
 
         // size of cache in bytes - zero means unlimited caching
-        int maximumCacheSize @unit(byte) = default(60000000byte);
+        int maximumCacheSize @unit(byte) = default(5000000 byte);
 
         // a value between 0.0 and 1.0 to indicate after which fraction a change
         // in neighbourhood is considered as a significant change
@@ -30,7 +30,7 @@ simple KKeetchiLayer like IForwardingLayer
         double neighbourhoodChangeSignificanceThreshold = default(0.25);
 
         // cool off period when continuous insignificant changes are detected in the neighbourhood
-        double coolOffDuration @unit(s) = default(300s);
+        double coolOffDuration @unit(s) = default(999999s);
 
         // the constant that gives the weight assigned to the current goodness value in cache when
         // computing the new value together with the recently arrived goodness value (in a data or
