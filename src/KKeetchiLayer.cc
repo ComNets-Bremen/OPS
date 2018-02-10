@@ -33,6 +33,7 @@ void KKeetchiLayer::initialize(int stage)
         const char *confVal = getEnvir()->getConfig()->getConfigValue("eventlog-file");
         string logfilePath(confVal);
         logfilePath = "simulations/" + logfilePath + "_KeetchiLib.txt";
+        EV_INFO << KKEETCHILAYER_SIMMODULEINFO << "logpath is " << logfilePath << "\n";
         keetchiAPI = new KLKeetchi(KLKEETCHI_CACHE_REPLACEMENT_POLICY_LRU, maximumCacheSize, 
                                         ownMACAddress, getParentModule()->getFullName(),
                                         neighbourhoodChangeSignificanceThreshold, coolOffDuration,
@@ -133,7 +134,8 @@ void KKeetchiLayer::finish()
     // remove age data trigger
     cancelEvent(ageDataTimeoutEvent);
     delete ageDataTimeoutEvent;
-
+	
+	delete keetchiAPI;
 }
 
 // Message processing methods
