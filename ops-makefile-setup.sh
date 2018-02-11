@@ -12,9 +12,6 @@
 source ./tools/shell-functions.sh
 loadSettings
 
-cd simulations
-opp_makemake -r --deep -I$KEETCHI_API_PATH -I$INET_PATH -L$KEETCHI_API_PATH/.libs/ -L$INET_PATH -lkeetchi -lINET --mode release -o $OPS_MODEL_NAME -f
-cd ..
 cd src
 opp_makemake -r --deep -I$KEETCHI_API_PATH -I$INET_PATH -L$KEETCHI_API_PATH/.libs/ -L$INET_PATH -llibkeetchi.dylib -lINET --mode release -o $OPS_MODEL_NAME -f
 cd ..
