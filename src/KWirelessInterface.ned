@@ -21,7 +21,7 @@ simple KWirelessInterface
         int wirelessHeaderSize @unit(byte) = default(16byte); // 32byte = 802.11 a/b/g, 16byte = BT
         
         // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
+        int logging = default(0);
 
         // icon
         @display("i=device/card");

@@ -12,14 +12,14 @@ tl;dr
 
 For Linux or MacOS:
 
-- Install and setup OMNeT++ v5.1+ (use OMNeT++ installation Guide)
+- Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
 - Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS`
-- Copy the `settings.default` as `.opsSettings` to home folder (and change if required)
 - Checkout and build dependencies: `./bootstrap.sh`
+- Download, copy and build SWIM with INET (see section `SWIM Mobility Model` below)
 - Create makefiles: `./ops-makefile-setup.sh`
 - Build simulation: `make`
-- Run simulation: `./ops-simu-run.sh -m tkenv`
+- Run simulation: `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-herald-epidemic.ini -p parsers.txt`
 - Parse logs to obtain graphs (check `Parsers` section)
 - See how you can improve !!!
 
@@ -52,9 +52,9 @@ on which it is run.
 
 
 
-### OMNeT++ 5.1 or higher
+### OMNeT++ 5.2.1 or higher
 
-OMNeT++ 5.0+ version must be installed and the PATH variable must be
+OMNeT++ 5.2.1 or a higher version must be installed and the PATH variable must be
 set to run all the binaries of OMNeT++.
 
 e.g.,
@@ -420,7 +420,6 @@ when the `bootstrap.sh` was run.
 3. Recompile the INET in the following manner
 
 - `cd modules/inet`
-- `make clean`
 - `make makefiles`
 - `make MODE=release`
 
