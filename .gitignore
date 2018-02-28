@@ -51,3 +51,6 @@ simulations/results/
 
 # Ignore Python compiled module files
 *.pyc
+
+# qt GUI settings
+.qtenvrc
