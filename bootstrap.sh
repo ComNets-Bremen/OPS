@@ -19,13 +19,7 @@ if [[ "$INET_PATH" != /* ]]; then
     INET_PATH=$(pwd)/$INET_PATH
 fi
 
-if [ ! -d $INET_PATH ]; then
-    echo "Invalid INET path: \"$INET_PATH\". Please check your configuration. Aborting..."
-    exit 1
-fi
-
 echo "Using INET: $INET_PATH"
-
 
 if [ ! -d "modules" ]; then
     mkdir modules
@@ -33,6 +27,12 @@ fi
 
 echo "Initialize the submodules"
 git submodule update --init --recursive
+
+# Now, all directories should be there and we can finally check the $INET_PATH
+if [ ! -d $INET_PATH ]; then
+    echo "Invalid INET path: \"$INET_PATH\". Please check your configuration. Aborting..."
+    exit 1
+fi
 
 cd modules
 if [ "$INET_BUILD" = true ]; then
