@@ -14,9 +14,13 @@ KEETCHI_API_LIB=$KEETCHI_API_PATH/.libs
 
 # Set to false and adapt INET_PATH if you prefer using your own inet checkout
 INET_BUILD=true
+INET_PATCH=true
 INET_PATH=modules/inet/src
 INET_LIB=$INET_PATH
 INET_NED=$INET_PATH
+
+# The git tag for the version to be used
+INET_VERSION="v3.6.3"
 
 OMNET_INI_FILE=simulations/omnetpp-herald-epidemic.ini
 OMNET_OUTPUT_DIR=./out/
