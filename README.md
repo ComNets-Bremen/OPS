@@ -15,8 +15,7 @@ For Linux or MacOS:
 - Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
 - Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS`
-- Checkout and build dependencies: `./bootstrap.sh`
-- Download, copy and build SWIM with INET (see section `SWIM Mobility Model` below)
+- Checkout and build dependencies: `./bootstrap.sh`. This will also download, copy and build SWIM with INET (see section `SWIM Mobility Model` below)
 - Create makefiles: `./ops-makefile-setup.sh`
 - Build simulation: `make`
 - Run simulation: `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-herald-epidemic.ini -p parsers.txt`
@@ -89,7 +88,7 @@ The software listed below are pulled automatically by OPS when setting up. Read 
 if different versions of the following software needs to be installed and configured.
 
 
-### INET 3.6.0
+### INET 3.6.3
 
 OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate
 mobility and checks out an own version of INET where running `./bootstrap.sh`.
@@ -147,12 +146,17 @@ At the moment, the simulation uses the following parameters:
   build. You can set this to false if you would like to use your own INET
   checkout
 
+- `INET_PATCH` - Boolean value. If set to `true`, missing modules will be added
+  to inet automatically
+
 - `INET_PATH` - Path to where INET is located. Change this if you prefer using
   an own INET checkout
 
 - `INET_LIB` - Path to where the dynamic library of INET is located (.so or .dylib).
 
 - `INET_NED` - Path to where all the INET source files (i.e., NED files) are located.
+
+- `INET_VERSION` - The git tag for the INET version to be used
 
 - `OMNET_INI_FILE` - Path to your OMNeT++ simulation setup file. Change this
   according to the simulation you would like to run.
@@ -406,7 +410,10 @@ models that we have used in our work.
 
 [Small Worlds in Motion](https://arxiv.org/pdf/0809.2730.pdf) (SWIM) is a mobility model
 developed by A. Mei and J. Stefa. The INET code for the SWIM was developed by our research
-group. If you wish to use this mobility model, follow the following steps.
+group. Swim is automatically checked out using the `bootstrap.sh` script. In
+the default settings, all files are copied automatically to the corresponding
+directories of INET. However, if you are using your own INET checkout, you can
+use SWIM by following these steps:
 
 1. Download the OMNeT++ INET SWIM mobility model from following Github repository.
 
