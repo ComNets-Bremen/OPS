@@ -4,3 +4,6 @@
 [submodule "modules/KeetchiLib"]
 	path = modules/KeetchiLib
 	url = https://github.com/ComNets-Bremen/KeetchiLib.git
+[submodule "modules/SWIMMobility"]
+	path = modules/SWIMMobility
+	url = https://github.com/ComNets-Bremen/SWIMMobility.git
