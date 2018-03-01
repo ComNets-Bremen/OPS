@@ -54,3 +54,6 @@ simulations/results/
 
 # qt GUI settings
 .qtenvrc
+
+# Ignore SWIM locations
+locations.txt
