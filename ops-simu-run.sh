@@ -21,6 +21,7 @@ showUsage(){
     echo "  -o <output dir> : Optional, set the simulation output directory"
     echo "  -p <parser file>: Optional, perform some post-processing steps (beta)"
     echo "  -g Merge all log files into one file (beta)"
+    echo "  -b <backup dir> : Optional, backup results to this directory (beta)"
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -76,6 +77,17 @@ while [ "$#" -gt 0 ]; do
             shift 2
             ;;
 
+        -b)
+            if [ -z ${2+x} ]; then
+                echo "Missing parameter for \"$1\""
+                showUsage
+                exit 1
+            fi
+            BACKUP_DIR="$2"
+
+            shift 2
+            ;;
+
         -p)
             if [ -z ${2+x} ]; then
                 echo "Missing parameter for \"$1\""
@@ -125,9 +137,11 @@ esac
 
 # Is a default output directory defined in the settings? Use this one.
 # Otherwise create a generic one
+GENERIC_SIM_OUTPUT_DIR=$(basename $OMNET_INI_FILE)
+GENERIC_SIM_OUTPUT_DIR="$OMNET_OUTPUT_DIR$(date +"%Y-%m-%d_%H-%M-%S")_${GENERIC_SIM_OUTPUT_DIR%.*}"
+
 if [ -z ${SIM_OUTPUT_DIR+x} ]; then
-    SIM_OUTPUT_DIR=$(basename $OMNET_INI_FILE)
-    SIM_OUTPUT_DIR="$OMNET_OUTPUT_DIR$(date +"%Y-%m-%d_%H-%M-%S")_${SIM_OUTPUT_DIR%.*}"
+    SIM_OUTPUT_DIR=$GENERIC_SIM_OUTPUT_DIR
 fi
 
 mkdir -p simulations/$SIM_OUTPUT_DIR
@@ -217,3 +231,21 @@ else
             done
     done
 fi
+
+if [ -z  ${BACKUP_DIR+x} ]; then
+    echo "Not backing up the data!"
+else
+    if [ -d $BACKUP_DIR ]; then
+        INPUTDIR="simulations/$SIM_OUTPUT_DIR"
+        BACKUPFILE="$BACKUP_DIR/$HOSTNAME-$(basename $GENERIC_SIM_OUTPUT_DIR).tar.gz"
+        mkdir -p outdir
+        tar -cvzf "$BACKUPFILE" "$INPUTDIR"
+
+    else
+        echo "##########"
+        echo "\"$BACKUP_DIR\" is not a valid directory. Canceling backup..."
+        echo "##########"
+    fi
+fi
+
+
