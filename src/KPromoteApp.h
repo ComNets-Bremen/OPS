@@ -23,7 +23,7 @@ using namespace omnetpp;
 using namespace std;
 
 
-#define KPROMOTEAPP_SIMMODULEINFO        ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define KPROMOTEAPP_SIMMODULEINFO        " KPromoteApp>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define TRUE                            1
 #define FALSE                           0
 #define KPROMOTEAPP_DISTR_NONE          1 // constant time intervals

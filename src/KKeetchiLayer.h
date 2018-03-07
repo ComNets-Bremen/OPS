@@ -56,6 +56,6 @@ class KKeetchiLayer: public cSimpleModule
         string broadcastMACAddress;
 
 };
-#define KKEETCHILAYER_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define KKEETCHILAYER_SIMMODULEINFO       " KKeetchiLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 
 #endif /* KKEETCHILAYER_H_ */

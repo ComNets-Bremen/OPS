@@ -110,7 +110,7 @@ class KEpidemicRoutingLayer: public cSimpleModule
         KSummaryVectorMsg* makeSummaryVectorMessage();
 
 };
-#define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         " KEpidemicRoutingLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define KEPIDEMICROUTINGLAYER_DEBUG                 ">!<DEBUG>!<" << ownMACAddress
 
 #define KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes

@@ -17,7 +17,8 @@ The following parameters are currently implemented in `ops-simu-run.sh`:
 * `-c <filename.ini>` Run the simulation using the given OMNeT++ simulation configuration file.
 * `-o <output dir>`: Define the output directory for the simulation logs. It is defined as a subdirectory of `simulations/out`. As default, the format `YYYY-mm-dd_HH-MM-SS_<omnetpp.ini-filename>` is used. This ensures that each simulation run result data is stored in a separate directory.
 * `-p <parsers.txt>`: Run the parsers defined in `parsers.txt` after the simulation ended. An example file is available in the repository.
-* `-g : Append the KeetchiLib log file to the main log file
+* `-g` : Append the KeetchiLib log file to the main log file
+* `-b <backup dir>` : Makes a compressed (tar.gz) copy of all output files to the given directory
 
 The functionality of the `-p` option is still being tested. It currently works as follows:
 

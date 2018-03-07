@@ -37,6 +37,6 @@ class KLinkAdaptLayer: public cSimpleModule
 
 };
 
-#define KLINKADAPTLAYER_SIMMODULEINFO       ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define KLINKADAPTLAYER_SIMMODULEINFO       " KLinkAdaptLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 
 #endif /* KLINKADAPTLAYER_H_ */
