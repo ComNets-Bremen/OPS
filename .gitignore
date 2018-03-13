@@ -31,16 +31,16 @@
 Makefile
 .tkenvrc
 simulations/Makefile
-simulations/keetchi-simu
+simulations/ops-simu
 simulations/out/
+src/KOPSMsg_m.cc
+src/KOPSMsg_m.h
 src/KInternalMsg_m.cc
 src/KInternalMsg_m.h
-src/KKeetchiMsg_m.cc
-src/KKeetchiMsg_m.h
 src/Makefile
 src/out/
 out/gcc-release/
-keetchi-simu
+ops-simu
 
 out
 simulations/results/
@@ -57,3 +57,10 @@ simulations/results/
 
 # Ignore SWIM locations
 locations.txt
+
+# Ignore UBM events, propertioes and record files
+events.txt
+# locations.txt
+properties.txt
+record.txt
+

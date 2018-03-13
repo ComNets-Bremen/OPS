@@ -43,6 +43,7 @@ if [ "$INET_BUILD" = true ]; then
     git checkout $INET_VERSION
     git submodule update --init --recursive
 
+    # build SWIM and ExtendedSWIM modules with INET
     if [ "$INET_PATCH" = true ]; then
         echo "Checking for SWIM in INET located in $INET_PATH and patch it if necessary"
         for f in $(ls ../SWIMMobility/*.{cc,h,ned}); do
@@ -56,6 +57,31 @@ if [ "$INET_BUILD" = true ]; then
                 echo "The existing version is not replaced. Ensure that you update it if required!"
             fi
         done
+        echo "Checking for ExtendedSWIM in INET located in $INET_PATH and patch it if necessary"
+        for f in $(ls ../ExtendedSWIMMobility/IReactive*.{h,ned}); do
+            basefile=$(basename $f)
+            echo "Checking for $basefile..."
+            if [ ! -f "$INET_PATH/inet/mobility/contract/$basefile" ]; then
+                echo "\"$basefile\" does not exist. Copying..."
+                cp $f $INET_PATH/inet/mobility/contract/
+            else
+                echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/contract/"
+                echo "The existing version is not replaced. Ensure that you update it if required!"
+            fi
+        done
+        for f in $(ls ../ExtendedSWIMMobility/ExtendedSWIM*.{cc,h,ned}); do
+            basefile=$(basename $f)
+            echo "Checking for $basefile..."
+            if [ ! -f "$INET_PATH/inet/mobility/single/$basefile" ]; then
+                echo "\"$basefile\" does not exist. Copying..."
+                cp $f $INET_PATH/inet/mobility/single/
+            else
+                echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/single/"
+                echo "The existing version is not replaced. Ensure that you update it if required!"
+            fi
+        done
+    else
+        echo "INET patching disabled"
     fi
 
     # Is there an old version? -> clean up inet

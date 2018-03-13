@@ -14,11 +14,13 @@ For Linux or MacOS:
 
 - Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
-- Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS`
-- Checkout and build dependencies: `./bootstrap.sh`. This will also download, copy and build SWIM with INET (see section `SWIM Mobility Model` below)
+- Clone this repository: `git clone -b OPS-NG https://github.com/ComNets-Bremen/OPS`
+- Checkout and build dependencies: `./bootstrap.sh`. This will also build SWIM and ExtendedSWIM with INET (see section `SWIM Mobility Model` and `ExtendedSWIM Mobility Model` below)
 - Create makefiles: `./ops-makefile-setup.sh`
 - Build simulation: `make`
-- Run simulation: `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-herald-epidemic.ini -p parsers.txt`
+- Create the `locations.txt`, `events.txt` and `properties.txt` files using the samples given.
+- Modify the `omnetpp-ubm.ini` according to your preferences
+- Run simulation: `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-ubm.ini -p parsers.txt`
 - Parse logs to obtain graphs (check `Parsers` section)
 - See how you can improve !!!
 
@@ -186,18 +188,18 @@ in `OPS_MODEL_NAME` must be present in the root folder of OPS.
 Running the Model
 -----------------
 
-1. Create the node model, the network and an appropriate OMNeT++ parameter file to
-run the required simulations. Currently there are many samples of these 3 components.
+1. Create the node model, the network, an appropriate OMNeT++ parameter file and other required
+   parameter files to run the required simulations. Currently there are many samples of these 3 components.
 
-  - Node Model - Currently implemented node models are `KNode.ned` and `KHeraldNode.ned`
+  - Node Model - Currently implemented node model is `KUBMNode.ned`
   in the `src/` folder. IMPORTANT: If a new node model is created, remember to include
   the name of this model in the `expectedNodeTypes` parameter of the `KWirelessInterface`
   module
-  - Network - Currently created simulation networks are `OpsNetA.ned` and
-  `OpsNetB.ned` in the `simulations/` folder
-  - Parameter File - Currently created parameter files are `omnetpp.ini` and
-  `omnetpp-herald.ini` in the `simulations/` folder
-
+  - Network - Currently created simulation network is `OpsNetE.ned` in the `simulations/` folder
+  - OMNeT++ Parameter File - Currently available parameter file is `omnetpp-ubm.ini` in the `simulations/` folder
+  - Other Files - The 3 additional files required by the models are `locations.txt`, `events.txt` 
+    and `properties.txt`. Make these files using the given samples `locations-sample.txt`, `events-sample.txt` 
+    and `properties-sample.txt` in the same folder (i.e. root folder of OPS)
 
 2. Modify the settings to point to the created OMNeT++ parameters in the
 previous step.
@@ -205,7 +207,7 @@ previous step.
 3. Run the `ops-simu-run` script file to run simulations. Simulation can be run using the GUI
 (Tkenv) mode or the command line mode. To enable the required mode, the  `-m` switch must be used.
 
-  - `ops-simu-run -m tkenv` - The `tkenv` mode brings up the GUI version of the simulation
+  - `ops-simu-run -m qtenv` - The `qtenv` mode brings up the GUI version of the simulation
   where the buttons have to be pressed to start simulating and further, this mode also shows
   the animations. __WARNING:__ this mode results in longer simulation times (VERY LONG)
 
@@ -222,8 +224,8 @@ Creating Your Own Scenarios
 
 The network file (i.e., scenario) created to simulate nodes deployed with the different
 protocol layers are located in the `simulations/` folder. As indicated in the Running
-the Model section, check the given example networks (e.g., `OpsNetA.ned` file) and the
-parameter file (e.g., `omnetpp.ini` file) to make your own networks.
+the Model section, check the given example networks (e.g., `OpsNetE.ned` file) and the
+parameter file (e.g., `omnetpp-ubm.ini` file) to make your own networks.
 
 
 Node Architecture
@@ -232,12 +234,12 @@ Node Architecture
 The architecture of a node uses a number of protocol layers which can be configured
 based on the scenario considered. Generally, every node has the following layers.
 
-
                            +------------------------+
-                           |  +------------------+  |
-                           |  |Application Layer |  |
-                           |  |                  |  |
-                           |  +--------+---------+  |
+                           |      OppNets Node      |
++--------------+           |  +------------------+  |
+| Notification |           |  |Application Layer |  |
+|  Generator   +--------------+     with UBM     |  |
++--------------+           |  +--------+---------+  |
                            |           |            |
                            |  +--------+---------+  |
                            |  |   Opportunistic  |  |
@@ -258,16 +260,23 @@ based on the scenario considered. Generally, every node has the following layers
                            +-----------|------------+
                                        |
 
-Each of the above layers can be configured to use different implementations relevant
-to the specific layer as listed below.
 
-1. Application Layer - Applications generate data and feedback. Current applications
-   are,
+The Notification Generator is a network-wide model that holds a set of messages and disseminates to the
+user behavior models of nodes. The models associated with notification generation are,
 
-   - `KBruitApp` - Generates data and feedback randomly
-   - `KHeraldApp` - Generates data from a given list and generates feedback for this
-     data randomly
-   - `KPromoteApp` - Generates data as constant, uniformly distributed or exponentially distributed traffic
+   - `KNotificationGenerator` - Notifications (i.e., messages) are held and disseminated to the user behaviour 
+models of each node to inject them into the network.
+
+
+The layers of a node can be configured to use different implementations relevant to the specific layer as 
+listed below.
+
+
+1. Application Layer with UBM - Applications generate data and feedback based on the preferences
+   of the users. Current models are,
+
+   - `KUserBehavior` - Performs the enforcement of user preferences on the notifications (messages)
+   - `KBasicUBMApp` - Injects and receives to/from network
 
 2. Opportunistic Networking Layer - Performs the forwarding of data and feedback according
    to the forwarding strategy employed. Current implementations are,
@@ -412,26 +421,14 @@ models that we have used in our work.
 developed by A. Mei and J. Stefa. The INET code for the SWIM was developed by our research
 group. Swim is automatically checked out using the `bootstrap.sh` script. In
 the default settings, all files are copied automatically to the corresponding
-directories of INET. However, if you are using your own INET checkout, you can
-use SWIM by following these steps:
+directories of INET. SWIM part of OPS and it will be built automatically by the setup scripts.
+Once installed, set parameters in `.ini` file in `simulations/` folder to use the SWIM mobility model.
 
-1. Download the OMNeT++ INET SWIM mobility model from following Github repository.
 
-`https://github.com/ComNets-Bremen/SWIMMobility.git`
+###  ExtendedSWIM Mobility Model
 
-2. Place the downloaded files in the following folder of local INET copy which was created
-when the `bootstrap.sh` was run.
-
-`./modules/inet/src/inet/mobility/single/`
-
-3. Recompile the INET in the following manner
-
-- `cd modules/inet`
-- `make makefiles`
-- `make MODE=release`
-
-4. Set parameters in `.ini` file in `simulations/` folder to use the SWIM mobility model.
-
+The ExtendedSWIMMobility model is an extended version of the SWIM model that is used by the 
+user behaviour model in OPS. It is automatically built by the setup scripts of OPS.  
 
 
 ###  BonnMotion Mobility Model

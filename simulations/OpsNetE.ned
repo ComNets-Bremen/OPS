@@ -3,18 +3,19 @@ package ops.simulations;
 
 import ops.*;
 
-network OpsNetB
+network OpsNetE
 {
+   
     parameters:
         int numNodes = default(20);
-
+       
     submodules:
 
         // nodes of the network
-        node[numNodes]: KHeraldNode {
+        host[numNodes]: KUBMNode {
             nodeID = index;
-			heraldAppDeployed = 1;
         }
+       
+       notificationGenerator: KNotificationGenerator{}
 
 }
-

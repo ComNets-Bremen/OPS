@@ -119,3 +119,33 @@ packet KDataRequestMsg {
     // epidemic routing specific fields
     string messageIDHashVector[];  // request vector
 }
+
+//
+// Event Reaction Message (used with UBM and reactive mobility).
+//
+// @author : Anas bin Muslim (anas1@uni-bremen.de)
+// @date   : 19-sep-2017
+//
+//
+// example sizes in bytes
+//
+//               addrs | data name | reaction type  | total  |
+//               s & d | or msg ID |  (1 byte int)  | (bytes)|
+// Keetchi  ->   6 + 6     64             1             77
+
+enum reactionType {
+    ignore = 1;
+    comment = 2;
+    save = 3;
+};
+
+packet KReactionMsg {
+    
+    // common fields
+    string sourceAddress;
+    string destinationAddress;
+    string dataName;
+        
+    // UBM specific fields
+    int reaction @enum(reactionType); 
+}
