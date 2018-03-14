@@ -218,7 +218,8 @@ previous step.
 
 
 The results files and the log files are created in the `simulations/out/` folder.
-For a detailed description of the `ops-simu-run.sh`-script, please refer to [README_ops-simu-run.md](./README_ops-simu-run.md)
+For a detailed description of the `ops-simu-run.sh` script, please refer 
+to [README_ops-simu-run.md](./README_ops-simu-run.md)
 
 
 Creating Your Own Scenarios
@@ -238,10 +239,10 @@ based on the scenario considered. Generally, every node has the following layers
 
                            +------------------------+
                            |      OppNets Node      |
-+--------------+           |  +------------------+  |
-| Notification |           |  |Application Layer |  |
-|  Generator   +--------------+     with UBM     |  |
-+--------------+           |  +--------+---------+  |
+ +--------------+          |  +------------------+  |
+ | Notification |          |  |Application Layer |  |
+ |  Generator   +-------------+     with UBM     |  |
+ +--------------+          |  +--------+---------+  |
                            |           |            |
                            |  +--------+---------+  |
                            |  |   Opportunistic  |  |
@@ -264,7 +265,7 @@ based on the scenario considered. Generally, every node has the following layers
 
 
 The Notification Generator is a network-wide model that holds a set of messages and disseminates to the
-user behavior models of nodes. The models associated with notification generation are,
+user behaviour models of nodes. The models associated with notification generation are,
 
    - `KNotificationGenerator` - Notifications (i.e., messages) are held and disseminated to the user behaviour 
 models of each node to inject them into the network.
