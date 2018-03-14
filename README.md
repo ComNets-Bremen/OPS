@@ -14,7 +14,7 @@ For Linux or MacOS:
 
 - Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
-- Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS`
+- Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS` (do not download directly, clone!)
 - Checkout and build dependencies: `./bootstrap.sh`. This will also download, copy and build SWIM with INET (see section `SWIM Mobility Model` below)
 - Create makefiles: `./ops-makefile-setup.sh`
 - Build simulation: `make`
