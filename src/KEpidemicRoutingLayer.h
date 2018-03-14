@@ -42,6 +42,9 @@ class KEpidemicRoutingLayer: public cSimpleModule
         int maximumHopCount;
         double maximumRandomBackoffDuration;
         int logging;
+        bool useTTL;
+        
+        int numEventsHandled;
 
         int currentCacheSize;
 
@@ -94,9 +97,9 @@ class KEpidemicRoutingLayer: public cSimpleModule
         list<SyncedNeighbour*> syncedNeighbourList;
         bool syncedNeighbourListIHasChanged;
 
-        cMessage *ageDataTimeoutEvent;
+    
 
-        void handleDataAgingTrigger(cMessage *msg);
+        void ageDataInCache();
         void handleAppRegistrationMsg(cMessage *msg);
         void handleDataMsgFromUpperLayer(cMessage *msg);
         void handleNeighbourListMsgFromLowerLayer(cMessage *msg);

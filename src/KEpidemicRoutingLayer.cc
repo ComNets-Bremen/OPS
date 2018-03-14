@@ -22,6 +22,8 @@ void KEpidemicRoutingLayer::initialize(int stage)
         maximumHopCount = par("maximumHopCount");
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         logging = par("logging");
+        useTTL = par("useTTL");
+        numEventsHandled = 0;
         
         syncedNeighbourListIHasChanged = TRUE;
         
@@ -30,10 +32,6 @@ void KEpidemicRoutingLayer::initialize(int stage)
 
     } else if (stage == 2) {
 
-        // setup the trigger to age data
-        ageDataTimeoutEvent = new cMessage("Age Data Timeout Event");
-        ageDataTimeoutEvent->setKind(108);
-        scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
 
     } else {
         EV_FATAL << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
@@ -50,19 +48,17 @@ void KEpidemicRoutingLayer::handleMessage(cMessage *msg)
     cGate *gate;
     char gateName[64];
     KNeighbourListMsg *neighListMsg;
+    
+    numEventsHandled++;
+    
+    // age the data in the cache only if needed (e.g. a message arrived)
+    if (useTTL)
+    	ageDataInCache();
 
     // self messages
     if (msg->isSelfMessage()) {
-
-        // age data trigger fired
-        if (msg->getKind() == 108) {
-
-            handleDataAgingTrigger(msg);
-
-        } else {
-            EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
-            delete msg;
-        }
+	    EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
+        delete msg;
 
     // messages from other layers
     } else {
@@ -123,7 +119,7 @@ void KEpidemicRoutingLayer::handleMessage(cMessage *msg)
     }
 }
 
-void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
+void KEpidemicRoutingLayer::ageDataInCache()
 {
 
     // remove expired data items
@@ -151,10 +147,8 @@ void KEpidemicRoutingLayer::handleDataAgingTrigger(cMessage *msg)
         }
     }
 
-    // setup next age data trigger
-    scheduleAt(simTime() + 1.0, msg);
-
 }
+
 
 void KEpidemicRoutingLayer::handleAppRegistrationMsg(cMessage *msg)
 {
@@ -780,10 +774,9 @@ KSummaryVectorMsg* KEpidemicRoutingLayer::makeSummaryVectorMessage()
 void KEpidemicRoutingLayer::finish()
 {
 
-    // remove age data trigger
-    cancelEvent(ageDataTimeoutEvent);
-    delete ageDataTimeoutEvent;
-
+	recordScalar("numEventsHandled", numEventsHandled);
+	
+    
     // clear resgistered app list
     while (registeredAppList.size() > 0) {
         list<AppInfo*>::iterator iteratorRegisteredApp = registeredAppList.begin();
