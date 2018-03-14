@@ -9,6 +9,9 @@
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Fixed file open check for properties.txt
 // - Changed function parameters to IReactiveMobility
+// - Unwanted code, comments cleanup
+// - Locations and events files as parameters
+//
 
 #include "KUserBehavior.h"
 
@@ -28,11 +31,8 @@ void KUserBehavior::initialize(int stage)
         appPrefix = par("appPrefix").stringValue();
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
         logging = par("logging");
-        
-        // setup stat collection signals
-        //dataSendSignal = registerSignal("dataSendSignal");
-        //dataReceiveSignal = registerSignal("dataReceiveSignal");
-        //feedbackSendSignal = registerSignal("feedbackSendSignal");
+        keywordsFilePath = par("keywordsFilePath").stringValue();
+        eventsFilePath = par("eventsFilePath").stringValue();
         
         angryBitSignal = registerSignal("angryBitSignal");
         
@@ -44,37 +44,15 @@ void KUserBehavior::initialize(int stage)
            randomly from properties text file  */
         bool keywordsFound = getKeywords();
         if (!keywordsFound) {
-            EV << "Could not open (keywords) properties.txt file. create it." << std::endl;
+            EV << "Could not open (keywords) " << keywordsFilePath << " file. create it." << std::endl;
             endSimulation();
         }
-        
-        // For Debugging
-		/*std::cout<<KUSERBEHAVIOR_SIMMODULEINFO<<"** Properties :: ";
-		for (int j=0; j<properties.size(); j++){
-			std::cout<<properties[j]<<", ";
-		}
-		std::cout<<"** "<<endl;*/
         
     } else if (stage == 2) {
 		
 		// Calculate the reactions based on keyword matching
 		computePreReactions();
 		notificationCount = notifications.size();
-		
-		// For Debugging
-		/*std::cout<<endl<<KUSERBEHAVIOR_SIMMODULEINFO<<"PRE-COMPUTING REACTIONS"<<endl;
-		for (int i=0; i<notifications.size(); i++){
-			std::cout<<"		EVENT KEYWORDS	 ::	";
-			for (int j=0; j<notifications[i].properties.size(); j++){
-				std::cout<<notifications[i].properties[j]<<", ";
-			}
-			std::cout<<endl;
-			std::cout<<"		Start, End	 ::	"<<notifications[i].startTime<<", "<<notifications[i].endTime<<endl;
-			std::cout<<"		Radius		 ::	"<<notifications[i].radius<<endl;
-			std::cout<<"		Coordinates	 ::	"<<notifications[i].eventCoord.x<<","<<notifications[i].eventCoord.y<<","<<notifications[i].eventCoord.z<<endl;
-			std::cout<<"		Popularity	 ::	"<<notifications[i].popularity<<endl;
-			std::cout<<"		REACTION	 ::	"<<notifications[i].reaction<<endl<<endl;
-		}*/
 		
 		int likeness = 0, goodness = 0;
 		std::string eventLogName;
@@ -230,9 +208,6 @@ void KUserBehavior::handleMessage(cMessage *msg)
 				send(lowerLayerMsg, "lowerLayerOut");
 				
                 if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<GD>!<" << lowerLayerMsg->getDataName() << "\n";}
-
-
-				//std::cout << KUSERBEHAVIOR_SIMMODULEINFO << " sent to others " << lowerLayerMsg->getDataName() << std::endl;
 				
 				/*      MSG SENT TO NEIGHBORS       */
 				//////////////////////////////////////
@@ -372,11 +347,12 @@ bool KUserBehavior::computePreReactions(){
 	std::ifstream infile;
 	
 	//Reading events from file
-	infile.open("events.txt",std::ios::in);
+	infile.open(eventsFilePath,std::ios::in);
 	if(!(infile.is_open())){
-		EV<<"Something wrong with Events File"<<endl;
-		return false;
+		EV << "Cannot open " << eventsFilePath << " file. Create it. " << endl;
+        endSimulation();
 	}
+    
 	while(!infile.eof()){
 		event tmpEvent;
 		std::getline(infile, details);
@@ -593,7 +569,7 @@ bool KUserBehavior::getKeywords(){
 	std::ifstream infile;
 	std::vector <std::string> keywordsList;
 	
-	infile.open("properties.txt", std::ios::in);
+	infile.open(keywordsFilePath, std::ios::in);
 	if(!(infile.is_open())) {
         return false;
     }

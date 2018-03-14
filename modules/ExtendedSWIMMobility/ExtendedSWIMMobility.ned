@@ -29,6 +29,7 @@
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Corrected the jumble of some files in OPS and others in INET
 // - All files now are copied into INET (like SWIMMobility files) before building INET
+// - Locations file as a parameter 
 //
 
 package inet.mobility.single;
@@ -55,6 +56,7 @@ simple ExtendedSWIMMobility extends MovingMobilityBase{
         //volatile double waitTime @unit(s) = default(0s);
         volatile double waitTime @unit(s) = default(uniform(0s,10s));
         int usedRNG = default(0);
+        string locationsFilePath = default("locations.txt");
         
         @class (ExtendedSWIMMobility);
         

@@ -5,33 +5,28 @@
 // @date   : 26-06-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
 //
-//
+// Change History:
+// Asanga Udugama (adu@comnets.uni-bremen.de)
+// - Unwanted code, comments cleanup
 
 package ops;
 
 simple KBasicUBMApp
 {
-     parameters:
-         
-         // assigned ID for the node
-         int nodeIndex;
-         
+    parameters:
+        // node index
+        int nodeIndex;
+        
 		// prefix assigned to the app
     	string appPrefix = default("/basicubm-");
 
 		// prefix used to generate names appended with a number, e.g., /bruit/event-000328     	
     	string appNameGenPrefix = default("/event-");
-		
-		 // node names to search for - used to get the destination address
-         //string expectedNodeTypes = default("KNode, KHeraldNode, KUBMNode, KPromoteNode");
-         
-         // RNG to use 
-		 int usedRNG = default(0);
+
+        // logging at layer - 0 = disabled, 1 = enabled
+        int logging = default(1);
 		 
-		 // logging at layer - 0 = disabled, 1 = enabled
-         int logging = default(1);
-		 
-         // icon used
+        // icon used
       	@display("i=block/app");
         
 	gates:

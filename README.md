@@ -15,12 +15,13 @@ For Linux or MacOS:
 - Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
 - Clone this repository: `git clone -b OPS-NG https://github.com/ComNets-Bremen/OPS`
-- Checkout and build dependencies: `./bootstrap.sh`. This will also build SWIM and ExtendedSWIM with INET (see section `SWIM Mobility Model` and `ExtendedSWIM Mobility Model` below)
-- Create makefiles: `./ops-makefile-setup.sh`
-- Build simulation: `make`
-- Create the `locations.txt`, `events.txt` and `properties.txt` files using the samples given.
+- Checkout and build dependencies: `./bootstrap.sh`. This will also build SWIM and ExtendedSWIM with
+  INET (see section `SWIM Mobility Model` and `ExtendedSWIM Mobility Model` below)
+- Create makefiles: run `./ops-makefile-setup.sh`
+- Build simulation: run `make`
+- Create the `locations.txt`, `events.txt` and `properties.txt` files using the samples given. Check FORMATS](./FORMATS.md)
 - Modify the `omnetpp-ubm.ini` according to your preferences
-- Run simulation: `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-ubm.ini -p parsers.txt`
+- Simulate: run `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-ubm.ini -p parsers.txt`
 - Parse logs to obtain graphs (check `Parsers` section)
 - See how you can improve !!!
 
@@ -199,7 +200,8 @@ Running the Model
   - OMNeT++ Parameter File - Currently available parameter file is `omnetpp-ubm.ini` in the `simulations/` folder
   - Other Files - The 3 additional files required by the models are `locations.txt`, `events.txt` 
     and `properties.txt`. Make these files using the given samples `locations-sample.txt`, `events-sample.txt` 
-    and `properties-sample.txt` in the same folder (i.e. root folder of OPS)
+    and `properties-sample.txt` in the same folder (i.e. root folder of OPS). Check [FORMATS](./FORMATS.md) to
+    know the formats of these files.
 
 2. Modify the settings to point to the created OMNeT++ parameters in the
 previous step.
@@ -332,7 +334,7 @@ Logging
 
 Simulation runs result in the creation of logs that  dumps information about the activities of a
 model. These logs are used by the parsers described below. The contents of these logs are coded
-to reduce the sizes of the logs. The codes used are listed here [here](./LOG_ENCODINGS.md). When
+to reduce the sizes of the logs. The codes used are listed in [ENCODINGS](./LOG_ENCODINGS.md). When
 developing new models, please check these encodings to see what can be used.
 
 
@@ -370,31 +372,7 @@ packages
 
 In the following is a description of what the `...stats.py` scripts generate.  
 
-- `s01-liked-data-stats.py` - This script generates stats related to liked and non-liked data.
-The KHeraldApp pre-classifies data as liked or non-liked (ignored) for each node. This information
-is later used to identify what data was received. The script requires the log file created in
-`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As
-output, this script creates text files with the computed stats.
-
-- `s01-liked-data-progress-stats.py` - This script generates stats related to liked and non-liked data
-for every hour. The KHeraldApp pre-classifies data as liked or non-liked (ignored) for each node. This
-information is later used to identify what data was received. The script requires the log file created in
-`simulations/out/` as input to compute these stat values (i.e., using the `-i` switch). As
-output, this script creates text files with the computed stats.
-
-- `s02-traffic-spread-stats.py` - This script generates stats related to total packets generated
-by all nodes and how well the traffic is spread across the network (i.e., CoV of the means
-of all nodes). The script requires the log file created in `simulations/out/` as input to
-compute these stat values (i.e., using the `-i` switch). As output, this script creates
-text files with the computed stats.
-
-- `s03-delivery-ratio-stats.py` - This script generates stats related to delivery ratio and the
-average delivery time. The script requires the log file created in `simulations/out/` as
-input to compute these stat values (i.e., using the `-i` switch) and the optional maximum
-simulation time to consider (i.e., using the `-m` switch). As output, this script creates
-text files with the computed stats.
-
-- `s04-contact-times.py` - This script generates the stats related to contact times (number
+- `s04-contact-times-stats.py` - This script generates the stats related to contact times (number
 of contacts and average contact time). The script requires the log file created in
 `simulations/out/` as input to compute these stat values (i.e., using the `-i` switch),
 total simulation time (-s), simulation period (i.e., the range as -p) and the time resolution
@@ -428,7 +406,8 @@ Once installed, set parameters in `.ini` file in `simulations/` folder to use th
 ###  ExtendedSWIM Mobility Model
 
 The ExtendedSWIMMobility model is an extended version of the SWIM model that is used by the 
-user behaviour model in OPS. It is automatically built by the setup scripts of OPS.  
+user behaviour model in OPS where in addition to the SWIM capabilities, it can make mobility decisions 
+on requests made by the user behaviour model. It is automatically built by the setup scripts of OPS.
 
 
 ###  BonnMotion Mobility Model

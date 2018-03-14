@@ -41,8 +41,6 @@
 #include <string>
 #include <omnetpp.h>
 
-// #include "KOPSMsg_m.h"
-// #include "KInternalMsg_m.h"
 #include "inet/common/INETMath.h"
 #include "inet/common/INETDefs.h"
 #include "inet/mobility/contract/IReactiveMobility.h"
@@ -68,7 +66,7 @@ struct nodeProp{
 #ifndef PI
 #define PI 3.14159265
 #endif
-#define EXTENDEDSWIMMOBILITY_SIMMODULEINFO       simTime().dbl() << " :: " << this->getParentModule()->getFullName() << " :: EXTENDEDSWIMMOBILITY :: "
+#define EXTENDEDSWIMMOBILITY_SIMMODULEINFO       " ExtendedSWIMMobility>!<" << simTime().dbl() << ">!<" << this->getParentModule()->getFullName()
 
 namespace inet {
 
@@ -92,6 +90,7 @@ protected:
     int neighbourLocationLimit;
     int returnHomePercentage;
     int usedRNG;
+    std::string locationsFilePath;
 
     double speed;
     double alpha = 0;
@@ -111,7 +110,6 @@ protected:
     cMessage *eventExpiry;
     cMessage *emergencyEventInterrupt;
     
-    std::ofstream outfile;
     std::string stoppedForEventName;
     
 private:
@@ -140,9 +138,6 @@ protected:
     
     virtual void handleSelfMessage(cMessage *message) override;
     
-    /** Create locations **/
-    virtual bool createLocations();
-
     /** Reads the locations from file **/
     virtual bool readLocations();
 

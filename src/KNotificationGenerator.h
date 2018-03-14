@@ -5,6 +5,9 @@
 // @date   : 10-07-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
 //
+// Change History:
+// Asanga Udugama (adu@comnets.uni-bremen.de)
+// - Locations file as a parameter 
 //
 
 #ifndef __KNOTIFICATIONGENERATOR_H_
@@ -41,6 +44,9 @@ class KNotificationGenerator : public cSimpleModule
         
         string appPrefix;
         string appNameGenPrefix;
+
+        string locationsFilePath;                     // path of locations file
+        string eventsFilePath;                        // path of events file
         
         std::vector<std::vector<int>> locations;      // Vector which stores all of the locations
         std::vector<int> nodesID;                     // Vector which stores all of the node IDs; used to send events to a node randomly

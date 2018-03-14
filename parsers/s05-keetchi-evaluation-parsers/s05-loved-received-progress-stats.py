@@ -138,7 +138,7 @@ def extract_from_log_and_accumilate_and_print(inputfilename, outputfilename):
                 last_dump_time += dump_frequency
 
             # identify events or accumilate
-            if "INFO" in line and "KHeraldApp" in line and ">!<NE>!<" in line:
+            if "INFO" in line and "KUserBehavior" in line and ">!<NE>!<" in line:
                 words = line.split(">!<")
 
                 if any(words[2].strip() in ex_node_name for ex_node_name in excluded_nodes):

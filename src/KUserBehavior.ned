@@ -5,6 +5,10 @@
 // @date   : 13-07-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
 //
+// Change History:
+// Asanga Udugama (adu@comnets.uni-bremen.de)
+// - Unwanted code, comments cleanup
+// - Keywords and events files as parameters
 //
 
 package ops;
@@ -30,6 +34,11 @@ simple KUserBehavior
 		
 		// logging at layer - 0 = disabled, 1 = enabled
         int logging = default(1);
+        
+        // file paths of keywords and events files
+        string keywordsFilePath = default("properties.txt");
+        string eventsFilePath = default("events.txt");
+        
          
       	// signals for statistics received
 		@signal[angryBitSignal](type="int");

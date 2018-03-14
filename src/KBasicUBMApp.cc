@@ -5,6 +5,9 @@
 // @date   : 26-06-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
 //
+// Change History:
+// Asanga Udugama (adu@comnets.uni-bremen.de)
+// - Unwanted code, comments cleanup
 //
 
 #include "KBasicUBMApp.h"
@@ -16,11 +19,8 @@ void KBasicUBMApp::initialize(int stage)
     if (stage == 0) {
 
         // get parameters
-        usedRNG = par("usedRNG");
-        nodeIndex = par("nodeIndex");
         appPrefix = par("appPrefix").stringValue();
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
-        //expectedNodeTypes = par("expectedNodeTypes").stringValue();
         logging = par("logging");
 
     } else if (stage == 1) {
@@ -61,7 +61,6 @@ void KBasicUBMApp::handleMessage(cMessage *msg)
         
         if (logging) {EV_INFO << KBASICUBMAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
         
-        //EV << KBASICUBMAPP_SIMMODULEINFO << "Generated App Registration" << "\n";
 	}
 	
 	// If the message is not a self message
@@ -95,47 +94,41 @@ void KBasicUBMApp::handleMessage(cMessage *msg)
 				send(lowerLayerMsg, "lowerLayerOut");
 			
 				if(strstr(getParentModule()->getFullName(), dataMsg->getFinalDestinationNodeName()) != NULL) {
-					//EV_INFO << KBASICUBMAPP_SIMMODULEINFO << " :: Received Data :: " << dataMsg->getDataName() << " :: At Destination :: "
-				 	//   << dataMsg->getFinalDestinationNodeName() << " \n";
-				}
-			}
-		}
+			    }
+		    }
+	    }
 		
 		//If msg is from another node; send to UBM layer
-		else if (dataMsg->getMsgType() == 31){
+	    else if (dataMsg->getMsgType() == 31){
 
-			string datNam = dataMsg->getDataName();
-			bool found = false;
+		    string datNam = dataMsg->getDataName();
+		    bool found = false;
 			
-			for(int i=0;i<notifications.size();i++){
-				if (datNam == notifications[i]){
-					found = true;
-				}
-			}
-			if(!found){
-				notifications.push_back(dataMsg->getDataName());
+		    for(int i=0;i<notifications.size();i++){
+			    if (datNam == notifications[i]) {
+			        found = true;
+			    }
+		    }
+            
+		    if(!found){
+			    notifications.push_back(dataMsg->getDataName());
 				
-				//Send msg to UBM
-				KDataMsg *upperLayerMsg;
-				upperLayerMsg = dataMsg->dup();
-				upperLayerMsg->setDataName(datNam.replace(datNam.begin(), datNam.begin()+10, "").c_str());
-				send(upperLayerMsg, "upperLayerOut");
+                //Send msg to UBM
+			    KDataMsg *upperLayerMsg;
+			    upperLayerMsg = dataMsg->dup();
+			    upperLayerMsg->setDataName(datNam.replace(datNam.begin(), datNam.begin()+10, "").c_str());
+			    send(upperLayerMsg, "upperLayerOut");
 				
-			}
-			else{
-				//std::cout<<KBASICUBMAPP_SIMMODULEINFO<<"MSG rcvd multiple times; DISCARDED"<<endl;
-			}
-		}
+		    }
+        }
 	}
 	
-	else if (dynamic_cast<KReactionMsg*>(msg) != NULL){
+	else if (dynamic_cast<KReactionMsg*>(msg) != NULL) {
 		reactionMsg = check_and_cast<KReactionMsg *>(msg);
 		string reactionDataName = reactionMsg->getDataName();
 		
 		KReactionMsg *UBMReactionMsg = reactionMsg->dup();
 		reactionMsg->setDataName(reactionDataName.replace(reactionDataName.begin()+9, reactionDataName.begin()+9, appPrefix).c_str());
-		
-		//std::cout << KBASICUBMAPP_SIMMODULEINFO << "Reaction msg sent to FWD layer :: " << reactionMsg->getDataName() <<endl;		
 
 		send(UBMReactionMsg, "lowerLayerOut");
 	}

@@ -8,6 +8,7 @@
 // Change History:
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Log entry includes model name
+// - Unwanted code, comments cleanup
 
 #ifndef KBASICUBMAPP_H_
 #define KBASICUBMAPP_H_
@@ -34,9 +35,7 @@ class KBasicUBMApp : public cSimpleModule
         virtual void finish();
         
     private:
-        int nodeIndex;
         int sameMsgCount;                     // Count of the same message which is received from multiple different nodes
-        int usedRNG;
                 
         cMessage *appRegistrationEvent;       // Message for registering application at forwarding layer
         
@@ -44,7 +43,6 @@ class KBasicUBMApp : public cSimpleModule
         
         string appPrefix;                     // Prefix to be appended in the message names so the message will reach its specific app layer application 
         string appNameGenPrefix;              // Same as appPrefix but it is an application Name
-        //string expectedNodeTypes;
         KDataMsg *neighborDataMsg;
         
         int logging;

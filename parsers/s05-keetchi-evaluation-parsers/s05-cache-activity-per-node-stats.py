@@ -50,7 +50,7 @@ IGNORED_NODES = ["abc", "xyz"]
 # Parse the lines and store the data in the corresponding node object
 def parseLine(line, nodeObjects):
 
-    if "INFO" in line and "KHeraldApp" in line and ">!<NE>!<" in line:
+    if "INFO" in line and "KUserBehavior" in line and ">!<NE>!<" in line:
         words = line.split(">!<")
         node = nodeObjects.getNode(words[2].strip())
 

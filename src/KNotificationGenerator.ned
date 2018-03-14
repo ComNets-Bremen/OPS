@@ -5,6 +5,10 @@
 // @date   : 10-07-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
 //
+// Change History:
+// Asanga Udugama (adu@comnets.uni-bremen.de)
+// - Unwanted code, comments cleanup
+// - Locations and events files as parameters
 //
 package ops;
 
@@ -15,14 +19,11 @@ simple KNotificationGenerator
 	    // NOTIFICATION GENERATION DISTRIBUTION
         // 1 = No Distribution - Constant Intervals
         // 2 = Exponential Distribution (Mean Value = notificationGenInterval)
-        // 3 = Uniform Distribution
+        // 3 = Uniform Distribution (Mean Value = notificationGenInterval)
         int notificationGenDistribution = default(1);
          
 	    // How often a new notification is generated
 	    int interEventTimeDuration @unit(s) = default(7200s);
-	    
-	    // Events are to be read from file or to be created by Notification generator
-	    bool readEventsFromFile = default(true);
 	    
 	    // Radius of location to create cicle  (Set same value as of radius in mobility model)
 	    int radius @unit(m) = default(50m);
@@ -38,6 +39,10 @@ simple KNotificationGenerator
 
 		// prefix used to generate names appended with a number, e.g., message-000328     	
     	string appNameGenPrefix = default("/message-");
+        
+        // file paths of locations and events files
+        string locationsFilePath = default("locations.txt");
+        string eventsFilePath = default("events.txt");
     	
         // icon
         @display("i=misc/globe");

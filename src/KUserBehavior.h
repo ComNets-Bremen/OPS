@@ -5,6 +5,10 @@
 // @date   : 13-07-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
 //
+// Change History:
+// Asanga Udugama (adu@comnets.uni-bremen.de)
+// - Unwanted code, comments cleanup
+// - Locations and events files as parameters
 //
 
 #ifndef KUSERBEHAVIOR_H_
@@ -69,6 +73,9 @@ class KUserBehavior : public cSimpleModule
         simsignal_t angryBitSignal;
         
         int logging;
+        
+        string keywordsFilePath;               // path of the keywords file
+        string eventsFilePath;                 // path of the events file
         
 };
 

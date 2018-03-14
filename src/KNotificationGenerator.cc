@@ -9,6 +9,8 @@
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Fixed handleMessage() if statement where and was with one & (115 & 116 check)
 // - Fixed file open check for locations.txt and events.txt
+// - Unwanted code, comments cleanup
+// - Locations and events files as parameters
 
 /* Msg types::
  * 11  = Event msg to UBM
@@ -46,13 +48,15 @@ void KNotificationGenerator::initialize(int stage)
         appPrefix = par("appPrefix").stringValue();
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
         logging = par("logging");
+        locationsFilePath = par("locationsFilePath").stringValue();
+        eventsFilePath = par("eventsFilePath").stringValue();
 
 		// Counting the number of locations in text file
 		std::vector <int> tempLoc;
 		
-		infile.open("locations.txt",std::ios::in);
+		infile.open(locationsFilePath,std::ios::in);
     	if(!(infile.is_open())) {
-            EV << " locations.txt not found. create the file manually.\n";
+            EV << " " << locationsFilePath << " not found. create the file manually.\n";
             endSimulation();
         }
         
@@ -85,7 +89,7 @@ void KNotificationGenerator::initialize(int stage)
 		//Reading notifications from file
 		eventsRead = readEvents();
         if (!eventsRead) {
-            EV << " events.txt not found. create the file.\n";
+            EV << " " << eventsFilePath << " not found. create the file.\n";
             endSimulation();
         }
 		
@@ -140,25 +144,15 @@ void KNotificationGenerator::initialize(int stage)
 			firstEventSendTime = simTime().dbl() + interEventTimeDuration;
 		}
         
-        //std::cout << KNOTIFICATIONGENERATOR_SIMMODULEINFO << "Next send event at :: " << firstEventSendTime << std::endl;
-        
         scheduleAt(firstEventSendTime, sendEvent);
 		
 		if (logging) {EV_INFO << KNOTIFICATIONGENERATOR_SIMMODULEINFO << ">!<SUTG "<< allEvents.size() << " DI" << "\n";}
-		
-		/*EV_INFO << KNOTIFICATIONGENERATOR_SIMMODULEINFO << " :: Notification List Begin :: Count :: " << allEvents.size() << "\n";
-        for (int i = 0; i < allEvents.size(); i++) {
-			EV_INFO << KNOTIFICATIONGENERATOR_SIMMODULEINFO << " :: Notification Entry :: " << allEvents[i] << "\n";
-		}
-        EV_INFO << KNOTIFICATIONGENERATOR_SIMMODULEINFO << " :: Notification List End :: Count :: " << allEvents.size() << "\n";
-        */
         
     } else if (stage == 3){
 		
 	} else {
         EV << "Something is radically wrong\n";
     }
-
 }
 
 int KNotificationGenerator::numInitStages() const
@@ -190,8 +184,6 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 		circle->setBounds(cFigure::Rectangle(x-radi/2, y-radi/2, radi, radi));
         circle->setLineWidth(3);
         circle->setLineColor(cFigure::RED);
-        //circle->setFilled(true);
-        //circle->setFillColor(cFigure::RED);
         canvas->addFigure(circle);
 	}	
 	
@@ -199,7 +191,6 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 		cCanvas * cnv = getParentModule()->getCanvas();
 		cOvalFigure *cc = check_and_cast<cOvalFigure *>(cnv->getFigure(msg->getName()));
 		cc->setLineColor(cFigure::BLACK);
-		//CANVAS->REMOVEFIGURE( NAME OF FIGURE ) = ? works
 	}
 	
 	else if (msg->isSelfMessage() && msg->getKind() == 115){
@@ -224,8 +215,6 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 		circle->setBounds(cFigure::Rectangle(x-10/2, y-10/2, 10, 10));
 		circle->setLineWidth(3);
 		circle->setLineColor(cFigure::GREEN);
-		//circle->setFilled(true);
-		//circle->setFillColor(cFigure::GREEN);
 		canvas->addFigure(circle);
 	}
 	
@@ -233,7 +222,6 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 		cCanvas *canvas = getParentModule()->getCanvas();
 		cOvalFigure *deleteFig = check_and_cast<cOvalFigure *>(canvas->getFigure(msg->getName()));
 		deleteFig->setLineColor(cFigure::BLACK);
-		//deleteFig->setFillColor(cFigure::WHITE);
 	}
 	
 	// Self message; Send event
@@ -257,7 +245,6 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 			itemNum = (rand() % 99999) + 1;
 			
 			sprintf(msgName, "%s-%d", appPrefix.c_str(), itemNum);
-			//sprintf(dataName, "%s%d", appNameGenPrefix.c_str(), itemNum);
 				
 			if(allEvents.size() > 0){
 				
@@ -400,36 +387,16 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 					}					
 				}
 				
-				/*
-				std::cout<<"###################################################"<<endl;
-				std::cout<<"****************"<<simTime().dbl()<<"******************"<<endl;
-				std::cout<<"*****************MESSAGE*****************"<<endl;
-				std::cout<<"Message Name         :   "<<eventMsg->getName()<<endl;
-				std::cout<<"Data Name            :   "<<eventMsg->getDataName()<<endl;
-				std::cout<<"Popularity           :   "<<eventMsg->getGoodnessValue()<<endl;
-				std::cout<<"Type                 :   "<<eventMsg->getMsgType()<<endl;
-				std::cout<<"Validity             :   "<<eventMsg->getValidUntilTime()<<endl;
-				std::cout<<"DPLC                 :   "<<eventMsg->getDummyPayloadContent()<<endl;
-				std::cout<<"*****************************************"<<endl;
-				*/
-				
 				int randomNo = intuniform(0, nodesID.size()-1, usedRNG);
 				
 				// Get a random node to which the notification will be sent				
 				cSimulation *currentSimulation = getSimulation();
 				
-				//cModule *ttModule = currentSimulation->getModule(nodesID[randomNo]);
 				cModule *targetModule = currentSimulation->getModule(nodesID[randomNo])->getParentModule();
 									
 				// Send the message containing notification details
 				cPacket *outPktCopy =  dynamic_cast<cPacket*>(eventMsg);
 				sendDirect(outPktCopy, targetModule, "notificationGenIn");
-				
-				//EV_INFO << KNOTIFICATIONGENERATOR_SIMMODULEINFO << " :: Generated Data :: " << eventMsg->getDataName() << " :: At Notification Generator :: "
-				//    << targetModule->getFullName() << " \n";
-				
-				//std::cout << KNOTIFICATIONGENERATOR_SIMMODULEINFO << " :: Generated Data :: " << eventMsg->getDataName() << " :: At Notification Generator :: Target Node :: "
-				//    << targetModule->getFullName() << " \n";    
 				
 				// Schedule another notification to be sent
 				cMessage *sendEvent = new cMessage("sendEvent");
@@ -446,9 +413,7 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 				
 				scheduleAt(nextNotificationGenTime, sendEvent);
 			}
-		}
-		
-		else{
+		} else {
 			EV << KNOTIFICATIONGENERATOR_SIMMODULEINFO << "Notifications cant be Generated; Verify the events file" <<endl;
 			EV << KNOTIFICATIONGENERATOR_SIMMODULEINFO << "           \\_('-')_/           " <<endl;
 		}
@@ -464,7 +429,7 @@ bool KNotificationGenerator::readEvents(){
 	std::string line;
 	std::ifstream infile;
 	
-	infile.open("events.txt",std::ios::in);
+	infile.open(eventsFilePath,std::ios::in);
 
 	if(!(infile.is_open())) {
         return false;

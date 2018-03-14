@@ -30,6 +30,8 @@
  * - Corrected the jumble of some files in OPS and others in INET
  * - All files now are copied into INET (like SWIMMobility files) before building INET
  * - file exists check for locations.txt
+ * - Locations file as a parameter 
+ * - unwanted code, comments cleanup
  */
 
 #include <algorithm>
@@ -64,27 +66,25 @@ void ExtendedSWIMMobility::initialize(int stage){
         neighbourLocationLimit = par("neighbourLocationLimit");
         returnHomePercentage = par("returnHomePercentage");
         usedRNG = par("usedRNG");
+        locationsFilePath = par("locationsFilePath").stringValue();
         nodes = getParentModule()->getParentModule()->par("numNodes");
        
         maxAreaX = constraintAreaMax.x;
         maxAreaY = constraintAreaMax.y;
         maxAreaZ = constraintAreaMax.z;
        
-        if(radius == 0) radius = 1;
-        
-       
+        if(radius == 0) {
+            radius = 1;
+        }
         
         locations.resize(noOfLocs);
 
-        int success = readLocations();
-        if (!success) {
-            EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << " ending simulation - locations.txt not found, create manually " << endl;            
+        int successful = readLocations();
+        if (!successful) {
+            EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << " ending simulation - " << locationsFilePath << " not found, create manually " << endl;            
             endSimulation();
         }
-                
-        outfile.open("record.txt",std::ios::out|std::ios::app);
     }
-    
 }
 
 void ExtendedSWIMMobility::setTargetPosition(){
@@ -92,135 +92,104 @@ void ExtendedSWIMMobility::setTargetPosition(){
     // initial position of a node is considered as the home
     // location
     
-    //std::cout<<"inside settargetposition"<<std::endl;
     if (!homeCoordFound) {
         homeCoordFound = true;
         homeCoord = this->getCurrentPosition();
         neew = homeCoord;
         lastPosition = homeCoord;
-        EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Home :: " << homeCoord << endl;
+        EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Home>!<" << homeCoord << endl;
     }
 
     // a nodes switches between moving and waiting
     // if the next  action is to wait, give the waiting time
-    if(nextMoveIsWait){
-		/*if(simTime() == nextChange){
-			std::cout<< "is equal" <<std::endl;
-		} else {
-			std::cout<< "not equal" <<std::endl;
-		}*/
-		//std::cout << EXTENDEDSWIMMOBILITY_SIMMODULEINFO <<" At :: " << targetPosition << " :: Last Position :: " << lastPosition << std::endl;
+    if(nextMoveIsWait) {
 		lastPosition = targetPosition;
         simtime_t waitTime = par("waitTime");
         
         nextChange = simTime() + waitTime.dbl();
         
-        for(int i=0; i<otherEvents.size(); i++){
+        for(int i=0; i<otherEvents.size(); i++) {
 			if((this->getCurrentPosition() - otherEvents[i].eventLoc).length() < radius && \
-			simTime().dbl() >= otherEvents[i].start && simTime().dbl() < otherEvents[i].end){
+			    simTime().dbl() >= otherEvents[i].start && simTime().dbl() < otherEvents[i].end){
 				waitTime = otherEvents[i].end - simTime().dbl();
 				nextChange = otherEvents[i].end;
 			}
 			
 		}
-		
-		/*std::cout << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "At :: " << lastPosition << " wait time :: " << waitTime << std::endl;*/
-        outfile<<EXTENDEDSWIMMOBILITY_SIMMODULEINFO<<" "<<targetPosition<<" Wait : "<<waitTime.dbl() <<" Change at : " << simTime().dbl()+waitTime.dbl() <<endl;
-        
-        //std::cout << "Next change at :: " << nextChange << " :: Next move = wait ? :: " << !nextMoveIsWait <<std::endl;
         
         // if the next action is to start moving, compute the next location to move
     } else {
-		if(!stoppedForEvent){
-        double randomNum = uniform(0.0, 1.0, usedRNG);
-        double returnHomeDecimalFraction = returnHomePercentage / 100.0;
+		if(!stoppedForEvent) {
+            double randomNum = uniform(0.0, 1.0, usedRNG);
+            double returnHomeDecimalFraction = returnHomePercentage / 100.0;
 
-        // randomly base to where the next move will be; home or
-        // other location (neighboring or visiting), provided that
-        // node is not already at home location
-        if(randomNum < returnHomeDecimalFraction && ((lastPosition - homeCoord).length()>radius) ) {
-            //std::cout<<"Next Destination is Home"<<endl;
+            // randomly base to where the next move will be; home or
+            // other location (neighboring or visiting), provided that
+            // node is not already at home location
+            if(randomNum < returnHomeDecimalFraction && ((lastPosition - homeCoord).length()>radius) ) {
 
-            // select home location to move to
-            targetPosition = homeCoord;
-            neew = homeCoord;
-            if(!firstStep) {
-                updateAllNodes(false);
+                // select home location to move to
+                targetPosition = homeCoord;
+                neew = homeCoord;
+                if(!firstStep) {
+                    updateAllNodes(false);
+                }
+
+                // compute next change time based on distance to the next
+                // loation to move to and speed
+                Coord positionDelta = targetPosition - lastPosition;
+                double distance = positionDelta.length();
+                nextChange = simTime().dbl() + distance/speed;
+            
+            } else {
+                // select the neighbouring or visiting location to move to
+                // compute the weights assignd to each node
+                seperateAndUpdateWeights();
+
+                // update the seen count (i.e., decrement nodes), but not at the begining
+                // as locations have not seen any nodes yet
+                if(!firstStep) {
+                    updateAllNodes(false);
+                }
+
+                // find the next location (position) to move to
+                targetPosition = decision();
+            
+                EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Target Position>!<" << targetPosition << endl;
+            
+                // compute next change time based on distance to the next
+                // loation to move to and speed
+                Coord positionDelta = targetPosition - lastPosition;
+
+                double distance = positionDelta.length();
+                nextChange = simTime() + distance/speed;
+
+                // update the seen count (i.e., increment nodes)
+                updateAllNodes(true);
+            
             }
-
-            // compute next change time based on distance to the next
-            // loation to move to and speed
-            Coord positionDelta = targetPosition - lastPosition;
-            double distance = positionDelta.length();
-            nextChange = simTime().dbl() + distance/speed;
-            
-            //std::cout << EXTENDEDSWIMMOBILITY_SIMMODULEINFO <<"Going to home :: " << targetPosition << " :: Last Position :: " << lastPosition << std::endl;
-            //std::cout << "Distance :: " << distance << " :: Next change at :: " << nextChange << " :: Next move = wait ? :: " << !nextMoveIsWait <<std::endl;
-
-        } else {
-            // select the neighbouring or visiting location to move to
-            //std::cout<<"selecting new dest"<<std::endl;
-            // compute the weights assignd to each node
-            seperateAndUpdateWeights();
-
-            // update the seen count (i.e., decrement nodes), but not at the begining
-            // as locations have not seen any nodes yet
-            if(!firstStep) {
-                updateAllNodes(false);
-            }
-
-            // find the next location (position) to move to
-            targetPosition = decision();
-            
-            EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Target Position :: " << targetPosition << endl;
-            //std::cout << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Target Position :: " << targetPosition << endl;
-            
-            // compute next change time based on distance to the next
-            // loation to move to and speed
-            Coord positionDelta = targetPosition - lastPosition;
-
-            double distance = positionDelta.length();
-            nextChange = simTime() + distance/speed;
-
-            // begin temp code
-            // EV << simTime() << " :: SWIM :: not nextMoveIsWait other :: node id :: " << getId() << " :: target pos :: x pos :: " << targetPosition.x
-            //     << " :: y pos :: " << targetPosition.y << " :: next change " << nextChange << "\n";
-            // end temp code
-
-            // update the seen count (i.e., increment nodes)
-            updateAllNodes(true);
-            
-            //std::cout << EXTENDEDSWIMMOBILITY_SIMMODULEINFO <<"Going to :: " << targetPosition << " :: Last Position :: " << lastPosition << std::endl;
-            //std::cout << "Distance :: " << distance << " :: Next change at :: " << nextChange << " :: Next move = wait ? :: " << !nextMoveIsWait <<std::endl;
-            
-        }
         
-    outfile<<EXTENDEDSWIMMOBILITY_SIMMODULEINFO<<" "<<targetPosition<< " :: Arrival time :: " << nextChange <<endl;
-    /*std::cout << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "destination :: " << targetPosition << std::endl;*/
-    }
-    else{
-		int index = -1;
-		for (int i=0; i<otherEvents.size(); i++){
-			if(stoppedForEventName==otherEvents[i].eventname){
-				index = i;
-				break;
-			}
-		}
-		if(index >= 0){
+        } else {
+		    int index = -1;
+		    for (int i=0; i<otherEvents.size(); i++){
+			    if(stoppedForEventName==otherEvents[i].eventname){
+				    index = i;
+				    break;
+			    }
+		    }
+		    if(index >= 0){
 			
-			neew = otherEvents[index].eventLoc;
-			targetPosition = spreadInsideRadius(otherEvents[index].eventLoc);
+			    neew = otherEvents[index].eventLoc;
+			    targetPosition = spreadInsideRadius(otherEvents[index].eventLoc);
 			
-			nextChange = simTime() + ((targetPosition - lastPosition).length())/speed;
-			stoppedForEvent = false;
-			updateAllNodes(true);
-			
-		}
+			    nextChange = simTime() + ((targetPosition - lastPosition).length())/speed;
+			    stoppedForEvent = false;
+			    updateAllNodes(true);
+            }
 		
-		//std::cout << EXTENDEDSWIMMOBILITY_SIMMODULEINFO <<"Going to :: " << targetPosition << " :: Last Position :: " << lastPosition << std::endl;
-        //std::cout << "Distance :: " << (targetPosition - lastPosition).length() << " :: Next change at :: " << nextChange << " :: Next move = wait ? :: " << !nextMoveIsWait <<std::endl;
-	}
+        }
     }
+    
     // indicate first time actions are all done
     firstStep = false;
 
@@ -228,11 +197,7 @@ void ExtendedSWIMMobility::setTargetPosition(){
     nextMoveIsWait = !nextMoveIsWait;
 }
 
-void ExtendedSWIMMobility::move(){
-	//std::cout<<EXTENDEDSWIMMOBILITY_SIMMODULEINFO<<"inside move :: " << simTime() <<" :: " <<nextChange <<std::endl;
-	/*if(simTime()==nextChange){
-		std::cout<<"inside move it is true at :: " << simTime() <<std::endl;
-	}*/
+void ExtendedSWIMMobility::move() {
     LineSegmentsMobilityBase::move();
     raiseErrorIfOutside();
 }
@@ -243,66 +208,57 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 	// check otherEvents and emergencies vector to see if any event has scheduled flag as FALSE
 	// then schedule that event; expiry time msg for emergency and movement for others
 	
-	if (emergencyReceived){
-		//std::cout<<"handle msg: emergency rcvd flag true"<<std::endl;
-	for(int i=0; i<emergencies.size(); i++){
-		if(!emergencies[i].scheduled && simTime().dbl() < emergencies[i].end){
-			if(simTime().dbl() < emergencies[i].start){
-				
-				//std::cout<<simTime().dbl() << " :: " << emergencies[i].start <<std::endl;
-				
-				std::string emergencyLocation = std::to_string(emergencies[i].eventLoc.x) + " " + std::to_string(emergencies[i].eventLoc.y) + " " + std::to_string(emergencies[i].eventLoc.z) + " " + "emergencyStarted";
-				emergencyEventInterrupt = new cMessage(emergencyLocation.c_str());
-				emergencyEventInterrupt->setKind(302);
-				scheduleAt(emergencies[i].start, emergencyEventInterrupt);
-			}
-			eventExpiry = new cMessage("emergencyExpired");
-			eventExpiry->setKind(304);
-			scheduleAt(emergencies[i].end, eventExpiry);
-			emergencies[i].scheduled = true;
-		}
-	}
-	emergencyReceived = false;
+	if (emergencyReceived) {
+	    for(int i=0; i<emergencies.size(); i++){
+		    if(!emergencies[i].scheduled && simTime().dbl() < emergencies[i].end){
+			    if(simTime().dbl() < emergencies[i].start){
+				    std::string emergencyLocation = std::to_string(emergencies[i].eventLoc.x) + " " + std::to_string(emergencies[i].eventLoc.y) + " " + std::to_string(emergencies[i].eventLoc.z) + " " + "emergencyStarted";
+				    emergencyEventInterrupt = new cMessage(emergencyLocation.c_str());
+				    emergencyEventInterrupt->setKind(302);
+				    scheduleAt(emergencies[i].start, emergencyEventInterrupt);
+			    }
+			    eventExpiry = new cMessage("emergencyExpired");
+			    eventExpiry->setKind(304);
+			    scheduleAt(emergencies[i].end, eventExpiry);
+			    emergencies[i].scheduled = true;
+            }
+        }
+        emergencyReceived = false;
 	}
 	
 	
-	if (eventReceived){
-		//std::cout<<"handle msg: event rcvd flag true"<<std::endl;
-	for(int i=0; i<otherEvents.size(); i++){
-		if(!otherEvents[i].scheduled){
-			
-			Coord middlePointOfCanvas, startingPointOfCanvas;
-			startingPointOfCanvas.x = 0;
-			startingPointOfCanvas.y = 0;
-			startingPointOfCanvas.z = 0;
-			middlePointOfCanvas.x = maxAreaX/2;
-			middlePointOfCanvas.y = maxAreaY/2;
-			middlePointOfCanvas.z = maxAreaZ/2;
-			double length = (middlePointOfCanvas - startingPointOfCanvas).length();
-			simtime_t startMovingBefore = length/speed;
-			moveToLoc = new cMessage(otherEvents[i].eventname.c_str());
-			moveToLoc->setKind(301);
-						
-			if(otherEvents[i].end > simTime().dbl()){
-				if( (otherEvents[i].start - startMovingBefore) > simTime() ){
-					//Check if it works like this
-					scheduleAt(otherEvents[i].start - startMovingBefore, moveToLoc);
-					//scheduleAt(otherEvents[i].start, moveToLoc);
-					otherEvents[i].scheduled = true;
-				}
-				else{
-					scheduleAt(simTime(), moveToLoc);
-					otherEvents[i].scheduled = true;
-				}
-			}
-		}
-	}
-	eventReceived = false;
+	if (eventReceived) {
+	    for(int i=0; i<otherEvents.size(); i++) {
+		    if(!otherEvents[i].scheduled) {
+			    Coord middlePointOfCanvas, startingPointOfCanvas;
+			    startingPointOfCanvas.x = 0;
+			    startingPointOfCanvas.y = 0;
+			    startingPointOfCanvas.z = 0;
+			    middlePointOfCanvas.x = maxAreaX/2;
+			    middlePointOfCanvas.y = maxAreaY/2;
+			    middlePointOfCanvas.z = maxAreaZ/2;
+			    double length = (middlePointOfCanvas - startingPointOfCanvas).length();
+			    simtime_t startMovingBefore = length/speed;
+			    moveToLoc = new cMessage(otherEvents[i].eventname.c_str());
+			    moveToLoc->setKind(301);
+
+			    if(otherEvents[i].end > simTime().dbl()){
+				    if( (otherEvents[i].start - startMovingBefore) > simTime() ){
+					    //Check if it works like this
+					    scheduleAt(otherEvents[i].start - startMovingBefore, moveToLoc);
+					    otherEvents[i].scheduled = true;
+				    } else {
+					    scheduleAt(simTime(), moveToLoc);
+					    otherEvents[i].scheduled = true;
+				    }
+			    }
+		    }
+	    }
+	    eventReceived = false;
 	}
 	
 	
-	if(message->getKind() == 304){
-		//std::cout<<"handle msg: delete emergency"<<std::endl;
+	if(message->getKind() == 304) {
 		for (int i=0; i<emergencies.size(); i++){
 			if((emergencies[i].end - simTime().dbl()) < 05){
 				emergencies.erase(emergencies.begin()+i);
@@ -312,15 +268,11 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 		delete message; 
 	}
 	else if(message->getKind() == 301){
-		//std::cout<<"handle msg: move to event location"<<std::endl;
 		
 		// Move to an event
 		for(int i=0; i<otherEvents.size(); i++){
 			if(message->getName()==otherEvents[i].eventname){
-				//cancelEvent(moveTimer);
 				lastPosition = this->getCurrentPosition();
-				
-				//targetPosition = otherEvents[i].eventLoc;
 				targetPosition = lastPosition;
 				stoppedForEvent = true;
 				stoppedForEventName = otherEvents[i].eventname;
@@ -329,8 +281,7 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 				Coord positionDelta = targetPosition - lastPosition;
             	double distance = positionDelta.length();
             	nextChange = simTime() + distance/speed;
-								
-				outfile<<EXTENDEDSWIMMOBILITY_SIMMODULEINFO<<targetPosition <<" :: Arrival Time (from 301) :: " << nextChange <<endl;
+
         		nextMoveIsWait = !nextMoveIsWait;
 				
 				eventExpiry = new cMessage(otherEvents[i].eventname.c_str());
@@ -339,10 +290,8 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 			}
 		}
 		delete message;
-	}
-	
-	else if(message->getKind() == 302){
-		//std::cout<<"handle msg: avoid emergency location"<<std::endl;
+
+	} else if(message->getKind() == 302){
 		std::string temp;
 		std::stringstream location(message->getName());
 		
@@ -362,20 +311,17 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 				rad = emergencies[i].radius;
 			}
 		}
-		//if(((this->getCurrentPosition()) - emergencyCoord).length() < rad){
 		if((targetPosition - emergencyCoord).length() < rad){
 			updateAllNodes(false);
             seperateAndUpdateWeights();
             lastPosition = this->getCurrentPosition();
             targetPosition = decision();
             EV<<"Emergency Decision is to go to (from 302): "<<targetPosition<<endl;
-            //std::cout<<EXTENDEDSWIMMOBILITY_SIMMODULEINFO<<"Emergency Decision is to go to : "<<targetPosition<<endl;
+
     	    distance = (targetPosition - lastPosition).length();
 	        nextChange = simTime() + distance/speed;
 	        
 	        updateAllNodes(true);
-        	
-        	outfile<<EXTENDEDSWIMMOBILITY_SIMMODULEINFO<<targetPosition <<" :: Arrival Time :: " << nextChange <<endl;
         	
         	nextMoveIsWait = !nextMoveIsWait;
 
@@ -384,7 +330,6 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 	}
 	
 	else if(message->getKind() == 303){
-		//std::cout<<"handle msg: delete normal event"<<std::endl;
 		for(int i=0; i<otherEvents.size(); i++){
 			if(message->getName() == otherEvents[i].eventname){
 				otherEvents.erase(otherEvents.begin()+i);
@@ -400,61 +345,11 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
     scheduleUpdate();
 }
 
-
-bool ExtendedSWIMMobility::createLocations(){
-
-    bool opn = false;
-
-    // open the file in output mode
-    std::ofstream outfile;
-    outfile.open("locations.txt",std::ios::out|std::ios::trunc);
-
-    if(outfile.is_open())
-        opn = 1;
-
-    // create a set of random locations in the mobility area
-    for(int i = 0; i < noOfLocs; i++) {
-
-        // creation of locations assume the following based
-        // on the mobility area
-        // 1) constraint area must be > 0
-        // 2) constraint area must be at least > 2 times the value
-        //    defined in radius because locations are not created
-        //    at the borders
-
-        if (!(maxAreaX > (radius * 4.0) && maxAreaY > (radius * 4.0))) {
-            EV << "SWIM :: Constraint area (maxAreaX or maxAreaY) is below 10 meters" << "\n";
-            opn = 0;
-            break;
-        }
-
-        // compute random x coord
-        double coordElem = uniform((radius * 2.0), (maxAreaX - (radius * 2.0)), usedRNG);
-        locations[i].myCoordX = (int) coordElem;
-
-        // compute random y coord
-        coordElem = uniform((radius * 2.0), (maxAreaY - (radius * 2.0)), usedRNG);
-        locations[i].myCoordY = (int) coordElem;
-
-        // z coord is always 0
-        locations[i].myCoordZ = 0.0;
-
-        locations[i].noOfNodesPresent = 0;
-
-        // write to file
-        outfile << locations[i].myCoordX << " " << locations[i].myCoordY << " " << locations[i].myCoordZ
-                << " " << locations[i].noOfNodesPresent << endl;
-    }
-
-    outfile.close();
-    return opn;
-}
-
 bool ExtendedSWIMMobility::readLocations(){
 
     // open location file to read
     std::ifstream infile;
-    infile.open("locations.txt", std::ios::in);
+    infile.open(locationsFilePath, std::ios::in);
 
     // if coudn't open, then problem
     if(!(infile.is_open())) {
@@ -526,9 +421,7 @@ void ExtendedSWIMMobility::seperateAndUpdateWeights(){
 }
 
 // make the decision of which location to go to next
-Coord ExtendedSWIMMobility::decision(){
-	
-	//std::cout<<"inside decision"<<endl;
+Coord ExtendedSWIMMobility::decision() {
     Coord dest;
     nodeProp temp;
 
@@ -583,8 +476,6 @@ Coord ExtendedSWIMMobility::decision(){
 // select a destination randomly from the given aray (i.e., neighboring
 // locations array or visiting locations array)
 Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
-	
-	//std::cout<<"inside choose dest"<<endl;
     int size = array.size();
     int randomNum = 0;
     int popular = 0;
@@ -627,7 +518,7 @@ Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
     // 4) if none of the above, select an item from the whole array,
     //    randomly
     
-    do{
+    do {
         iterate ++ ;
         count = 0;
 
@@ -662,29 +553,10 @@ Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
             temp = homeCoord;
             break;
         }
-    }while(count > 0);
+    } while(count > 0);
     
     
-    EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Selected Locations :: " << temp <<endl;
-
-    /*
-    double u, v, w, t, x, y;
-
-    // find a position within the radius given from the selected location
-    // to move to
-    // REASON: don't want all the nodes to pile up at the center of the
-    // location
-    u = uniform(0, 1, usedRNG);
-    v = uniform(0, 1, usedRNG);
-    w = radius * sqrt(u);
-    t = 2 * PI * v;
-    x = w * cos(t);
-    y = w * sin(t);
-
-    target.x = temp.x + x;
-    target.y = temp.y + y;
-    target.z = temp.z;
-    */
+    EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Selected Locations>!<" << temp <<endl;
     
     target = spreadInsideRadius(temp);
     
@@ -771,17 +643,11 @@ Coord ExtendedSWIMMobility::spreadInsideRadius(Coord location){
 
 void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgType, double validUntilTime, 
                                                 std::string eventName) {
-		
-    // KDataMsg * dataMsg;
-    // dataMsg = check_and_cast<KDataMsg *>(msg);
-
-	
 	bool found = false;
 	double distance;
 	
 	event tempEvent;
 	
-    // std::string dataName = dataMsg->getDummyPayloadContent();
 	std::string temp;
 	
 	std::stringstream loccoord(dataName);
@@ -794,13 +660,10 @@ void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgTyp
 	tempEvent.eventLoc.z = std::stoi(temp);
 	loccoord>>temp;
 	tempEvent.start = std::stof(temp);
-	//if(dataMsg->getMsgType() == 1){
 	if(msgType == 1){
 		loccoord>>temp;
 		tempEvent.radius = std::stoi(temp);
 	}	
-    // tempEvent.end = dataMsg->getValidUntilTime();
-    // tempEvent.eventname = dataMsg->getDataName();
 	tempEvent.end = validUntilTime;
 	tempEvent.eventname = eventName;
 	
@@ -832,32 +695,24 @@ void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgTyp
 		if(neew == tempEvent.eventLoc || (tempEvent.eventLoc-neew).length() < radius){
 			if( ((simTime().dbl() >= tempEvent.start) && (simTime().dbl() <= tempEvent.end)) || \
 			(nextChange >= tempEvent.start && nextChange < tempEvent.end) ){
-        	    //std::cout<<"Going to Emergency event Coordinates: Changing direction now"<<simTime().dbl()<<tempEvent.start<<tempEvent.end<<endl;
-            	//lastPosition = neew;
             	
             	updateAllNodes(false);
             	seperateAndUpdateWeights();
             	lastPosition = this->getCurrentPosition();
             	targetPosition = lastPosition;
             	
-            	//targetPosition = decision();
             	EV<<"Emergency Decision is to go to (event rcvd emergency) : Stopping mobility "<<targetPosition<<endl;
         	    
         	    Coord positionDelta = targetPosition - lastPosition;
     	        distance = positionDelta.length();
 	            nextChange = simTime() + distance/speed;
-            	//updateAllNodes(true);
             	nextMoveIsWait = !nextMoveIsWait;
-            	
-        	    //std::cout<<EXTENDEDSWIMMOBILITY_SIMMODULEINFO<<"New Target position is :: "<<neew<<" :: "<<targetPosition<<" :: & event is at : "<<tempEvent.eventLoc<<endl;
-
 			}
         }
 	}
 }
 
-ExtendedSWIMMobility::~ExtendedSWIMMobility(){
-	outfile.close();
+ExtendedSWIMMobility::~ExtendedSWIMMobility() {
 }
 
 } // namespace inet
