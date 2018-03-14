@@ -18,11 +18,12 @@ This file holds the locations used by ExtendedSWIMMobility mobility model.
 
 The X, Y and Z coordinates are in the cartesian format and in meters. Here are the contents of an example file with 4 locations.
 
+```
  50 100 0 0
  50 50 0 0
  100 50 0 0
  100 100 0 0
-
+```
 
 Events File (events.txt)
 ------------------------
@@ -42,13 +43,14 @@ This file holds the different events (and their details) that would be generated
 
 Here are the contents of an example file with 6 events.
 
+```
  emergency 50 100 0 20m 5 10 100p
  shopping music 100 100 0 20 30 100p
  emergency 100 100 0 20m 10 18 100p
  emergency 50 50 0 10m 50 100 100p
  music 100 50 0 100 150 75p
  shopping indoor celebration 50 100 0 300 400 50p
-
+```
 
 Keywords File (properties.txt)
 ------------------------------
@@ -63,9 +65,10 @@ picks a line and assigns to the nodes.
 
 Here are the contents of an example file with 6 combinations of keywords.
 
+```
  wedding music
  celebration shopping
  music jazz rock pop classic
  park outdoor food
-
+```
 

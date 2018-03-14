@@ -237,12 +237,13 @@ Node Architecture
 The architecture of a node uses a number of protocol layers which can be configured
 based on the scenario considered. Generally, every node has the following layers.
 
+```
                            +------------------------+
                            |      OppNets Node      |
- +--------------+          |  +------------------+  |
- | Notification |          |  |Application Layer |  |
- |  Generator   +-------------+     with UBM     |  |
- +--------------+          |  +--------+---------+  |
+  +--------------+         |  +------------------+  |
+  | Notification |         |  |Application Layer |  |
+  |  Generator   +---------+  |     with UBM     |  |
+  +--------------+         |  +--------+---------+  |
                            |           |            |
                            |  +--------+---------+  |
                            |  |   Opportunistic  |  |
@@ -262,7 +263,7 @@ based on the scenario considered. Generally, every node has the following layers
                            |  +--------+---------+  |
                            +-----------|------------+
                                        |
-
+```
 
 The Notification Generator is a network-wide model that holds a set of messages and disseminates to the
 user behaviour models of nodes. The models associated with notification generation are,
@@ -276,7 +277,9 @@ listed below.
 
 
 1. Application Layer with UBM - Applications generate data and feedback based on the preferences
-   of the users. Current models are,
+   of the users. The details of the application and the user behaviour model are described in 
+   the publication [Reactive User Behaviour and Mobility Models](https://arxiv.org/pdf/1709.06395.pdf). 
+   Current models are,
 
    - `KUserBehavior` - Performs the enforcement of user preferences on the notifications (messages)
    - `KBasicUBMApp` - Injects and receives to/from network
