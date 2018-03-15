@@ -29,6 +29,9 @@ simple KEpidemicRoutingLayer like IForwardingLayer
 
         // logging at layer - 0 = disabled, 1 = enabled
         int logging = default(1);
+        
+        // switch on and off the TTL handling (expensive procedure)
+        bool useTTL = default(false);
 
         // icon used
         @display("i=block/transport");
