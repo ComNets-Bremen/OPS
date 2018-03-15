@@ -14,7 +14,6 @@ For Linux or MacOS:
 
 - Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
-<<<<<<< HEAD
 - Clone this repository: `git clone -b OPS-NG https://github.com/ComNets-Bremen/OPS`
 - Checkout and build dependencies: `./bootstrap.sh`. This will also build SWIM and ExtendedSWIM with
   INET (see section `SWIM Mobility Model` and `ExtendedSWIM Mobility Model` below)
@@ -23,13 +22,6 @@ For Linux or MacOS:
 - Create the `locations.txt`, `events.txt` and `properties.txt` files using the samples given. Check FORMATS](./FORMATS.md)
 - Modify the `omnetpp-ubm.ini` according to your preferences
 - Simulate: run `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-ubm.ini -p parsers.txt`
-=======
-- Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS` (do not download directly, clone!)
-- Checkout and build dependencies: `./bootstrap.sh`. This will also download, copy and build SWIM with INET (see section `SWIM Mobility Model` below)
-- Create makefiles: `./ops-makefile-setup.sh`
-- Build simulation: `make`
-- Run simulation: `./ops-simu-run.sh -m cmdenv -c simulations/omnetpp-herald-epidemic.ini -p parsers.txt`
->>>>>>> 3839dd2101be620c6c11f5ae3b55a02dd9529374
 - Parse logs to obtain graphs (check `Parsers` section)
 - See how you can improve !!!
 
