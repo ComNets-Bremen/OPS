@@ -78,7 +78,6 @@ void KUserBehavior::initialize(int stage)
         }
         if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
 		
-		
     } else {
         EV << KUSERBEHAVIOR_SIMMODULEINFO << "Something is radically wrong\n";
     }
@@ -353,10 +352,13 @@ bool KUserBehavior::computePreReactions(){
         endSimulation();
 	}
     
-	while(!infile.eof()){
+	while(!infile.eof()){        
 		event tmpEvent;
 		std::getline(infile, details);
-		
+		if (details.empty()) {
+			continue;
+        }
+        
 		tmpEvent.rawDescription = details;
 				
 		for(idx = 0; idx < strlen(details.c_str()); idx++){

@@ -55,12 +55,8 @@ simulations/results/
 # qt GUI settings
 .qtenvrc
 
-# Ignore SWIM locations
-locations.txt
-
-# Ignore UBM events, propertioes and record files
+# Ignore UBM and SWIM files (locations, events and properties)
 events.txt
-# locations.txt
+locations.txt
 properties.txt
-record.txt
 

@@ -1,6 +1,0 @@
-emergency 50 100 0 20m 5 10 100p
-shopping music 100 100 0 20 30 100p
-emergency 100 100 0 20m 10 18 100p
-emergency 50 50 0 10m 50 100 100p
-music 100 50 0 100 150 75p
-shopping indoor celebration 50 100 0 300 400 50p

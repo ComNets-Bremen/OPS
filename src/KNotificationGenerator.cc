@@ -59,7 +59,7 @@ void KNotificationGenerator::initialize(int stage)
             EV << " " << locationsFilePath << " not found. create the file manually.\n";
             endSimulation();
         }
-        
+
 		while (!infile.eof()){
 			infile >> temp;
 			tempLoc.push_back(temp);

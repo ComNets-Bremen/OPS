@@ -1,0 +1,97 @@
+# Data file generation parameters for the
+# UBM and Extended SWIM of the OPS simulator
+#
+# author: Asanga Udugama (adu@comnets.uni-bremen.de)
+# date: 19-mar-2018
+
+# Following are the list of parameters required to
+# generate the location details
+
+# --- General parameters ---
+# RNG seed
+rng_seed = 256
+
+
+# --- Location parameters ---
+# Name of the locations file
+locations_file = "./locations.txt"
+
+# Number of locations
+num_locations = 200
+
+# Mobility area - width (X) in meters
+area_width = 1500.0
+
+# Mobility area - height (Y) in meters
+area_height = 1500.0
+
+# radius of a location in meters
+# computed as min((area_width/num_locations), (area_height/num_locations))
+location_radius = 15
+
+
+# --- Event parameters ---
+# Following are the list of parameters required to
+# generate the event details
+
+# Name of the events file
+events_file = "./events.txt"
+
+# Event generation freauency in seconds (e.g. 1 per 900 seconds)
+mean_event_gen_time = 900.0
+
+# Simulation duration in seconds
+sim_time = 604800.0
+
+# Keyword used for emergency events
+emergency_event_keyword = "emergency"
+
+# The amount of emergency events from all events during simulation
+# time as a percentage (e.g., 2%)
+percentage_of_emergency_events = 2.0
+
+# The affected are of an emergency in terms of a radius computed
+# as a random value ranging between the following 2 variables in
+# meters (e.g., between 100 and 200 meters)
+emergency_radius_smallest = 100.0
+emergency_radius_largest = 200.0
+
+# Non-emergency event keyword combinations that are assigned randomly
+# to different events - given as a string of keywords separated by
+# commas and combinations separated by semi-colons
+# (e.g., "concert, jazz; park, frisbee")
+non_emergency_event_keywords = "shopping, sale; music, concert, outdoor; park, relax; cafe, coffee; restaurent, dinner; concert, jazz; concert, pop; disco, free-bier; disco free-entry"
+
+# The start time of an event in seconds, computed as a random value ranging
+# between the following 2 variables (e.g., between 1800 and 3600 seconds)
+start_time_earliest = 1800.0
+start_time_latest = 3600.0
+
+# The duration of the event in seconds, computed as a random value ranging
+# between the following 2 variables (e.g., between 1800 and 10800 seconds)
+event_duration_smallest = 1800
+event_duration_largest = 10800
+
+# The popularity assigned to an event as a percentage ranging between the
+# following 2 variables
+assigned_popularity_smallest = 25.0
+assigned_popularity_largest = 100.0
+
+
+# --- Keyword parameters ---
+# Following are the list of parameters required to
+# generate the keyword details
+
+# Name of the keyword (properties) file
+properties_file = "./properties.txt"
+
+# The list of keywords that are assignable to a node
+possible_keywords = "shopping, sale, music, concert, outdoor, park, relax, cafe, coffee, restaurent, dinner, jazz, pop, disco, free-bier, free-entry"
+
+# The sets of keyword combinations which are randomly assigned to nodes
+assignable_keyword_sets = 30
+
+# The number of keywords assigned to a node as a random number between
+# the following 2 numbers
+minimum_keywords_assigned = 2
+maximum_keywords_assigned = 5
