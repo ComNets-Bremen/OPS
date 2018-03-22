@@ -43,9 +43,9 @@ class INET_API IReactiveMobility
 
     /** @brief Returns the maximum possible speed at any future time. */
     // virtual void setNewTargetPosition(cMessage * message) = 0;
-    virtual void setNewTargetPosition(std::string dataName, int msgType, double validUntilTime, 
+    virtual void setNewTargetPosition(std::string dataName, int msgType, double validUntilTime,
                                         std::string eventName) = 0;
-    
+
 };
 
 } // namespace inet

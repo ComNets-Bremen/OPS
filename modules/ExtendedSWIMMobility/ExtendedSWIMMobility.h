@@ -1,5 +1,5 @@
 /******************************************************************************
- * SWIMMobility - A SWIM implementation for the INET Framework of the OMNeT++ 
+ * SWIMMobility - A SWIM implementation for the INET Framework of the OMNeT++
  * Simulator.
  *
  * Copyright (C) 2016, Sustainable Communication Networks, University of Bremen, Germany
@@ -20,7 +20,7 @@
  ******************************************************************************/
 
 /**
-* The C++ include file of the EXTENDED SWIM mobility model for the INET Framework 
+* The C++ include file of the EXTENDED SWIM mobility model for the INET Framework
 * in OMNeT++.
 *
 * @author : Anas bin Muslim (anas1@uni-bremen.de)
@@ -71,7 +71,7 @@ struct nodeProp{
 namespace inet {
 
 struct event{
-	bool scheduled = false;
+    bool scheduled = false;
     Coord eventLoc;
     double start;
     double end;
@@ -105,21 +105,21 @@ protected:
 
     Coord neew;
     Coord homeCoord;
-    
+
     cMessage *moveToLoc;
     cMessage *eventExpiry;
     cMessage *emergencyEventInterrupt;
-    
+
     std::string stoppedForEventName;
-    
+
 private:
     bool homeCoordFound;
 
 public:
-    
+
     bool emergencyReceived;
     bool eventReceived;
-    
+
     int noOfLocs;
     int nodes;
 
@@ -135,9 +135,9 @@ protected:
     virtual void setTargetPosition() override;
 
     virtual void move() override;
-    
+
     virtual void handleSelfMessage(cMessage *message) override;
-    
+
     /** Reads the locations from file **/
     virtual bool readLocations();
 
@@ -155,7 +155,7 @@ protected:
 
     /** Used to update a common locations table in all of the nodes **/
     virtual void updateAllNodes(bool increase);
-    
+
     virtual Coord spreadInsideRadius(Coord location);
 
 public:
@@ -164,12 +164,12 @@ public:
 
     /** Destructor **/
     ~ExtendedSWIMMobility();
-    	
-	/** Move away from emergency or move to an event **/
+
+    /** Move away from emergency or move to an event **/
     // virtual void setNewTargetPosition(cMessage*) override;
-	virtual void setNewTargetPosition(std::string dataName, int msgType, double validUntilTime, 
+    virtual void setNewTargetPosition(std::string dataName, int msgType, double validUntilTime,
                                         std::string eventName) override;
-	
+
 };
 
 }//namespace inet

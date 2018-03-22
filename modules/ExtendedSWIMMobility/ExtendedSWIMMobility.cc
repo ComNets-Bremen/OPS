@@ -1,5 +1,5 @@
 /******************************************************************************
- * ExtendedSWIMMobility - An Extended SWIM implementation for the INET Framework of the OMNeT++ 
+ * ExtendedSWIMMobility - An Extended SWIM implementation for the INET Framework of the OMNeT++
  * Simulator.
  *
  * Copyright (C) 2016, Sustainable Communication Networks, University of Bremen, Germany
@@ -30,7 +30,7 @@
  * - Corrected the jumble of some files in OPS and others in INET
  * - All files now are copied into INET (like SWIMMobility files) before building INET
  * - file exists check for locations.txt
- * - Locations file as a parameter 
+ * - Locations file as a parameter
  * - unwanted code, comments cleanup
  */
 
@@ -68,20 +68,20 @@ void ExtendedSWIMMobility::initialize(int stage){
         usedRNG = par("usedRNG");
         locationsFilePath = par("locationsFilePath").stringValue();
         nodes = getParentModule()->getParentModule()->par("numNodes");
-       
+
         maxAreaX = constraintAreaMax.x;
         maxAreaY = constraintAreaMax.y;
         maxAreaZ = constraintAreaMax.z;
-       
+
         if(radius == 0) {
             radius = 1;
         }
-        
+
         locations.resize(noOfLocs);
 
         int successful = readLocations();
         if (!successful) {
-            EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << " ending simulation - " << locationsFilePath << " not found, create manually " << endl;            
+            EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << " ending simulation - " << locationsFilePath << " not found, create manually " << endl;
             endSimulation();
         }
     }
@@ -91,7 +91,7 @@ void ExtendedSWIMMobility::setTargetPosition(){
 
     // initial position of a node is considered as the home
     // location
-    
+
     if (!homeCoordFound) {
         homeCoordFound = true;
         homeCoord = this->getCurrentPosition();
@@ -103,23 +103,23 @@ void ExtendedSWIMMobility::setTargetPosition(){
     // a nodes switches between moving and waiting
     // if the next  action is to wait, give the waiting time
     if(nextMoveIsWait) {
-		lastPosition = targetPosition;
-        simtime_t waitTime = par("waitTime");
-        
-        nextChange = simTime() + waitTime.dbl();
-        
+        lastPosition = targetPosition;
+        double waitTime = par("waitTime");
+
+        nextChange = simTime().dbl() + waitTime;
+
         for(int i=0; i<otherEvents.size(); i++) {
-			if((this->getCurrentPosition() - otherEvents[i].eventLoc).length() < radius && \
-			    simTime().dbl() >= otherEvents[i].start && simTime().dbl() < otherEvents[i].end){
-				waitTime = otherEvents[i].end - simTime().dbl();
-				nextChange = otherEvents[i].end;
-			}
-			
-		}
-        
+            if((this->getCurrentPosition() - otherEvents[i].eventLoc).length() < radius && \
+                simTime().dbl() >= otherEvents[i].start && simTime().dbl() < otherEvents[i].end){
+                waitTime = otherEvents[i].end - simTime().dbl();
+                nextChange = otherEvents[i].end;
+            }
+
+        }
+
         // if the next action is to start moving, compute the next location to move
     } else {
-		if(!stoppedForEvent) {
+        if(!stoppedForEvent) {
             double randomNum = uniform(0.0, 1.0, usedRNG);
             double returnHomeDecimalFraction = returnHomePercentage / 100.0;
 
@@ -139,8 +139,8 @@ void ExtendedSWIMMobility::setTargetPosition(){
                 // loation to move to and speed
                 Coord positionDelta = targetPosition - lastPosition;
                 double distance = positionDelta.length();
-                nextChange = simTime().dbl() + distance/speed;
-            
+                nextChange = simTime().dbl() + (distance/speed);
+
             } else {
                 // select the neighbouring or visiting location to move to
                 // compute the weights assignd to each node
@@ -154,42 +154,42 @@ void ExtendedSWIMMobility::setTargetPosition(){
 
                 // find the next location (position) to move to
                 targetPosition = decision();
-            
+
                 EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Target Position>!<" << targetPosition << endl;
-            
+
                 // compute next change time based on distance to the next
                 // loation to move to and speed
                 Coord positionDelta = targetPosition - lastPosition;
 
                 double distance = positionDelta.length();
-                nextChange = simTime() + distance/speed;
+                nextChange = simTime().dbl() + distance/speed;
 
                 // update the seen count (i.e., increment nodes)
                 updateAllNodes(true);
-            
+
             }
-        
+
         } else {
-		    int index = -1;
-		    for (int i=0; i<otherEvents.size(); i++){
-			    if(stoppedForEventName==otherEvents[i].eventname){
-				    index = i;
-				    break;
-			    }
-		    }
-		    if(index >= 0){
-			
-			    neew = otherEvents[index].eventLoc;
-			    targetPosition = spreadInsideRadius(otherEvents[index].eventLoc);
-			
-			    nextChange = simTime() + ((targetPosition - lastPosition).length())/speed;
-			    stoppedForEvent = false;
-			    updateAllNodes(true);
+            int index = -1;
+            for (int i=0; i<otherEvents.size(); i++){
+                if(stoppedForEventName==otherEvents[i].eventname){
+                    index = i;
+                    break;
+                }
             }
-		
+            if(index >= 0){
+
+                neew = otherEvents[index].eventLoc;
+                targetPosition = spreadInsideRadius(otherEvents[index].eventLoc);
+
+                nextChange = simTime().dbl() + ((targetPosition - lastPosition).length())/speed;
+                stoppedForEvent = false;
+                updateAllNodes(true);
+            }
+
         }
     }
-    
+
     // indicate first time actions are all done
     firstStep = false;
 
@@ -204,144 +204,150 @@ void ExtendedSWIMMobility::move() {
 
 
 void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
-	
-	// check otherEvents and emergencies vector to see if any event has scheduled flag as FALSE
-	// then schedule that event; expiry time msg for emergency and movement for others
-	
-	if (emergencyReceived) {
-	    for(int i=0; i<emergencies.size(); i++){
-		    if(!emergencies[i].scheduled && simTime().dbl() < emergencies[i].end){
-			    if(simTime().dbl() < emergencies[i].start){
-				    std::string emergencyLocation = std::to_string(emergencies[i].eventLoc.x) + " " + std::to_string(emergencies[i].eventLoc.y) + " " + std::to_string(emergencies[i].eventLoc.z) + " " + "emergencyStarted";
-				    emergencyEventInterrupt = new cMessage(emergencyLocation.c_str());
-				    emergencyEventInterrupt->setKind(302);
-				    scheduleAt(emergencies[i].start, emergencyEventInterrupt);
-			    }
-			    eventExpiry = new cMessage("emergencyExpired");
-			    eventExpiry->setKind(304);
-			    scheduleAt(emergencies[i].end, eventExpiry);
-			    emergencies[i].scheduled = true;
+
+    // check otherEvents and emergencies vector to see if any event has scheduled flag as FALSE
+    // then schedule that event; expiry time msg for emergency and movement for others
+
+    if (emergencyReceived) {
+        for(int i=0; i<emergencies.size(); i++){
+            if(!emergencies[i].scheduled && simTime().dbl() < emergencies[i].end){
+                if(simTime().dbl() < emergencies[i].start){
+                    std::string emergencyLocation = std::to_string(emergencies[i].eventLoc.x) + " " + std::to_string(emergencies[i].eventLoc.y) + " " + std::to_string(emergencies[i].eventLoc.z) + " " + "emergencyStarted";
+                    emergencyEventInterrupt = new cMessage(emergencyLocation.c_str());
+                    emergencyEventInterrupt->setKind(302);
+                    scheduleAt(emergencies[i].start, emergencyEventInterrupt);
+                }
+                eventExpiry = new cMessage("emergencyExpired");
+                eventExpiry->setKind(304);
+                scheduleAt(emergencies[i].end, eventExpiry);
+                emergencies[i].scheduled = true;
             }
         }
         emergencyReceived = false;
-	}
-	
-	
-	if (eventReceived) {
-	    for(int i=0; i<otherEvents.size(); i++) {
-		    if(!otherEvents[i].scheduled) {
-			    Coord middlePointOfCanvas, startingPointOfCanvas;
-			    startingPointOfCanvas.x = 0;
-			    startingPointOfCanvas.y = 0;
-			    startingPointOfCanvas.z = 0;
-			    middlePointOfCanvas.x = maxAreaX/2;
-			    middlePointOfCanvas.y = maxAreaY/2;
-			    middlePointOfCanvas.z = maxAreaZ/2;
-			    double length = (middlePointOfCanvas - startingPointOfCanvas).length();
-			    simtime_t startMovingBefore = length/speed;
-			    moveToLoc = new cMessage(otherEvents[i].eventname.c_str());
-			    moveToLoc->setKind(301);
+    }
 
-			    if(otherEvents[i].end > simTime().dbl()){
-				    if( (otherEvents[i].start - startMovingBefore) > simTime() ){
-					    //Check if it works like this
-					    scheduleAt(otherEvents[i].start - startMovingBefore, moveToLoc);
-					    otherEvents[i].scheduled = true;
-				    } else {
-					    scheduleAt(simTime(), moveToLoc);
-					    otherEvents[i].scheduled = true;
-				    }
-			    }
-		    }
-	    }
-	    eventReceived = false;
-	}
-	
-	
-	if(message->getKind() == 304) {
-		for (int i=0; i<emergencies.size(); i++){
-			if((emergencies[i].end - simTime().dbl()) < 05){
-				emergencies.erase(emergencies.begin()+i);
-				i--;
-			}
-		}
-		delete message; 
-	}
-	else if(message->getKind() == 301){
-		
-		// Move to an event
-		for(int i=0; i<otherEvents.size(); i++){
-			if(message->getName()==otherEvents[i].eventname){
-				lastPosition = this->getCurrentPosition();
-				targetPosition = lastPosition;
-				stoppedForEvent = true;
-				stoppedForEventName = otherEvents[i].eventname;
-				updateAllNodes(false);
-				
-				Coord positionDelta = targetPosition - lastPosition;
-            	double distance = positionDelta.length();
-            	nextChange = simTime() + distance/speed;
 
-        		nextMoveIsWait = !nextMoveIsWait;
-				
-				eventExpiry = new cMessage(otherEvents[i].eventname.c_str());
-				eventExpiry->setKind(303);
-				scheduleAt(otherEvents[i].end, eventExpiry);
-			}
-		}
-		delete message;
+    if (eventReceived) {
+        for(int i=0; i<otherEvents.size(); i++) {
+            if(!otherEvents[i].scheduled) {
+                Coord middlePointOfCanvas, startingPointOfCanvas;
+                startingPointOfCanvas.x = 0;
+                startingPointOfCanvas.y = 0;
+                startingPointOfCanvas.z = 0;
+                middlePointOfCanvas.x = maxAreaX/2;
+                middlePointOfCanvas.y = maxAreaY/2;
+                middlePointOfCanvas.z = maxAreaZ/2;
+                double length = (middlePointOfCanvas - startingPointOfCanvas).length();
+                simtime_t startMovingBefore = length/speed;
+                moveToLoc = new cMessage(otherEvents[i].eventname.c_str());
+                moveToLoc->setKind(301);
 
-	} else if(message->getKind() == 302){
-		std::string temp;
-		std::stringstream location(message->getName());
-		
-		Coord emergencyCoord;
-		int rad;
-		double distance;
-		
-		location>>temp;
-		emergencyCoord.x = std::stoi(temp);
-		location>>temp;
-		emergencyCoord.y = std::stoi(temp);
-		location>>temp;
-		emergencyCoord.z = std::stoi(temp);
-		
-		for(int i=0; i<emergencies.size(); i++){
-			if(emergencies[i].eventLoc == emergencyCoord){
-				rad = emergencies[i].radius;
-			}
-		}
-		if((targetPosition - emergencyCoord).length() < rad){
-			updateAllNodes(false);
+                if(otherEvents[i].end > simTime().dbl()){
+                    if( ((otherEvents[i].start - startMovingBefore)) > simTime().dbl()){
+                        //Check if it works like this
+                        scheduleAt((otherEvents[i].start - startMovingBefore), moveToLoc);
+                        otherEvents[i].scheduled = true;
+                    } else {
+                        scheduleAt(simTime().dbl(), moveToLoc);
+                        otherEvents[i].scheduled = true;
+                    }
+                }
+            }
+        }
+        eventReceived = false;
+    }
+
+
+    if(message->getKind() == 304) {
+        for (int i=0; i<emergencies.size(); i++){
+            if((emergencies[i].end - simTime().dbl()) < 05){
+                emergencies.erase(emergencies.begin()+i);
+                i--;
+            }
+        }
+        delete message;
+    }
+    else if(message->getKind() == 301){
+
+        // Move to an event
+        for(int i=0; i<otherEvents.size(); i++){
+            if(message->getName()==otherEvents[i].eventname){
+                lastPosition = this->getCurrentPosition();
+                targetPosition = lastPosition;
+                stoppedForEvent = true;
+                stoppedForEventName = otherEvents[i].eventname;
+                updateAllNodes(false);
+
+                Coord positionDelta = targetPosition - lastPosition;
+                double distance = positionDelta.length();
+                nextChange = simTime().dbl() + (distance/speed);
+
+                nextMoveIsWait = !nextMoveIsWait;
+
+                eventExpiry = new cMessage(otherEvents[i].eventname.c_str());
+                eventExpiry->setKind(303);
+                if (otherEvents[i].end > simTime().dbl()) {
+                    scheduleAt(otherEvents[i].end, eventExpiry);
+                } else {
+                    scheduleAt(simTime().dbl(), eventExpiry);
+                }
+            }
+        }
+        delete message;
+
+    } else if(message->getKind() == 302){
+        std::string temp;
+        std::stringstream location(message->getName());
+
+        Coord emergencyCoord;
+        int rad;
+        double distance;
+
+        location>>temp;
+        emergencyCoord.x = std::stoi(temp);
+        location>>temp;
+        emergencyCoord.y = std::stoi(temp);
+        location>>temp;
+        emergencyCoord.z = std::stoi(temp);
+
+        for(int i=0; i<emergencies.size(); i++){
+            if(emergencies[i].eventLoc == emergencyCoord){
+                rad = emergencies[i].radius;
+            }
+        }
+        if((targetPosition - emergencyCoord).length() < rad){
+            updateAllNodes(false);
             seperateAndUpdateWeights();
             lastPosition = this->getCurrentPosition();
             targetPosition = decision();
             EV<<"Emergency Decision is to go to (from 302): "<<targetPosition<<endl;
 
-    	    distance = (targetPosition - lastPosition).length();
-	        nextChange = simTime() + distance/speed;
-	        
-	        updateAllNodes(true);
-        	
-        	nextMoveIsWait = !nextMoveIsWait;
+            distance = (targetPosition - lastPosition).length();
+            nextChange = simTime().dbl() + (distance/speed);
 
-		}
-		delete message;
-	}
-	
-	else if(message->getKind() == 303){
-		for(int i=0; i<otherEvents.size(); i++){
-			if(message->getName() == otherEvents[i].eventname){
-				otherEvents.erase(otherEvents.begin()+i);
-				break;
-			}
-		}
-		delete message;
-	}
-	
-	if(nextChange<simTime()){nextChange=simTime();}
-	
-	moveAndUpdate();
+            updateAllNodes(true);
+
+            nextMoveIsWait = !nextMoveIsWait;
+
+        }
+        delete message;
+    }
+
+    else if(message->getKind() == 303){
+        for(int i=0; i<otherEvents.size(); i++){
+            if(message->getName() == otherEvents[i].eventname){
+                otherEvents.erase(otherEvents.begin()+i);
+                break;
+            }
+        }
+        delete message;
+    }
+
+    if(nextChange<simTime().dbl()) {
+        nextChange=simTime().dbl();
+    }
+
+    moveAndUpdate();
     scheduleUpdate();
 }
 
@@ -446,7 +452,7 @@ Coord ExtendedSWIMMobility::decision() {
         // if random number is lower than alpha, choose a neighbor location as
         // next destination
         dest = chooseDestination(neighborLocs);
-        
+
         // must be a valid destination
         if(dest.x > 0 && dest.y > 0 && dest.z >= 0) {
             return dest;
@@ -504,10 +510,10 @@ Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
 
     // compute the not-popular locations
     notPopular = size - popular;
-    
+
     EV<<"Popular locs :: "<<popular<<endl;
     EV<<"Not Popular locs :: "<<notPopular<<endl;
-    
+
     // choose a destination from the given array in the following manner
     // 1) obtain a random number and check if a popular or not popular
     //    item is selected (i.e., popularityDecisionThreshold)
@@ -517,7 +523,7 @@ Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
     //    select an item in the not popular range, randomly
     // 4) if none of the above, select an item from the whole array,
     //    randomly
-    
+
     do {
         iterate ++ ;
         count = 0;
@@ -530,19 +536,19 @@ Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
             temp.y = array[randomNum].locCoordY;
             temp.z = array[randomNum].locCoordZ;
         } else if (notPopular > 0) {
-			EV<<"Selecting not popular location"<<endl;
+            EV<<"Selecting not popular location"<<endl;
             randomNum = intuniform(0, (notPopular - 1), usedRNG);
             temp.x = array[popular + randomNum].locCoordX;
             temp.y = array[popular + randomNum].locCoordY;
             temp.z = array[popular + randomNum].locCoordZ;
         } else {
-			EV<<"Selecting any random location :: "<<endl;
+            EV<<"Selecting any random location :: "<<endl;
             randomNum = intuniform(0, (size - 1), usedRNG);
             temp.x = array[randomNum].locCoordX;
             temp.y = array[randomNum].locCoordY;
             temp.z = array[randomNum].locCoordZ;
         }
-        
+
         double arrivalTime = simTime().dbl() + ((temp - lastPosition).length())/speed;
         for(int i=0;i<emergencies.size();i++){
             if((temp-emergencies[i].eventLoc).length() < emergencies[i].radius && (arrivalTime>emergencies[i].start && arrivalTime<emergencies[i].end)){
@@ -554,12 +560,12 @@ Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
             break;
         }
     } while(count > 0);
-    
-    
+
+
     EV << EXTENDEDSWIMMOBILITY_SIMMODULEINFO << "Selected Locations>!<" << temp <<endl;
-    
+
     target = spreadInsideRadius(temp);
-    
+
     // temporary code to place node at the center of the location
     // and not to spread inside the radius.
     //target = temp;
@@ -621,8 +627,8 @@ void ExtendedSWIMMobility::updateAllNodes(bool increase){
 }
 
 Coord ExtendedSWIMMobility::spreadInsideRadius(Coord location){
-	double u, v, w, t, x, y;
-	Coord newLocation;
+    double u, v, w, t, x, y;
+    Coord newLocation;
     // find a position within the radius given from the selected location
     // to move to
     // REASON: don't want all the nodes to pile up at the center of the
@@ -637,79 +643,79 @@ Coord ExtendedSWIMMobility::spreadInsideRadius(Coord location){
     newLocation.x = location.x + x;
     newLocation.y = location.y + y;
     newLocation.z = location.z;
-    
+
     return newLocation;
 }
 
-void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgType, double validUntilTime, 
+void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgType, double validUntilTime,
                                                 std::string eventName) {
-	bool found = false;
-	double distance;
-	
-	event tempEvent;
-	
-	std::string temp;
-	
-	std::stringstream loccoord(dataName);
-	
-	loccoord>>temp;
-	tempEvent.eventLoc.x = std::stoi(temp);
-	loccoord>>temp;
-	tempEvent.eventLoc.y = std::stoi(temp);	
-	loccoord>>temp;
-	tempEvent.eventLoc.z = std::stoi(temp);
-	loccoord>>temp;
-	tempEvent.start = std::stof(temp);
-	if(msgType == 1){
-		loccoord>>temp;
-		tempEvent.radius = std::stoi(temp);
-	}	
-	tempEvent.end = validUntilTime;
-	tempEvent.eventname = eventName;
-	
-	if(tempEvent.radius == -1){
-		// normal event. Schedule a move from start till end time.
-		for (int i=0; i<emergencies.size(); i++){
-			if((tempEvent.eventLoc-emergencies[i].eventLoc).length() <= emergencies[i].radius){
-				if( (tempEvent.start >= emergencies[i].start && tempEvent.start <= emergencies[i].end) || \
-				(tempEvent.end >= emergencies[i].start && tempEvent.end <= emergencies[i].end) ){
-					found = true;
-					break;
-				}
-			}
-		}
-		
-		/*if no emergency event is taking place at same location at same time
-		  then push event in list and schedule the mobility event  */
-		if(!found){
-			eventReceived = true;
-			otherEvents.push_back(tempEvent);
-		}
-	}
-	else if(tempEvent.radius > 0){
-		
-		// emergency event. Save the event details. Move away.
-		emergencies.push_back(tempEvent);
-		emergencyReceived = true;
-		
-		if(neew == tempEvent.eventLoc || (tempEvent.eventLoc-neew).length() < radius){
-			if( ((simTime().dbl() >= tempEvent.start) && (simTime().dbl() <= tempEvent.end)) || \
-			(nextChange >= tempEvent.start && nextChange < tempEvent.end) ){
-            	
-            	updateAllNodes(false);
-            	seperateAndUpdateWeights();
-            	lastPosition = this->getCurrentPosition();
-            	targetPosition = lastPosition;
-            	
-            	EV<<"Emergency Decision is to go to (event rcvd emergency) : Stopping mobility "<<targetPosition<<endl;
-        	    
-        	    Coord positionDelta = targetPosition - lastPosition;
-    	        distance = positionDelta.length();
-	            nextChange = simTime() + distance/speed;
-            	nextMoveIsWait = !nextMoveIsWait;
-			}
+    bool found = false;
+    double distance;
+
+    event tempEvent;
+
+    std::string temp;
+
+    std::stringstream loccoord(dataName);
+
+    loccoord>>temp;
+    tempEvent.eventLoc.x = std::stoi(temp);
+    loccoord>>temp;
+    tempEvent.eventLoc.y = std::stoi(temp);
+    loccoord>>temp;
+    tempEvent.eventLoc.z = std::stoi(temp);
+    loccoord>>temp;
+    tempEvent.start = std::stof(temp);
+    if(msgType == 1){
+        loccoord>>temp;
+        tempEvent.radius = std::stoi(temp);
+    }
+    tempEvent.end = validUntilTime;
+    tempEvent.eventname = eventName;
+
+    if(tempEvent.radius == -1){
+        // normal event. Schedule a move from start till end time.
+        for (int i=0; i<emergencies.size(); i++){
+            if((tempEvent.eventLoc-emergencies[i].eventLoc).length() <= emergencies[i].radius){
+                if( (tempEvent.start >= emergencies[i].start && tempEvent.start <= emergencies[i].end) || \
+                (tempEvent.end >= emergencies[i].start && tempEvent.end <= emergencies[i].end) ){
+                    found = true;
+                    break;
+                }
+            }
         }
-	}
+
+        /*if no emergency event is taking place at same location at same time
+          then push event in list and schedule the mobility event  */
+        if(!found){
+            eventReceived = true;
+            otherEvents.push_back(tempEvent);
+        }
+    }
+    else if(tempEvent.radius > 0){
+
+        // emergency event. Save the event details. Move away.
+        emergencies.push_back(tempEvent);
+        emergencyReceived = true;
+
+        if(neew == tempEvent.eventLoc || (tempEvent.eventLoc-neew).length() < radius){
+            if( ((simTime().dbl() >= tempEvent.start) && (simTime().dbl() <= tempEvent.end)) || \
+            (nextChange >= tempEvent.start && nextChange < tempEvent.end) ){
+
+                updateAllNodes(false);
+                seperateAndUpdateWeights();
+                lastPosition = this->getCurrentPosition();
+                targetPosition = lastPosition;
+
+                EV<<"Emergency Decision is to go to (event rcvd emergency) : Stopping mobility "<<targetPosition<<endl;
+
+                Coord positionDelta = targetPosition - lastPosition;
+                distance = positionDelta.length();
+                nextChange = simTime().dbl() + (distance/speed);
+                nextMoveIsWait = !nextMoveIsWait;
+            }
+        }
+    }
 }
 
 ExtendedSWIMMobility::~ExtendedSWIMMobility() {
