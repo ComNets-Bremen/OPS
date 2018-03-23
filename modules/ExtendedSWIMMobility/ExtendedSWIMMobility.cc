@@ -110,8 +110,8 @@ void ExtendedSWIMMobility::setTargetPosition(){
 
         for(int i=0; i<otherEvents.size(); i++) {
             if((this->getCurrentPosition() - otherEvents[i].eventLoc).length() < radius && \
-                simTime().dbl() >= otherEvents[i].start && simTime().dbl() < otherEvents[i].end){
-                waitTime = otherEvents[i].end - simTime().dbl();
+                simTime() >= otherEvents[i].start && simTime() < otherEvents[i].end){
+                waitTime = otherEvents[i].end.dbl() - simTime().dbl();
                 nextChange = otherEvents[i].end;
             }
 
@@ -210,8 +210,8 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 
     if (emergencyReceived) {
         for(int i=0; i<emergencies.size(); i++){
-            if(!emergencies[i].scheduled && simTime().dbl() < emergencies[i].end){
-                if(simTime().dbl() < emergencies[i].start){
+            if(!emergencies[i].scheduled && simTime() < emergencies[i].end){
+                if(simTime() < emergencies[i].start){
                     std::string emergencyLocation = std::to_string(emergencies[i].eventLoc.x) + " " + std::to_string(emergencies[i].eventLoc.y) + " " + std::to_string(emergencies[i].eventLoc.z) + " " + "emergencyStarted";
                     emergencyEventInterrupt = new cMessage(emergencyLocation.c_str());
                     emergencyEventInterrupt->setKind(302);
@@ -238,17 +238,17 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
                 middlePointOfCanvas.y = maxAreaY/2;
                 middlePointOfCanvas.z = maxAreaZ/2;
                 double length = (middlePointOfCanvas - startingPointOfCanvas).length();
-                simtime_t startMovingBefore = length/speed;
+                simtime_t startMovingBefore = length / speed;
                 moveToLoc = new cMessage(otherEvents[i].eventname.c_str());
                 moveToLoc->setKind(301);
 
-                if(otherEvents[i].end > simTime().dbl()){
-                    if( ((otherEvents[i].start - startMovingBefore)) > simTime().dbl()){
+                if(otherEvents[i].end > simTime()){
+                    if( ((otherEvents[i].start - startMovingBefore)) > simTime()){
                         //Check if it works like this
                         scheduleAt((otherEvents[i].start - startMovingBefore), moveToLoc);
                         otherEvents[i].scheduled = true;
                     } else {
-                        scheduleAt(simTime().dbl(), moveToLoc);
+                        scheduleAt(simTime(), moveToLoc);
                         otherEvents[i].scheduled = true;
                     }
                 }
@@ -260,7 +260,7 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 
     if(message->getKind() == 304) {
         for (int i=0; i<emergencies.size(); i++){
-            if((emergencies[i].end - simTime().dbl()) < 05){
+            if((emergencies[i].end - simTime()) < 05){
                 emergencies.erase(emergencies.begin()+i);
                 i--;
             }
@@ -280,16 +280,16 @@ void ExtendedSWIMMobility::handleSelfMessage(cMessage *message){
 
                 Coord positionDelta = targetPosition - lastPosition;
                 double distance = positionDelta.length();
-                nextChange = simTime().dbl() + (distance/speed);
+                nextChange = simTime() + (distance / speed);
 
                 nextMoveIsWait = !nextMoveIsWait;
 
                 eventExpiry = new cMessage(otherEvents[i].eventname.c_str());
                 eventExpiry->setKind(303);
-                if (otherEvents[i].end > simTime().dbl()) {
+                if (otherEvents[i].end > simTime()) {
                     scheduleAt(otherEvents[i].end, eventExpiry);
                 } else {
-                    scheduleAt(simTime().dbl(), eventExpiry);
+                    scheduleAt(simTime(), eventExpiry);
                 }
             }
         }
@@ -549,7 +549,7 @@ Coord ExtendedSWIMMobility::chooseDestination(std::vector<nodeProp> &array){
             temp.z = array[randomNum].locCoordZ;
         }
 
-        double arrivalTime = simTime().dbl() + ((temp - lastPosition).length())/speed;
+        simtime_t arrivalTime = simTime() + SimTime(((temp - lastPosition).length()) / speed);
         for(int i=0;i<emergencies.size();i++){
             if((temp-emergencies[i].eventLoc).length() < emergencies[i].radius && (arrivalTime>emergencies[i].start && arrivalTime<emergencies[i].end)){
                 count++;
@@ -699,7 +699,7 @@ void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgTyp
         emergencyReceived = true;
 
         if(neew == tempEvent.eventLoc || (tempEvent.eventLoc-neew).length() < radius){
-            if( ((simTime().dbl() >= tempEvent.start) && (simTime().dbl() <= tempEvent.end)) || \
+            if( ((simTime() >= tempEvent.start) && (simTime() <= tempEvent.end)) || \
             (nextChange >= tempEvent.start && nextChange < tempEvent.end) ){
 
                 updateAllNodes(false);

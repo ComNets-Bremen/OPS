@@ -73,8 +73,8 @@ namespace inet {
 struct event{
     bool scheduled = false;
     Coord eventLoc;
-    double start;
-    double end;
+    simtime_t start;
+    simtime_t end;
     int radius = -1;
     std::string eventname;
 };
