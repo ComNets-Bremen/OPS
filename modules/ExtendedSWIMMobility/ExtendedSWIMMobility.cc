@@ -32,6 +32,7 @@
  * - file exists check for locations.txt
  * - Locations file as a parameter
  * - unwanted code, comments cleanup
+ * - use of simtime_t variables instead of double for time variables
  */
 
 #include <algorithm>

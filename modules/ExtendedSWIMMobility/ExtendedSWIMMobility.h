@@ -29,6 +29,7 @@
 * Asanga Udugama (adu@comnets.uni-bremen.de)
 * - Corrected the jumble of some files in OPS and others in INET
 * - All files now are copied into INET (like SWIMMobility files) before building INET
+* - use of simtime_t variables instead of double for time variables
 */
 
 #ifndef __INET_EXTENDEDSWIMMOBILITY_H
