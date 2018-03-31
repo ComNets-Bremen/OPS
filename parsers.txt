@@ -8,3 +8,4 @@ parsers/s05-keetchi-evaluation-parsers/s05-packets-sent-per-node-stats.py
 parsers/s05-keetchi-evaluation-parsers/s05-loved-received-progress-stats.py
 parsers/s05-keetchi-evaluation-parsers/s05-message-delay-and-ratio-stats.py
 parsers/s05-keetchi-evaluation-parsers/s05-cache-activity-per-node-stats.py
+parsers/s04-contact-times/s04-contact-times-stats.py

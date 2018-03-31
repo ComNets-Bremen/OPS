@@ -5,17 +5,21 @@
 # - periodic contact summary (based on the value of -p)
 # - overall contact summary
 #
-# syntax:
-#  s04-contact-times.py -i sfo.txt -s 2071530.0 -p 86400.0
 #
 # Author: Asanga Udugama (adu@comnets.uni-bremen.de)
-# Date: 10-mar-2017
+# Date: 28-mar-2018
 
-import sys, getopt, re, tempfile
+import sys, re, tempfile
+import argparse
 
-wireless_resolution_interval = 1.0 # seconds
-interval_period = 10.0 # seconds
-sim_time = 3600.0 # seconds
+
+DEFAULT_WIRELESS_RESOLUTION_INTERVAL = 1.0
+DEFULT_INTERVAL_PERIOD = 900.0
+
+wireless_resolution_interval = 0.0 # seconds
+interval_period = 0.0 # seconds
+sim_time = 0.0 # seconds
+
 inputfile = 0
 tempfile1 = 0
 outputfile1 = 0
@@ -43,7 +47,7 @@ class Node:
         self.contacts = []
 
 
-def parse_param_n_open_files(argv):
+def init_n_create_files(inputfilename):
     global inputfile
     global tempfile1
     global outputfile1
@@ -52,33 +56,21 @@ def parse_param_n_open_files(argv):
     global interval_period
     global sim_time
     global wireless_resolution_interval
-    
-    # check parameters syntax
-    try:
-        opts, args = getopt.getopt(argv,"hi:s:p:r:",["ifile=", "simtime=", "period=", "resolution="])
-    except getopt.GetoptError:
-        print 's04-contact-times.py -i <inputfile> -s <sim time> -p <period> -r <resolution>'
-        sys.exit(2)
+    global nodes
+    global total_contacts
 
-    # read all parameters in 
-    for opt, arg in opts:
-        if opt == '-h':
-            print 's04-contact-times.py -i <inputfile> -s <sim time> -p <period> -r <resolution>'
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            inputfilename = arg
-        elif opt in ("-s", "--simtime"):
-            sim_time = float(arg)
-        elif opt in ("-p", "--period"):
-            interval_period = float(arg)
-        elif opt in ("-r", "--resolution"):
-            wireless_resolution_interval = float(arg)
-    
+    # init variables
+    wireless_resolution_interval = DEFAULT_WIRELESS_RESOLUTION_INTERVAL
+    interval_period = DEFULT_INTERVAL_PERIOD
+    sim_time = 0.0
+    nodes = []
+    total_contacts = 0
+
     # remove undesirable characters from the file names
     newfilename = re.sub(':', '_', inputfilename)
     newfilename = re.sub('-', '_', newfilename)
 
-    # open files - dsome have to be created
+    # open files
     inputfile = open(inputfilename, "r")
     tempfile1 = tempfile.TemporaryFile(dir='.')
     outputfile1 = open(re.sub('.txt', '_ct_01.txt', newfilename), "w+")
@@ -86,27 +78,34 @@ def parse_param_n_open_files(argv):
     outputfile3 = open(re.sub('.txt', '_ct_03.txt', newfilename), "w+")
 
     # show the file names
-    print "Input File:                    ", inputfile.name
-    print "Temporary File:                ", tempfile1.name
-    print "Contacts List:                 ", outputfile1.name
-    print "Periodic Contact Summary:      ", outputfile2.name
-    print "Overall Contact Summary:       ", outputfile2.name
+    print("Temporary File:                ", tempfile1.name)
+    print("Contacts List:                 ", outputfile1.name)
+    print("Periodic Contact Summary:      ", outputfile2.name)
+    print("Overall Contact Summary:       ", outputfile2.name)
     
     # write the initial line of output files - with a # in front (as a comment line)
-    outputfile1.write("# node name :: node mac :: start time :: end time :: duration :: contact node name :: contact node mac \n")
+    outputfile1.write("# node name >!< node mac >!< start time >!< end time >!< duration >!< contact node name >!< contact node mac \n")
     outputfile2.write("# start time period    time period end    contact count    period number \n")
-    outputfile3.write("# total contacts :: average contact time \n")
+    outputfile3.write("# total contacts >!< average contact time \n")
 
+    print("wireless_resolution_interval", wireless_resolution_interval)
+    print("interval_period", interval_period)
 
 def extract_from_log():
     global inputfile
     global tempfile1
+    global sim_time
     
     # extract all the relevant lines from the original log file     
     for line in inputfile:
-        if "INFO" in line and ":: KWirelessInterface ::" in line:
+        if "INFO" in line and "KWirelessInterface" in line:
             tempfile1.write(line)
-
+            words = line.split(">!<")
+            current_simulation_time = float(words[1].strip())
+            
+            if current_simulation_time > sim_time:
+                sim_time = current_simulation_time
+    print("sim_time", sim_time)
 
 def extract_contact_times():
     global tempfile1
@@ -124,7 +123,7 @@ def extract_contact_times():
         # look for a node already not considered
         more_nodes = False
         for line in tempfile1:
-            words = line.split("::")
+            words = line.split(">!<")
 
             found = False
             for node in nodes:
@@ -144,9 +143,9 @@ def extract_contact_times():
 
         tempfile1.seek(0)
         for line in tempfile1:
-            words = line.split("::")
+            words = line.split(">!<")
             current_simulation_time = float(words[1].strip())
-            
+
             if current_node.node_name == words[2].strip():
 
                 # update (create) connection
@@ -169,13 +168,12 @@ def extract_contact_times():
                 for contact in current_node.contacts:
                     if current_simulation_time > (contact.last_seen_time + wireless_resolution_interval):
                         contact_duration = (contact.last_seen_time + wireless_resolution_interval) - contact.start_time
-                        outputfile1.write(current_node.node_name + " :: " + current_node.node_mac + " :: " \
-                                            + str(contact.start_time) + " :: " + str(contact.last_seen_time + wireless_resolution_interval) + " :: " \
-                                            + str(contact_duration) + " :: " + contact.contact_node_name + " :: " + contact.contact_node_mac + "\n")
+                        outputfile1.write(current_node.node_name + " >!< " + current_node.node_mac + " >!< " \
+                                            + str(contact.start_time) + " >!< " + str(contact.last_seen_time + wireless_resolution_interval) + " >!< " \
+                                            + str(contact_duration) + " >!< " + contact.contact_node_name + " >!< " + contact.contact_node_mac + "\n")
                         current_node.contacts.remove(contact)
                         removed = True
                         break
-
 
 def dump_periodic_summary():
     global outputfile1
@@ -189,7 +187,7 @@ def dump_periodic_summary():
     # tempfile1.seek(0)
     # max_sim_time = 0.0
     # for line in tempfile1:
-    #     words = line.split("::")
+    #     words = line.split(">!<")
     #     max_sim_time = float(words[1].strip())
     
     # identify the upper limit of the final (last) periods
@@ -217,7 +215,7 @@ def dump_periodic_summary():
             if line.strip().startswith("#"):
                 continue
             
-            words = line.split("::")
+            words = line.split(">!<")
             if lower_sim_limit == 0.0 and float(words[2].strip()) >= lower_sim_limit and float(words[2].strip()) <= upper_sim_limit:
                 contact_count = contact_count + 1
                 total_contact_count = total_contact_count + 1
@@ -240,9 +238,9 @@ def dump_periodic_summary():
         upper_sim_limit = upper_sim_limit + interval_period
             
     # dump the overall summary
+    print("total_contact_time", total_contact_time, "total_contact_count", total_contact_count)
     avg_contact_time = total_contact_time / total_contact_count
-    outputfile3.write(str(total_contact_count) + " :: " + str(avg_contact_time) + "\n")
-
+    outputfile3.write(str(total_contact_count) + " >!< " + str(avg_contact_time) + "\n")
 
 def close_files():
     global inputfile
@@ -258,15 +256,20 @@ def close_files():
     outputfile2.close()
     outputfile3.close()
 
+# Main function
+def main():
+    parser = argparse.ArgumentParser(description='Create statistics: Contact times')
+    parser.add_argument('logfiles', type=str, nargs="+", help="The logfiles")
+    args = parser.parse_args()
 
-def main(argv):
-    # main function that calls all other functions
-    parse_param_n_open_files(argv)
-    extract_from_log()
-    extract_contact_times()
-    dump_periodic_summary()
-    close_files()
+    for inputfilename in args.logfiles:
+        print("Processing", inputfilename)
+
+        init_n_create_files(inputfilename)
+        extract_from_log()
+        extract_contact_times()
+        dump_periodic_summary()
+        close_files()
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
-  
+    main()
