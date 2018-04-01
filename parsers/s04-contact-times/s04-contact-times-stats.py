@@ -66,9 +66,9 @@ def init_n_create_files(inputfilename):
     nodes = []
     total_contacts = 0
 
-    # remove undesirable characters from the file names
-    newfilename = re.sub(':', '_', inputfilename)
-    newfilename = re.sub('-', '_', newfilename)
+    # # remove undesirable characters from the file names
+    # newfilename = re.sub(':', '_', inputfilename)
+    # newfilename = re.sub('-', '_', newfilename)
 
     # open files
     inputfile = open(inputfilename, "r")
