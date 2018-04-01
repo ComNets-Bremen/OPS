@@ -73,9 +73,9 @@ def init_n_create_files(inputfilename):
     # open files
     inputfile = open(inputfilename, "r")
     tempfile1 = tempfile.TemporaryFile(dir='.')
-    outputfile1 = open(re.sub('.txt', '_ct_01.txt', newfilename), "w+")
-    outputfile2 = open(re.sub('.txt', '_ct_02.txt', newfilename), "w+")
-    outputfile3 = open(re.sub('.txt', '_ct_03.txt', newfilename), "w+")
+    outputfile1 = open(re.sub('.txt', '_ct_01.txt', inputfilename), "w+")
+    outputfile2 = open(re.sub('.txt', '_ct_02.txt', inputfilename), "w+")
+    outputfile3 = open(re.sub('.txt', '_ct_03.txt', inputfilename), "w+")
 
     # show the file names
     print("Temporary File:                ", tempfile1.name)
