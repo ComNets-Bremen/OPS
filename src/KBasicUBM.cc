@@ -11,13 +11,15 @@
 // - Changed function parameters to IReactiveMobility
 // - Unwanted code, comments cleanup
 // - Locations and events files as parameters
+// - use of an interface
+// - change of class name
 //
 
-#include "KUserBehavior.h"
+#include "KBasicUBM.h"
 
-Define_Module(KUserBehavior);
+Define_Module(KBasicUBM);
 
-void KUserBehavior::initialize(int stage)
+void KBasicUBM::initialize(int stage)
 {
     if (stage == 0) {
 			
@@ -58,7 +60,7 @@ void KUserBehavior::initialize(int stage)
 		std::string eventLogName;
 		
 		 // dump the notification list with given popularity, likeness and goodness value
-        if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
+        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
         for (int i = 0; i < notificationCount; i++) {
 			likeness = goodness = 0;
 			if(notifications[i].reaction == reactionType::save){
@@ -70,25 +72,25 @@ void KUserBehavior::initialize(int stage)
 			
 			eventLogName = "/basicubm-" + notifications[i].rawDescription;
 			
-			if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<NE>!<" << eventLogName << ">!<"
+			if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NE>!<" << eventLogName << ">!<"
                 << notifications[i].popularity << ">!<" << likeness << ">!<"
                 << goodness << ">!<"
                 << (goodness == 100 ? "L" : "I") << ">!<"
                 << notifications[i].endTime << "\n";}
         }
-        if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
+        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
 		
     } else {
-        EV << KUSERBEHAVIOR_SIMMODULEINFO << "Something is radically wrong\n";
+        EV << KBASICUBM_SIMMODULEINFO << "Something is radically wrong\n";
     }
 }
 
-int KUserBehavior::numInitStages() const
+int KBasicUBM::numInitStages() const
 {
     return 3;
 }
 
-void KUserBehavior::handleMessage(cMessage *msg)
+void KBasicUBM::handleMessage(cMessage *msg)
 {
 	KDataMsg *dataMsg;
     std::string msgDataName;
@@ -206,7 +208,7 @@ void KUserBehavior::handleMessage(cMessage *msg)
 				lowerLayerMsg->setDestinationOriented(false);
 				send(lowerLayerMsg, "lowerLayerOut");
 				
-                if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<GD>!<" << lowerLayerMsg->getDataName() << "\n";}
+                if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<GD>!<" << lowerLayerMsg->getDataName() << "\n";}
 				
 				/*      MSG SENT TO NEIGHBORS       */
 				//////////////////////////////////////
@@ -270,7 +272,7 @@ void KUserBehavior::handleMessage(cMessage *msg)
 			 */
 			else if(dataMsg->getMsgType() == 31){
 				
-		        if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
+		        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
 			
 				/////////////////////////
 				// REACTING TO NORMAL MSG
@@ -320,24 +322,24 @@ void KUserBehavior::handleMessage(cMessage *msg)
 		// Unexpected Message Received
 		else{
 			
-			EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<Received unexpected packet \n";
+			EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<Received unexpected packet \n";
 
-			//EV << KUSERBEHAVIOR_SIMMODULEINFO << "Unexpected Message Received" << endl;
+			//EV << KBASICUBM_SIMMODULEINFO << "Unexpected Message Received" << endl;
 		}
 	}
 	
     delete msg;
 }
 
-void KUserBehavior::finish(){
+void KBasicUBM::finish(){
 	
 }
 
-void KUserBehavior::moveAway(){
+void KBasicUBM::moveAway(){
 	
 }
 
-bool KUserBehavior::computePreReactions(){
+bool KBasicUBM::computePreReactions(){
 
 	//Reading all events from file and calculating the reactions
 	
@@ -448,7 +450,7 @@ bool KUserBehavior::computePreReactions(){
 	return true;
 }
 
-event KUserBehavior::computeEventReaction(event rEvent){
+event KBasicUBM::computeEventReaction(event rEvent){
 		
 	int keysMatch = 0;
 	float reactionVal;
@@ -483,7 +485,7 @@ event KUserBehavior::computeEventReaction(event rEvent){
 	return rEvent;
 }
 
-void KUserBehavior::reactToEvent(event rEvent){
+void KBasicUBM::reactToEvent(event rEvent){
 
 	KDataMsg *eventMsg;
 	
@@ -550,7 +552,7 @@ void KUserBehavior::reactToEvent(event rEvent){
 
 }
 
-void KUserBehavior::sendReactionMsg(reactionType response, std::string eventName){
+void KBasicUBM::sendReactionMsg(reactionType response, std::string eventName){
 	KReactionMsg *reactionMsg = new KReactionMsg();
 	reactionMsg->setSourceAddress("");
 	reactionMsg->setDestinationAddress("");
@@ -560,12 +562,12 @@ void KUserBehavior::sendReactionMsg(reactionType response, std::string eventName
 
 	send(reactionMsg, "lowerLayerOut");
 	
-	if (logging) {EV_INFO << KUSERBEHAVIOR_SIMMODULEINFO << ">!<GF>!<" << reactionMsg->getDataName() << ">!<T-Pre\n";}
+	if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<GF>!<" << reactionMsg->getDataName() << ">!<T-Pre\n";}
 
 	
 }
 
-bool KUserBehavior::getKeywords(){
+bool KBasicUBM::getKeywords(){
 	
 	std::string keywords;
 	std::ifstream infile;

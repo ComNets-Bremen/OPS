@@ -1,6 +1,6 @@
 //
-// The model is the implementation of the Notification Generator
-// for Keetchi Simulator
+// The model is the implementation of a basic Notification Generator
+// for OPS Simulator
 //
 // @date   : 10-07-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
@@ -11,6 +11,8 @@
 // - Fixed file open check for locations.txt and events.txt
 // - Unwanted code, comments cleanup
 // - Locations and events files as parameters
+// - use of interface
+// - change of class name
 
 /* Msg types::
  * 11  = Event msg to UBM
@@ -21,11 +23,11 @@
  * 116 = Delete Normal Event Indicator
  */
  
-#include "KNotificationGenerator.h"
+#include "KBasicNotificationGenerator.h"
 
-Define_Module(KNotificationGenerator);
+Define_Module(KBasicNotificationGenerator);
 
-void KNotificationGenerator::initialize(int stage)
+void KBasicNotificationGenerator::initialize(int stage)
 {
     if (stage == 0) {
 		
@@ -50,6 +52,7 @@ void KNotificationGenerator::initialize(int stage)
         logging = par("logging");
         locationsFilePath = par("locationsFilePath").stringValue();
         eventsFilePath = par("eventsFilePath").stringValue();
+        dataSizeInBytes = par("dataSizeInBytes");
 
 		// Counting the number of locations in text file
 		std::vector <int> tempLoc;
@@ -124,7 +127,7 @@ void KNotificationGenerator::initialize(int stage)
 
 		for (int currentID = 0; currentID <= maxId; currentID++) {
 			cModule *currentModule = currentSimulation->getModule(currentID);
-			if (currentModule != NULL && dynamic_cast<KUserBehavior*>(currentModule) != NULL){
+			if (currentModule != NULL && dynamic_cast<IUBM*>(currentModule) != NULL){
 				nodes++;
 				nodesID.push_back(currentID);
 			}
@@ -136,9 +139,9 @@ void KNotificationGenerator::initialize(int stage)
         cMessage *sendEvent = new cMessage("sendEvent");
         sendEvent->setKind(112);
         
-        if (notificationGenDistribution == KNOTIFICATIONGENERATOR_DISTR_EXPONENTIAL) {
+        if (notificationGenDistribution == KBASICNOTIFICATIONGENERATOR_DISTR_EXPONENTIAL) {
 			firstEventSendTime = simTime() + exponential(interEventTimeDuration, usedRNG);
-		} else if (notificationGenDistribution == KNOTIFICATIONGENERATOR_DISTR_UNIFORM) {
+		} else if (notificationGenDistribution == KBASICNOTIFICATIONGENERATOR_DISTR_UNIFORM) {
 			firstEventSendTime = simTime().dbl() + uniform(0.0, (interEventTimeDuration * 2), usedRNG);
 		} else {
 			firstEventSendTime = simTime().dbl() + interEventTimeDuration;
@@ -146,7 +149,7 @@ void KNotificationGenerator::initialize(int stage)
         
         scheduleAt(firstEventSendTime, sendEvent);
 		
-		if (logging) {EV_INFO << KNOTIFICATIONGENERATOR_SIMMODULEINFO << ">!<SUTG "<< allEvents.size() << " DI" << "\n";}
+		if (logging) {EV_INFO << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << ">!<SUTG "<< allEvents.size() << " DI" << "\n";}
         
     } else if (stage == 3){
 		
@@ -155,12 +158,12 @@ void KNotificationGenerator::initialize(int stage)
     }
 }
 
-int KNotificationGenerator::numInitStages() const
+int KBasicNotificationGenerator::numInitStages() const
 {
     return 3;
 }
 
-void KNotificationGenerator::handleMessage(cMessage *msg)
+void KBasicNotificationGenerator::handleMessage(cMessage *msg)
 {
 	int rndm, idx;
 	
@@ -228,7 +231,7 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 	else if (msg->isSelfMessage() && msg->getKind() == 112) {
 		
 		if(eventsRead==false){
-			EV_FATAL << KNOTIFICATIONGENERATOR_SIMMODULEINFO << "Events cannot be read" << endl;
+			EV_FATAL << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "Events cannot be read" << endl;
 		}
 		
 		else if(eventsRead){
@@ -336,7 +339,10 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 				eventMsg->setValidUntilTime(validtime);
 				eventMsg->setDestinationOriented(false);
 				eventMsg->setMsgType(11);
-				
+                
+        		eventMsg->setRealPayloadSize(dataSizeInBytes);
+        		eventMsg->setByteLength(dataSizeInBytes);
+
 				// Animations for emergency events
 				if(emergency){
 					if(stof(tempvec[endTimeIdx]) > simTime().dbl()){
@@ -403,9 +409,9 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 				sendEvent->setKind(112);
 				
 				double nextNotificationGenTime = 0.0;
-				if (notificationGenDistribution == KNOTIFICATIONGENERATOR_DISTR_EXPONENTIAL) {
+				if (notificationGenDistribution == KBASICNOTIFICATIONGENERATOR_DISTR_EXPONENTIAL) {
 					nextNotificationGenTime = simTime().dbl() + exponential(interEventTimeDuration, usedRNG);
-				} else if (notificationGenDistribution == KNOTIFICATIONGENERATOR_DISTR_UNIFORM) {
+				} else if (notificationGenDistribution == KBASICNOTIFICATIONGENERATOR_DISTR_UNIFORM) {
 					nextNotificationGenTime = simTime().dbl() + uniform(0.0, (interEventTimeDuration * 2), usedRNG);
 		        } else {
 					nextNotificationGenTime = simTime().dbl() + interEventTimeDuration;
@@ -414,8 +420,8 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 				scheduleAt(nextNotificationGenTime, sendEvent);
 			}
 		} else {
-			EV << KNOTIFICATIONGENERATOR_SIMMODULEINFO << "Notifications cant be Generated; Verify the events file" <<endl;
-			EV << KNOTIFICATIONGENERATOR_SIMMODULEINFO << "           \\_('-')_/           " <<endl;
+			EV << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "Notifications cant be Generated; Verify the events file" <<endl;
+			EV << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "           \\_('-')_/           " <<endl;
 		}
 		
 		
@@ -424,7 +430,8 @@ void KNotificationGenerator::handleMessage(cMessage *msg)
 }
 
 //Read events from text file
-bool KNotificationGenerator::readEvents(){
+bool KBasicNotificationGenerator::readEvents()
+{
 	int i=0;
 	std::string line;
 	std::ifstream infile;
@@ -445,6 +452,7 @@ bool KNotificationGenerator::readEvents(){
 	return true;
 }
 
-void KNotificationGenerator::finish(){
+void KBasicNotificationGenerator::finish()
+{
 	
 }

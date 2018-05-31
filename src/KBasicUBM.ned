@@ -1,6 +1,6 @@
 //
 // The model is the implementation of the User Behavior layer
-// for Keetchi Simulator
+// for OPS Simulator
 //
 // @date   : 13-07-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
@@ -9,11 +9,13 @@
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Unwanted code, comments cleanup
 // - Keywords and events files as parameters
+// - use of an interface
+// - change of class name
 //
 
 package ops;
 
-simple KUserBehavior
+simple KBasicUBM like IUBM
 {
      parameters:
      

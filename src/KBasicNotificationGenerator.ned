@@ -9,10 +9,13 @@
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Unwanted code, comments cleanup
 // - Locations and events files as parameters
+// - use of interface
+// - change of class name
+// - data size parameter
 //
 package ops;
 
-simple KNotificationGenerator
+simple KBasicNotificationGenerator like INotificationGenerator
 {
 	parameters:
 	
@@ -43,6 +46,9 @@ simple KNotificationGenerator
         // file paths of locations and events files
         string locationsFilePath = default("locations.txt");
         string eventsFilePath = default("events.txt");
+
+        // data size
+        int dataSizeInBytes = default(10000);
     	
         // icon
         @display("i=misc/globe");

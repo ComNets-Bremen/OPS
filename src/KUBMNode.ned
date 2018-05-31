@@ -1,11 +1,13 @@
 //
 // The OPS node model consisting of the different OPS
-// layers and deployed with the Bruit application.
+// layers.
 //
 // @author : Anas bin Muslim (anas1@uni-bremen.de)
 // @date   : 12-may-17
 //
-//
+// Change History:
+// Asanga Udugama (adu@comnets.uni-bremen.de)
+// - use of an interface
 
 package ops;
 
@@ -19,13 +21,19 @@ module KUBMNode
 
         // unique node identifier
         int nodeID;
+        
+        // user behaviour model used
+        string userBahaviourModel = default("KBasicUBM");
+
+        // user behaviour model application used
+        string userBahaviourApp = default("KBasicUBMApp");
 
         // type of forwarding layer used
         string forwardingLayer @enum(KRRSLayer,KKeetchiLayer,KEpidemicRoutingLayer) = default("KKeetchiLayer");
-		
+
 		// Static node (currently only routers) or mobile node
 		// Static swim = 0, swim = 1, Extended swim = 2
-		
+
         // build own address from nodeID (in the form of a MAC address)
         int digit1 = (nodeID - (nodeID % 10000)) / 10000;
         int digit2 = ((nodeID - (this.digit1 * 10000)) - ((nodeID - (this.digit1 * 10000)) % 1000)) / 1000;
@@ -37,24 +45,24 @@ module KUBMNode
 
 		// mobility model used
 		string mobilityType = default("SWIMMobility");
-		
+
         // icon
         @display("i=device/palm2;bgb=290,400");
 
     gates:
         input radioIn @directIn;
 		input notificationGenIn @directIn;
-    
+
     submodules:
-		
+
 		// user behavior model
-		ubm: KUserBehavior{
+		ubm: <userBahaviourModel> like IUBM {
 			parameters:
 				@display("p=180,50;t=UserBehavior,r,blue");
 		}
-		
+
         // application layer
-        app: KBasicUBMApp{
+        app: <userBahaviourApp> like IUBMApp {
             parameters:
 				nodeIndex = nodeID;
                 @display("p=90,50;t=UBMApp,l,blue");

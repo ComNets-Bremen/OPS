@@ -9,14 +9,17 @@
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Unwanted code, comments cleanup
 // - Locations and events files as parameters
+// - use of an interface
+// - change of class name
 //
 
-#ifndef KUSERBEHAVIOR_H_
-#define KUSERBEHAVIOR_H_
+#ifndef KBASICUBM_H_
+#define KBASICUBM_H_
 
 #include "inet/mobility/single/ExtendedSWIMMobility.h"
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
+#include "IUBM.h"
 
 #if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
@@ -34,7 +37,7 @@ struct event{
 	
 using namespace std;
 
-class KUserBehavior : public cSimpleModule
+class KBasicUBM : public cSimpleModule, public IUBM
 {
     protected:
         virtual void initialize(int stage);
@@ -44,7 +47,7 @@ class KUserBehavior : public cSimpleModule
         
         virtual void moveAway();
         
-    public:
+    private:
         virtual bool computePreReactions();
         
         virtual event computeEventReaction(event);
@@ -54,7 +57,6 @@ class KUserBehavior : public cSimpleModule
         virtual void sendReactionMsg(reactionType, std::string);
         
         virtual bool getKeywords();
-    private:
 		
         int usedRNG;
         int react;                            // User defined value in NED file; 1 = react to events, 2 = don't react to events
@@ -79,6 +81,6 @@ class KUserBehavior : public cSimpleModule
         
 };
 
-#define KUSERBEHAVIOR_SIMMODULEINFO       " KUserBehavior>!<" << simTime() << ">!<" << this->getParentModule()->getFullName()
+#define KBASICUBM_SIMMODULEINFO       " KBasicUBM>!<" << simTime() << ">!<" << this->getParentModule()->getFullName()
 
-#endif /* KUSERBEHAVIOR_H_ */
+#endif /* KBASICUBM_H_ */

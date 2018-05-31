@@ -8,10 +8,11 @@
 // Change History:
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Unwanted code, comments cleanup
+// - use of an interface
 
 package ops;
 
-simple KBasicUBMApp
+simple KBasicUBMApp like IUBMApp
 {
     parameters:
         // node index
@@ -20,7 +21,7 @@ simple KBasicUBMApp
 		// prefix assigned to the app
     	string appPrefix = default("/basicubm-");
 
-		// prefix used to generate names appended with a number, e.g., /bruit/event-000328     	
+		// prefix used to generate names appended with a number, e.g., /event-000328     	
     	string appNameGenPrefix = default("/event-");
 
         // logging at layer - 0 = disabled, 1 = enabled

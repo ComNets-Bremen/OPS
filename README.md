@@ -269,7 +269,7 @@ based on the scenario considered. Generally, every node has the following layers
 The Notification Generator is a network-wide model that holds a set of messages and disseminates to the
 user behaviour models of nodes. The models associated with notification generation are,
 
-   - `KNotificationGenerator` - Notifications (i.e., messages) are held and disseminated to the user behaviour 
+   - `KBasicNotificationGenerator` - Notifications (i.e., messages) are held and disseminated to the user behaviour 
 models of each node to inject them into the network.
 
 
@@ -282,7 +282,7 @@ listed below.
    the publication [Reactive User Behaviour and Mobility Models](https://arxiv.org/pdf/1709.06395.pdf). 
    Current models are,
 
-   - `KUserBehavior` - Performs the enforcement of user preferences on the notifications (messages)
+   - `KBasicUBM` - Performs the enforcement of user preferences on the notifications (messages)
    - `KBasicUBMApp` - Injects and receives to/from network
 
 2. Opportunistic Networking Layer - Performs the forwarding of data and feedback according

@@ -9,13 +9,15 @@
 // Asanga Udugama (adu@comnets.uni-bremen.de)
 // - Log entry includes model name
 // - Unwanted code, comments cleanup
+// - use of an interface
 
 #ifndef KBASICUBMAPP_H_
 #define KBASICUBMAPP_H_
 
 #include <omnetpp.h>
 #include "KOPSMsg_m.h"
-#include "KUserBehavior.h"
+#include "KBasicUBM.h"
+#include "IUBMApp.h"
 
 #if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
@@ -26,7 +28,7 @@ using namespace std;
 
 #define KBASICUBMAPP_SIMMODULEINFO  " KBasicUBMApp>!<" << simTime() << ">!<" << this->getParentModule()->getFullName()
 
-class KBasicUBMApp : public cSimpleModule
+class KBasicUBMApp : public cSimpleModule, public IUBMApp
 {
     protected:
         virtual void initialize(int stage);
