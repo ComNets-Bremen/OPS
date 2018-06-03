@@ -342,6 +342,7 @@ void KWirelessInterface::finish()
         cancelEvent(sendPacketTimeoutEvent);
     }
     delete sendPacketTimeoutEvent;
+    sendPacketTimeoutEvent = NULL;
 
     // remove all messages
     while(!packetQueue.empty()) {

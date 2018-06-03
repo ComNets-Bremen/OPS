@@ -366,5 +366,6 @@ void KRRSLayer::finish()
     // remove age data trigger
     cancelEvent(ageDataTimeoutEvent);
     delete ageDataTimeoutEvent;
+    ageDataTimeoutEvent = NULL;
 
 }
