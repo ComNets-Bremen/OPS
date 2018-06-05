@@ -251,7 +251,7 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
             if (logging) {EV_INFO << KRRSLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                    << omnetDataMsg->getByteLength() << "\n";}
+                    << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
             // if destination oriented data sent around, then cache message only if not destined to self
             // or if no destination in data, cache all messages
