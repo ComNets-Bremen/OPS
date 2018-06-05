@@ -84,7 +84,7 @@ def extract_from_log_and_compute(fileHelper, nodes):
         print "Input File:                                                     ", inputfile.name
 
         for line in inputfile:
-            if "INFO" in line and "KUserBehavior" in line and ">!<NE>!<" in line:
+            if "INFO" in line and "KBasicUBM" in line and ">!<NE>!<" in line:
                 words = line.split(">!<")
 
                 # print "ne node=", words[2].strip(), " data=", words[4].strip(), " type=", words[8].strip()
