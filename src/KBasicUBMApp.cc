@@ -22,6 +22,7 @@ void KBasicUBMApp::initialize(int stage)
         appPrefix = par("appPrefix").stringValue();
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
         logging = par("logging");
+        dataSizeInBytes = par("dataSizeInBytes");
 
     } else if (stage == 1) {
 
@@ -90,6 +91,8 @@ void KBasicUBMApp::handleMessage(cMessage *msg)
 				
 				lowerLayerMsg->setDataName(datNam.replace(datNam.begin(), datNam.begin(), appPrefix).c_str());
 				lowerLayerMsg->setMsgType(31);
+                lowerLayerMsg->setRealPayloadSize(dataSizeInBytes);
+                lowerLayerMsg->setByteLength(dataSizeInBytes);
 			
 				send(lowerLayerMsg, "lowerLayerOut");
 			

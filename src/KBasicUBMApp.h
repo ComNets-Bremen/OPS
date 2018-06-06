@@ -47,6 +47,7 @@ class KBasicUBMApp : public cSimpleModule, public IUBMApp
         string appNameGenPrefix;              // Same as appPrefix but it is an application Name
         KDataMsg *neighborDataMsg;
         
+        int dataSizeInBytes;
         int logging;
 };
 

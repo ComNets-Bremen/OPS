@@ -27,6 +27,9 @@ simple KBasicUBMApp like IUBMApp
         // logging at layer - 0 = disabled, 1 = enabled
         int logging = default(1);
 		 
+        // data size
+        int dataSizeInBytes = default(10000);
+
         // icon used
       	@display("i=block/app");
         
