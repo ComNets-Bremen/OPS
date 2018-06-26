@@ -14,7 +14,7 @@ For Linux or MacOS:
 
 - Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
-- Clone this repository: `git clone -b OPS-NG https://github.com/ComNets-Bremen/OPS`
+- Clone this repository: `git https://github.com/ComNets-Bremen/OPS`
 - Checkout and build dependencies: `./bootstrap.sh`. This will also build SWIM and ExtendedSWIM with
   INET (see section `SWIM Mobility Model` and `ExtendedSWIM Mobility Model` below) and further, KeetchiLib
 - Create makefiles: run `./ops-makefile-setup.sh`
