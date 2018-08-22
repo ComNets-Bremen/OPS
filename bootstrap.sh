@@ -90,7 +90,20 @@ if [ "$INET_BUILD" = true ]; then
     fi
 
     make makefiles
+
+    if [ $? -ne 0 ]; then
+        echo "Command \"make makefiles\" for INET failed. Aborting"
+        exit 1
+    fi
+
     make MODE=release
+
+    if [ $? -ne 0 ]; then
+        echo "Command \"make MODE=release\" for INET failed. Aborting"
+        exit 1
+    fi
+
+
     cd ..
 else
     echo "Skipping building OMNeT++ INET Framework"
