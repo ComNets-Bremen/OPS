@@ -45,41 +45,50 @@ if [ "$INET_BUILD" = true ]; then
 
     # build SWIM and ExtendedSWIM modules with INET
     if [ "$INET_PATCH" = true ]; then
-        echo "Checking for SWIM in INET located in $INET_PATH and patch it if necessary"
-        for f in $(ls ../SWIMMobility/*.{cc,h,ned}); do
-            basefile=$(basename $f)
-            echo "Checking for $basefile..."
-            if [ ! -f "$INET_PATH/inet/mobility/single/$basefile" ]; then
-                echo "\"$basefile\" does not exist. Copying..."
-                cp $f $INET_PATH/inet/mobility/single/
-            else
-                echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/single/"
-                echo "The existing version is not replaced. Ensure that you update it if required!"
-            fi
-        done
-        echo "Checking for ExtendedSWIM in INET located in $INET_PATH and patch it if necessary"
-        for f in $(ls ../ExtendedSWIMMobility/IReactive*.{h,ned}); do
-            basefile=$(basename $f)
-            echo "Checking for $basefile..."
-            if [ ! -f "$INET_PATH/inet/mobility/contract/$basefile" ]; then
-                echo "\"$basefile\" does not exist. Copying..."
-                cp $f $INET_PATH/inet/mobility/contract/
-            else
-                echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/contract/"
-                echo "The existing version is not replaced. Ensure that you update it if required!"
-            fi
-        done
-        for f in $(ls ../ExtendedSWIMMobility/ExtendedSWIM*.{cc,h,ned}); do
-            basefile=$(basename $f)
-            echo "Checking for $basefile..."
-            if [ ! -f "$INET_PATH/inet/mobility/single/$basefile" ]; then
-                echo "\"$basefile\" does not exist. Copying..."
-                cp $f $INET_PATH/inet/mobility/single/
-            else
-                echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/single/"
-                echo "The existing version is not replaced. Ensure that you update it if required!"
-            fi
-        done
+        if [ -d "../SWIMMobility" ]; then
+            echo "Checking for SWIM in INET located in $INET_PATH and patch it if necessary"
+            for f in $(ls ../SWIMMobility/*.{cc,h,ned}); do
+                basefile=$(basename $f)
+                echo "Checking for $basefile..."
+                if [ ! -f "$INET_PATH/inet/mobility/single/$basefile" ]; then
+                    echo "\"$basefile\" does not exist. Copying..."
+                    cp $f $INET_PATH/inet/mobility/single/
+                else
+                    echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/single/"
+                    echo "The existing version is not replaced. Ensure that you update it if required!"
+                fi
+            done
+        else
+            echo "SWIMMobility not found! Skipping"
+        fi
+
+        if [ -d "../ExtendedSWIMMobility" ]; then
+            echo "Checking for ExtendedSWIM in INET located in $INET_PATH and patch it if necessary"
+            for f in $(ls ../ExtendedSWIMMobility/IReactive*.{h,ned}); do
+                basefile=$(basename $f)
+                echo "Checking for $basefile..."
+                if [ ! -f "$INET_PATH/inet/mobility/contract/$basefile" ]; then
+                    echo "\"$basefile\" does not exist. Copying..."
+                    cp $f $INET_PATH/inet/mobility/contract/
+                else
+                    echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/contract/"
+                    echo "The existing version is not replaced. Ensure that you update it if required!"
+                fi
+            done
+            for f in $(ls ../ExtendedSWIMMobility/ExtendedSWIM*.{cc,h,ned}); do
+                basefile=$(basename $f)
+                echo "Checking for $basefile..."
+                if [ ! -f "$INET_PATH/inet/mobility/single/$basefile" ]; then
+                    echo "\"$basefile\" does not exist. Copying..."
+                    cp $f $INET_PATH/inet/mobility/single/
+                else
+                    echo "Found \"$basefile\" in the INET directory \"$INET_PATH/inet/mobility/single/"
+                    echo "The existing version is not replaced. Ensure that you update it if required!"
+                fi
+            done
+        else
+            echo "ExtendedSWIMMobility not found. Skipping"
+        fi
     else
         echo "INET patching disabled"
     fi
