@@ -79,9 +79,7 @@ This simulation campaign was done to determine the initial confidence interval c
 - herald-epidemic-random-mob-netpress-197.ini
 - herald-epidemic-random-mob-netpress-197-single-run.ini
 - herald-epidemic-random-mob-netpress-59-2.ini
-- herald-epidemic-random-mob-netpress-592.ini
 - herald-epidemic-random-mob-netpress-59-2-single-run.ini
-- herald-epidemic-random-mob-netpress-592-single-run.ini
 - herald-keetchi-random-mob-netpress-118.ini
 - herald-keetchi-random-mob-netpress-118-single-run.ini
 - herald-keetchi-random-mob-netpress-148.ini
@@ -89,6 +87,4 @@ This simulation campaign was done to determine the initial confidence interval c
 - herald-keetchi-random-mob-netpress-197.ini
 - herald-keetchi-random-mob-netpress-197-single-run.ini
 - herald-keetchi-random-mob-netpress-59-2.ini
-- herald-keetchi-random-mob-netpress-592.ini
 - herald-keetchi-random-mob-netpress-59-2-single-run.ini
-- herald-keetchi-random-mob-netpress-592-single-run.ini
