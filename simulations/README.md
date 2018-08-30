@@ -11,7 +11,8 @@ This simulation campaign was done to determine the initial confidence interval c
 
 
 # Files for the simulation:
-
+- herald-epidemic-random-mob.ini
+- herald-epidemic-random-mob-single-run.ini
 - herald-epidemic-random-appl-15s.ini
 - herald-epidemic-random-appl-15s-single-run.ini
 - herald-epidemic-random-appl-250s.ini
@@ -42,6 +43,8 @@ This simulation campaign was done to determine the initial confidence interval c
 - herald-epidemic-random-mob-cache-3MB-single-run.ini
 - herald-epidemic-random-mob-cache-500kB.ini
 - herald-epidemic-random-mob-cache-500kB-single-run.ini
+- herald-keetchi-random-mob.ini
+- herald-keetchi-random-mob-single-run.ini
 - herald-keetchi-random-appl-15s.ini
 - herald-keetchi-random-appl-15s-single-run.ini
 - herald-keetchi-random-appl-250s.ini
