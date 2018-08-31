@@ -17,27 +17,6 @@ This simulation campaign was done to determine the initial confidence interval c
 - **herald-epidemic-random-mob.ini**: Simulation of the default scenario for Epidemic routing with 500 nodes and 5MB cache (30 runs)
 - **herald-epidemic-random-mob-single-run.ini**: Simulation of the default scenario for Epidemic routing with 500 nodes and 5MB cache (single run)
 
-
-## Evaluation of the data injection frequency
-### Keetchi
-- **herald-keetchi-random-appl-15s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 15 seconds (30 runs)
-- **herald-keetchi-random-appl-15s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 15 seconds (single run)
-- **herald-keetchi-random-appl-60s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 60 seconds (30 runs)
-- **herald-keetchi-random-appl-60s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 60 seconds (single run)
-- **herald-keetchi-random-appl-250s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 250 seconds (30 runs)
-- **herald-keetchi-random-appl-250s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 250 seconds (single run)
-- **herald-keetchi-random-appl-500s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 500 seconds (30 runs)
-- **herald-keetchi-random-appl-500s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 500 seconds (single run)
-### Epidemic
-- **herald-epidemic-random-appl-15s.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 15 seconds (30 runs)
-- **herald-epidemic-random-appl-15s-single-run.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 15 seconds (single run)
-- **herald-epidemic-random-appl-60s.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 60 seconds (30 runs)
-- **herald-epidemic-random-appl-60s-single-run.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 60 seconds (single run)
-- **herald-epidemic-random-appl-250s.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 250 seconds (30 runs)
-- **herald-epidemic-random-appl-250s-single-run.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 250 seconds (single run)
-- **herald-epidemic-random-appl-500s.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 500 seconds (30 runs)
-- **herald-epidemic-random-appl-500s-single-run.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 500 seconds (single run)
-
 ## Evaluation of the number of nodes
 ### Keetchi
 - **herald-keetchi-random-mob-250-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (30 runs)
