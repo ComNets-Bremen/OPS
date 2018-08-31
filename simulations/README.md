@@ -60,7 +60,7 @@ This simulation campaign was done to determine the initial confidence interval c
 ### Epidemic
 - **herald-epidemic-random-mob-250-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (30 runs)
 - **herald-epidemic-random-mob-250-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (single run)
-- **herald-epidemic-random-mob-500-nodes.ini**:Simulation of the default scenario for Epidemic routing with the number of nodes set to 500 (30 runs)
+- **herald-epidemic-random-mob-500-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 500 (30 runs)
 - **herald-epidemic-random-mob-500-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 500 (single run)
 - **herald-epidemic-random-mob-750-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 750 (30 runs)
 - **herald-epidemic-random-mob-750-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 750 (single run)
