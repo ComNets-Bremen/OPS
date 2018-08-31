@@ -1,0 +1,3 @@
+# type >!< network average delay >!< network total >!< network received >!< network delivery ratio >!< network hops travelled 
+ loved >!< 12890.0800875 >!< 82000 >!< 71153 >!< 0.867719512195 >!< 16.8324286287
+ non-loved >!< 12858.9115545 >!< 254000 >!< 216223 >!< 0.851271653543 >!< 16.8237634892
