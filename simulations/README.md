@@ -1,7 +1,4 @@
-# Keetchi-Paper-Spring-2018
-
-Each of the sub folders here points to the .ini files used in a particular simulations campaign.
-# 2018-04-03-campaign
+# Simulation files
 
 This simulation campaign was done to determine the initial confidence interval computations (using Student-t) for the following sets of simulations.
 
@@ -10,12 +7,28 @@ This simulation campaign was done to determine the initial confidence interval c
 - Epidemic and Keetchi using random mobility with cache sizes 500kB, 1MB, 3MB
 
 
-# Files for the simulation:
-## Epidemic Routing
-### Reference Scenario
+# Simulation Configurations
+## Reference Scenario
+### Keetchi
+- **herald-keetchi-random-mob.ini**: Simulation of the default scenario for Keetchi with 500 nodes and 5MB cache (30 runs)
+- **herald-keetchi-random-mob-single-run.ini**: Simulation of the default scenario for Keetchi with 500 nodes and 5MB cache (single run)
+
+### Epidemic
 - **herald-epidemic-random-mob.ini**: Simulation of the default scenario for Epidemic routing with 500 nodes and 5MB cache (30 runs)
 - **herald-epidemic-random-mob-single-run.ini**: Simulation of the default scenario for Epidemic routing with 500 nodes and 5MB cache (single run)
-### Evaluation of the data injection frequency
+
+
+## Evaluation of the data injection frequency
+### Keetchi
+- **herald-keetchi-random-appl-15s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 15 seconds (30 runs)
+- **herald-keetchi-random-appl-15s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 15 seconds (single run)
+- **herald-keetchi-random-appl-60s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 60 seconds (30 runs)
+- **herald-keetchi-random-appl-60s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 60 seconds (single run)
+- **herald-keetchi-random-appl-250s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 250 seconds (30 runs)
+- **herald-keetchi-random-appl-250s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 250 seconds (single run)
+- **herald-keetchi-random-appl-500s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 500 seconds (30 runs)
+- **herald-keetchi-random-appl-500s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 500 seconds (single run)
+### Epidemic
 - **herald-epidemic-random-appl-15s.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 15 seconds (30 runs)
 - **herald-epidemic-random-appl-15s-single-run.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 15 seconds (single run)
 - **herald-epidemic-random-appl-60s.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 60 seconds (30 runs)
@@ -25,56 +38,8 @@ This simulation campaign was done to determine the initial confidence interval c
 - **herald-epidemic-random-appl-500s.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 500 seconds (30 runs)
 - **herald-epidemic-random-appl-500s-single-run.ini**: Simulation of the default scenario for Epidemic routing with the data injection frequency set to every 500 seconds (single run)
 
-### Evaluation of the number of nodes
-- **herald-epidemic-random-mob-250-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (30 runs)
-- **herald-epidemic-random-mob-250-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (single run)
-- **herald-epidemic-random-mob-500-nodes.ini**:Simulation of the default scenario for Epidemic routing with the number of nodes set to 500 (30 runs)
-- **herald-epidemic-random-mob-500-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 500 (single run)
-- **herald-epidemic-random-mob-750-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 750 (30 runs)
-- **herald-epidemic-random-mob-750-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 750 (single run)
-- **herald-epidemic-random-mob-1000-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1000 (30 runs)
-- **herald-epidemic-random-mob-1000-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1000 (single run)
-- **herald-epidemic-random-mob-1250-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1250 (30 runs)
-- **herald-epidemic-random-mob-1250-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1250 (single run)
-- **herald-epidemic-random-mob-1500-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1500 (30 runs)
-- **herald-epidemic-random-mob-1500-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1500 (single run)
-- **herald-epidemic-random-mob-1750-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1750 (30 runs)
-- **herald-epidemic-random-mob-1750-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1750 (single run)
-- **herald-epidemic-random-mob-2000-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 2000 (30 runs)
-- **herald-epidemic-random-mob-2000-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 2000 (single run)
-
-### Evaluation of the cache size
-- **herald-epidemic-random-mob-netpress-197.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 20KB (30 runs)
-- **herald-epidemic-random-mob-netpress-197-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 20KB (single run)
-- **herald-epidemic-random-mob-netpress-148.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 40KB (30 runs)
-- **herald-epidemic-random-mob-netpress-148-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 40KB (single run)
-- **herald-epidemic-random-mob-netpress-118.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 50KB (30 runs)
-- **herald-epidemic-random-mob-netpress-118-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 50KB (single run)
-- **herald-epidemic-random-mob-netpress-59-2.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 100KB (30 runs)
-- **herald-epidemic-random-mob-netpress-59-2-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 100KB (single run)
-- **herald-epidemic-random-mob-cache-500kB.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 500KB (30 runs)
-- **herald-epidemic-random-mob-cache-500kB-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 500KB (single run)
-- **herald-epidemic-random-mob-cache-1MB.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 1MB (30 runs)
-- **herald-epidemic-random-mob-cache-1MB-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 1MB (single run)
-- **herald-epidemic-random-mob-cache-3MB.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 3MB (30 runs)
-- **herald-epidemic-random-mob-cache-3MB-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 3MB (single run)
-
-## Keetchi Routing
-### Reference Scenario
-- **herald-keetchi-random-mob.ini**: Simulation of the default scenario for Keetchi with 500 nodes and 5MB cache (30 runs)
-- **herald-keetchi-random-mob-single-run.ini**: Simulation of the default scenario for Keetchi with 500 nodes and 5MB cache (single run)
-
-### Evaluation of the data injection frequency
-- **herald-keetchi-random-appl-15s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 15 seconds (30 runs)
-- **herald-keetchi-random-appl-15s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 15 seconds (single run)
-- **herald-keetchi-random-appl-60s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 60 seconds (30 runs)
-- **herald-keetchi-random-appl-60s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 60 seconds (single run)
-- **herald-keetchi-random-appl-250s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 250 seconds (30 runs)
-- **herald-keetchi-random-appl-250s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 250 seconds (single run)
-- **herald-keetchi-random-appl-500s.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 500 seconds (30 runs)
-- **herald-keetchi-random-appl-500s-single-run.ini**: Simulation of the default scenario for Keetchi with the data injection frequency set to every 500 seconds (single run)
-
-### Evaluation of the number of nodes
+## Evaluation of the number of nodes
+### Keetchi
 - **herald-keetchi-random-mob-250-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (30 runs)
 - **herald-keetchi-random-mob-250-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (single run)
 - **herald-keetchi-random-mob-500-nodes.ini**: Simulation of the default scenario for Keetchi with the number of nodes set to 500 (30 runs)
@@ -92,7 +57,26 @@ This simulation campaign was done to determine the initial confidence interval c
 - **herald-keetchi-random-mob-2000-nodes.ini**: Simulation of the default scenario for Keetchi with the number of nodes set to 2000 (30 runs)
 - **herald-keetchi-random-mob-2000-nodes-single-run.ini**: Simulation of the default scenario for Keetchi with the number of nodes set to 2000 (single run)
 
-### Evaluation of the cache size
+### Epidemic
+- **herald-epidemic-random-mob-250-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (30 runs)
+- **herald-epidemic-random-mob-250-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 250 (single run)
+- **herald-epidemic-random-mob-500-nodes.ini**:Simulation of the default scenario for Epidemic routing with the number of nodes set to 500 (30 runs)
+- **herald-epidemic-random-mob-500-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 500 (single run)
+- **herald-epidemic-random-mob-750-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 750 (30 runs)
+- **herald-epidemic-random-mob-750-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 750 (single run)
+- **herald-epidemic-random-mob-1000-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1000 (30 runs)
+- **herald-epidemic-random-mob-1000-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1000 (single run)
+- **herald-epidemic-random-mob-1250-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1250 (30 runs)
+- **herald-epidemic-random-mob-1250-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1250 (single run)
+- **herald-epidemic-random-mob-1500-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1500 (30 runs)
+- **herald-epidemic-random-mob-1500-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1500 (single run)
+- **herald-epidemic-random-mob-1750-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1750 (30 runs)
+- **herald-epidemic-random-mob-1750-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 1750 (single run)
+- **herald-epidemic-random-mob-2000-nodes.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 2000 (30 runs)
+- **herald-epidemic-random-mob-2000-nodes-single-run.ini**: Simulation of the default scenario for Epidemic routing with the number of nodes set to 2000 (single run)
+
+## Evaluation of the cache size
+### Keetchi
 - **herald-keetchi-random-mob-netpress-197.ini**: Simulation of the default scenario for Keetchi with the cache size set to 20KB (30 runs)
 - **herald-keetchi-random-mob-netpress-197-single-run.ini**: Simulation of the default scenario for Keetchi with the cache size set to 20KB (single run)
 - **herald-keetchi-random-mob-netpress-148.ini**: Simulation of the default scenario for Keetchi with the cache size set to 40KB (30 runs)
@@ -108,3 +92,18 @@ This simulation campaign was done to determine the initial confidence interval c
 - **herald-keetchi-random-mob-cache-3MB.ini**: Simulation of the default scenario for Keetchi with the cache size set to 3MB (30 runs)
 - **herald-keetchi-random-mob-cache-3MB-single-run.ini**: Simulation of the default scenario for Keetchi with the cache size set to 3MB (single run)
 
+### Epidemic
+- **herald-epidemic-random-mob-netpress-197.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 20KB (30 runs)
+- **herald-epidemic-random-mob-netpress-197-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 20KB (single run)
+- **herald-epidemic-random-mob-netpress-148.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 40KB (30 runs)
+- **herald-epidemic-random-mob-netpress-148-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 40KB (single run)
+- **herald-epidemic-random-mob-netpress-118.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 50KB (30 runs)
+- **herald-epidemic-random-mob-netpress-118-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 50KB (single run)
+- **herald-epidemic-random-mob-netpress-59-2.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 100KB (30 runs)
+- **herald-epidemic-random-mob-netpress-59-2-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 100KB (single run)
+- **herald-epidemic-random-mob-cache-500kB.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 500KB (30 runs)
+- **herald-epidemic-random-mob-cache-500kB-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 500KB (single run)
+- **herald-epidemic-random-mob-cache-1MB.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 1MB (30 runs)
+- **herald-epidemic-random-mob-cache-1MB-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 1MB (single run)
+- **herald-epidemic-random-mob-cache-3MB.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 3MB (30 runs)
+- **herald-epidemic-random-mob-cache-3MB-single-run.ini**: Simulation of the default scenario for Epidemic routing with the cache size set to 3MB (single run)
