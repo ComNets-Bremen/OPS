@@ -1,0 +1,2 @@
+# totals >!< total sent count >!< total sent bytes >!< data sent count >!< data sent bytes >!< feedback sent count >!< feedback sent bytes >!< svm send count >!< svm sent bytes >!< drm sent count >!< drm sent bytes
+totals >!< 4288444 >!< 29880794137 >!< 2897881 >!< 29051257025 >!< 0 >!< 0 >!< 696215 >!< 808882864 >!< 694348 >!< 20654248
