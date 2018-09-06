@@ -105,7 +105,7 @@ if [ "$INET_BUILD" = true ]; then
         exit 1
     fi
 
-    make MODE=release
+    make MODE=release -j $(nproc)
 
     if [ $? -ne 0 ]; then
         echo "Command \"make MODE=release\" for INET failed. Aborting"
