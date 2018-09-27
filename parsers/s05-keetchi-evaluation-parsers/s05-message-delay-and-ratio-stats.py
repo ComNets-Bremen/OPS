@@ -100,7 +100,10 @@ def extract_from_log_and_compute(fileHelper, nodes):
                 # print "ui dm data=", words[8].strip(), " time=", words[1].strip()
 
                 global_event = get_event(all_events, words[8].strip(), False, 'X')
-                if global_event.injected_time == -1.0:
+                if global_event is None:
+                    print "ui dm data=", words[8].strip(), " time=", words[1].strip()
+                   
+                if not global_event is None and global_event.injected_time == -1.0:
                     global_event.injected_time = float(words[1].strip())
 
             elif "INFO" in line and ("KKeetchiLayer" in line or "KRRSLayer" in line or "KEpidemicRoutingLayer" in line) \
