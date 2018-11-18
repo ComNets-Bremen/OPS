@@ -14,8 +14,8 @@
 // @author: Asanga Udugama (adu@comnets.uni-bremen.de)
 //
 
-#ifndef KWIRELESSINTERFACE_H_
-#define KWIRELESSINTERFACE_H_
+#ifndef KNEIGHBORDISCOVERY_H_
+#define KNEIGHBORDISCOVERY_H_
 
 #define TRUE                            1
 #define FALSE                           0
@@ -31,47 +31,29 @@
 using namespace omnetpp;
 #endif
 
-#include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
+#include "IKNeighborDiscovery.h"
 
 using namespace std;
 
-class KBaseNodeInfo;
-
-class KWirelessInterface: public cSimpleModule
+class KNeighborDiscovery: public cSimpleModule, public IKNeighborDiscovery
 {
     protected:
         virtual void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
-        virtual int numInitStages() const;
-        virtual void finish();
+        virtual int numInitStages() const { return 3; }
+        virtual void refreshDisplay() const;
 
     private:
-        string ownMACAddress;
         double wirelessRange;
         string expectedNodeTypes;
         double neighbourScanInterval;
-        double bandwidthBitRate;
-        int wirelessHeaderSize;
-        int logging;
-
-        string broadcastMACAddress;
         KBaseNodeInfo *ownNodeInfo;
         list<KBaseNodeInfo*> allNodeInfoList;
-        queue<cMessage*> packetQueue;
-        cMessage *sendPacketTimeoutEvent;
-
         list<KBaseNodeInfo*> currentNeighbourNodeInfoList;
-        list<KBaseNodeInfo*> atTxNeighbourNodeInfoList;
-        cMessage *currentPendingMsg;
 
-        long numSent = 0;
-        long numReceived = 0;
-
-        void setupSendingMsg(cMessage *msg);
-        void sendPendingMsg();
-        string getDestinationAddress(cMessage *msg);
-
+    public:
+        virtual const list<KBaseNodeInfo*>& getCurrentNeighbourNodeInfoList() const {return currentNeighbourNodeInfoList;}
 };
 
-#endif /* KWIRELESSINTERFACE_H_ */
+#endif

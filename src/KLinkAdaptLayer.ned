@@ -25,6 +25,7 @@ simple KLinkAdaptLayer
         // interface to the upper layer (forwarding layer)
         input upperLayerIn;
         output upperLayerOut;
+        input neighborListIn;
 
         // interface to the lower layer (which may be the link technology used, e.g., emulated, WiFi adhoc, WiFi direct, etc.)
         input lowerLayerIn;

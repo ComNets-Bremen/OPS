@@ -14,8 +14,8 @@
 // @author: Asanga Udugama (adu@comnets.uni-bremen.de)
 //
 
-#ifndef KWIRELESSINTERFACE_H_
-#define KWIRELESSINTERFACE_H_
+#ifndef KWIRELESSINTERFACEWITHOUTND_H_
+#define KWIRELESSINTERFACEWITHOUTND_H_
 
 #define TRUE                            1
 #define FALSE                           0
@@ -37,8 +37,9 @@ using namespace omnetpp;
 using namespace std;
 
 class KBaseNodeInfo;
+class IKNeighborDiscovery;
 
-class KWirelessInterface: public cSimpleModule
+class KWirelessInterfaceWithoutND: public cSimpleModule
 {
     protected:
         virtual void initialize(int stage);
@@ -48,22 +49,18 @@ class KWirelessInterface: public cSimpleModule
 
     private:
         string ownMACAddress;
-        double wirelessRange;
-        string expectedNodeTypes;
-        double neighbourScanInterval;
         double bandwidthBitRate;
         int wirelessHeaderSize;
         int logging;
 
         string broadcastMACAddress;
-        KBaseNodeInfo *ownNodeInfo;
-        list<KBaseNodeInfo*> allNodeInfoList;
         queue<cMessage*> packetQueue;
         cMessage *sendPacketTimeoutEvent;
 
         list<KBaseNodeInfo*> currentNeighbourNodeInfoList;
         list<KBaseNodeInfo*> atTxNeighbourNodeInfoList;
         cMessage *currentPendingMsg;
+        IKNeighborDiscovery *neighborDiscovery;
 
         long numSent = 0;
         long numReceived = 0;

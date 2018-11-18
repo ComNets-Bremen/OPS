@@ -28,11 +28,11 @@ module KHeraldNode
         string forwardingLayer @enum(KRRSLayer,KKeetchiLayer,KEpidemicRoutingLayer) = default("KKeetchiLayer");
 
         // build own address from nodeID (in the form of a MAC address)
-        int digit1 = (nodeID - (nodeID % 10000)) / 10000;
-        int digit2 = ((nodeID - (this.digit1 * 10000)) - ((nodeID - (this.digit1 * 10000)) % 1000)) / 1000;
-        int digit3 = ((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000)) - ((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000)) % 100)) / 100;
-        int digit4 = ((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000) - (this.digit3 * 100)) - ((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000) - (this.digit3 * 100)) % 10)) / 10;
-        int digit5 = nodeID - (this.digit1 * 10000) - (this.digit2 * 1000) - (this.digit3 * 100) - (this.digit4 * 10);
+        int digit1 = int((nodeID - (nodeID % 10000)) / 10000);
+        int digit2 = int(((nodeID - (this.digit1 * 10000)) - ((nodeID - (this.digit1 * 10000)) % 1000)) / 1000);
+        int digit3 = int(((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000)) - ((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000)) % 100)) / 100);
+        int digit4 = int(((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000) - (this.digit3 * 100)) - ((nodeID - (this.digit1 * 10000) - (this.digit2 * 1000) - (this.digit3 * 100)) % 10)) / 10);
+        int digit5 = int(nodeID - (this.digit1 * 10000) - (this.digit2 * 1000) - (this.digit3 * 100) - (this.digit4 * 10));
         string ownAddress = "02:0" + string(this.digit1) + ":0" + string(this.digit2) + ":0" + string(this.digit3) + ":0" + string(this.digit4) + ":0" + string(this.digit5);
         *.ownMACAddress = ownAddress;
 
@@ -63,9 +63,15 @@ module KHeraldNode
             @display("p=120,189");
         }
 
+        neigh: <default("")> like IKNeighborDiscovery if typename != "" {
+            @display("p=179.34,249.90001");
+        }
+
         // wifi adhoc interface
-        wirelessIfc: KWirelessInterface {
-            @display("p=120,269");
+        link: <default("KWirelessInterface")> like IKWirelessInterface {
+            parameters:
+                ownMACAddress = ownAddress;
+                @display("p=90,350;t=WirelessIfc,l,blue");
         }
 
         // mobility
@@ -81,11 +87,13 @@ module KHeraldNode
         forwarding.lowerLayerOut --> linkAdapt.upperLayerIn;
 
         // gate connections between link adaptation layer and the wireless interface
-        linkAdapt.lowerLayerIn <-- wirelessIfc.upperLayerOut;
-        linkAdapt.lowerLayerOut --> wirelessIfc.upperLayerIn;
+        linkAdapt.lowerLayerIn <-- link.upperLayerOut;
+        linkAdapt.lowerLayerOut --> link.upperLayerIn;
 
         // gate connections between wireless interface and physical layer
         // only considered receipts as @directIn is specified and nodes send
         // directly to other nodes
-        wirelessIfc.lowerLayerIn <-- radioIn;
+        link.lowerLayerIn <-- radioIn;
+
+        neigh.upperLayerOut --> linkAdapt.neighborListIn if exists(neigh);
 }

@@ -9,22 +9,12 @@
 
 package ops;
 
-simple KWirelessInterface like IKWirelessInterface
+moduleinterface IKWirelessInterface
 {
     parameters:
         string ownMACAddress;
-        string interfaceTypeName = default("wireless");
-        double wirelessRange @unit(m) = default(30m);
-        string expectedNodeTypes = default("KNode, KHeraldNode, KUBMNode, KPromoteNode");
-        double neighbourScanInterval @unit(s) = default(1s);
-        double bandwidthBitRate @unit(bps) = default(100000bps); // 100 Kbps
-        int wirelessHeaderSize @unit(byte) = default(16byte); // 32byte = 802.11 a/b/g, 16byte = BT
-        
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(0);
-
-        // icon
-        @display("i=device/card");
+        double bandwidthBitRate @unit(bps);
+        int wirelessHeaderSize @unit(byte);
 
     gates:
         // interface to the upper layer (which may be the link adaptation layer)

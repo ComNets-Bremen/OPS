@@ -1,5 +1,5 @@
 //
-// A module interface that represents the forwardin layer in the nodes.
+// A module interface that represents the forwarding layer in the nodes.
 // 
 
 package ops;

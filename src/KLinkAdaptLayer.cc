@@ -55,7 +55,7 @@ void KLinkAdaptLayer::handleMessage(cMessage *msg)
         // if pkt from upper layer, then send to the lower layer
         send(msg, "lowerLayerOut");
 
-    } else if (strcmp(gateName, "lowerLayerIn") == 0) {
+    } else if (strcmp(gateName, "lowerLayerIn") == 0 || strcmp(gateName, "neighborListIn") == 0) {
         // if pkt from lower layer, then send to the upper layer
         send(msg, "upperLayerOut");
 
