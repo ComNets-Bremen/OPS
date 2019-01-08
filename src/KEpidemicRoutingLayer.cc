@@ -23,6 +23,7 @@ void KEpidemicRoutingLayer::initialize(int stage)
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         logging = par("logging");
         useTTL = par("useTTL");
+        usedRNG = par("usedRNG");
         numEventsHandled = 0;
         
         syncedNeighbourListIHasChanged = TRUE;
@@ -327,7 +328,7 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             // neighbour seen for the first time (could also be after the cool off period)
             // then start the random backoff
             syncedNeighbour->randomBackoffStarted = TRUE;
-            double randomBackoffDuration = uniform(1.0, maximumRandomBackoffDuration);
+            double randomBackoffDuration = uniform(1.0, maximumRandomBackoffDuration, usedRNG);
             syncedNeighbour->randomBackoffEndTime = simTime().dbl() + randomBackoffDuration;
 
             syncWithNeighbour = FALSE;

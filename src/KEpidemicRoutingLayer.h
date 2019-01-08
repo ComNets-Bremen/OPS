@@ -43,6 +43,7 @@ class KEpidemicRoutingLayer: public cSimpleModule
         double maximumRandomBackoffDuration;
         int logging;
         bool useTTL;
+        int usedRNG;
         
         int numEventsHandled;
 
