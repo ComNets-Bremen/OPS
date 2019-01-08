@@ -12,7 +12,7 @@ tl;dr
 
 For Linux or MacOS:
 
-- Install and setup OMNeT++ v5.2.1 or higher (use OMNeT++ installation Guide)
+- Install and setup OMNeT++ v5.4.1 or higher (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
 - Clone this repository: `git clone https://github.com/ComNets-Bremen/OPS` (do not download directly, clone!)
 - Checkout and build dependencies: `./bootstrap.sh`. This will also download, copy and build SWIM with INET (see section `SWIM Mobility Model` below)
@@ -51,14 +51,14 @@ on which it is run.
 
 
 
-### OMNeT++ 5.2.1 or higher
+### OMNeT++ 5.4.1 or higher
 
-OMNeT++ 5.2.1 or a higher version must be installed and the PATH variable must be
+OMNeT++ 5.4.1 or a higher version must be installed and the PATH variable must be
 set to run all the binaries of OMNeT++.
 
 e.g.,
 
-`export PATH=/Users/adu/Development/omnet/omnetpp-5.1/bin:$PATH (on a Mac OS X)`
+`export PATH=/Users/adu/Development/omnet/omnetpp-5.4.1/bin:$PATH (on a Mac OS X)`
 
 Use the Installation Guide of OMNeT++.
 
@@ -88,7 +88,7 @@ The software listed below are pulled automatically by OPS when setting up. Read 
 if different versions of the following software needs to be installed and configured.
 
 
-### INET 3.6.3
+### INET 4.0.0
 
 OPS requires the use of [INET Framework](https://inet.omnetpp.org) of OMNeT++ to simulate
 mobility and checks out an own version of INET where running `./bootstrap.sh`.
@@ -321,10 +321,10 @@ see what parameters are usually set to run a simulation.
 Logging
 -------
 
-Simulation runs result in the creation of logs that  dumps information about the activities of a
+Simulation runs result in the creation of logs that  dump information about the activities of a
 model. These logs are used by the parsers described below. The contents of these logs are coded
 to reduce the sizes of the logs. The codes used are listed here [here](./LOG_ENCODINGS.md). When
-developing new models, please check these encodings to see what can be used.
+developing new models, please check these encodings to see what can be reused.
 
 
 
