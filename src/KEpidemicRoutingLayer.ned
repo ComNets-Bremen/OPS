@@ -33,6 +33,9 @@ simple KEpidemicRoutingLayer like IForwardingLayer
         // switch on and off the TTL handling (expensive procedure)
         bool useTTL = default(false);
 
+	    // OMNeT RNG which is used for generation of random numbers
+	    int usedRNG = default(0);
+
         // icon used
         @display("i=block/transport");
 
