@@ -27,6 +27,10 @@
 #include <string>
 #include <queue>
 
+#if OMNETPP_VERSION >= 0x500
+using namespace omnetpp;
+#endif
+
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
 

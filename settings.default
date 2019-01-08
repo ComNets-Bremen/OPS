@@ -20,7 +20,7 @@ INET_LIB=$INET_PATH
 INET_NED=$INET_PATH
 
 # The git tag for the version to be used
-INET_VERSION="v3.99.3"
+INET_VERSION="v4.0.0"
 
 OMNET_INI_FILE=simulations/omnetpp-herald-epidemic.ini
 OMNET_OUTPUT_DIR=./out/
