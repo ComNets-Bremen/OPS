@@ -16,5 +16,9 @@ network OpsNetB
 			heraldAppDeployed = 1;
         }
 
+        neighborCache: <default("")> like INeighborCache if typename != "" {
+            @display("p=200,50");
+        }
+
 }
 
