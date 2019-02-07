@@ -12,7 +12,7 @@ tl;dr
 
 For Linux or MacOS:
 
-- Install and setup OMNeT++ v5.4.1 or higher (use OMNeT++ installation Guide)
+- Install and setup OMNeT++ v5.4.1 (use OMNeT++ installation Guide)
 - Install (or update) dependent software (automake, libtool and others - check `Prerequisites I` section)
 - Clone this repository: `git https://github.com/ComNets-Bremen/OPS`
 - Checkout and build dependencies: `./bootstrap.sh`. This will also build SWIM and ExtendedSWIM with
@@ -54,14 +54,14 @@ on which it is run.
 
 
 
-### OMNeT++ 5.4.1 or higher
+### OMNeT++ 5.4.1
 
-OMNeT++ 5.4.1 or a higher version must be installed and the PATH variable must be
+OMNeT++ 5.4.1 version must be installed and the PATH variable must be
 set to run all the binaries of OMNeT++.
 
 e.g.,
 
-`export PATH=/Users/adu/Development/omnet/omnetpp-5.4.1/bin:$PATH (on a Mac OS X)`
+`export PATH=/Users/adu/Development/omnet/omnetpp-5.4.1/bin:$PATH (on a MacOS)`
 
 Use the Installation Guide of OMNeT++.
 
@@ -337,7 +337,7 @@ see what parameters are usually set to run a simulation.
 Logging
 -------
 
-Simulation runs result in the creation of logs that dump information about the activities of a
+Simulation runs result in the creation of logs that  dump information about the activities of a
 model. These logs are used by the parsers described below. The contents of these logs are coded
 to reduce the sizes of the logs. The codes used are listed in [ENCODINGS](./LOG_ENCODINGS.md). When
 developing new models, please check these encodings to see what can be reused.
@@ -427,5 +427,18 @@ write to us using any of the e-mail adresses below.
   - Asanga Udugama (adu@comnets.uni-bremen.de)
   - Jens Dede (jd@comnets.uni-bremen.de)
   - Anna Förster (anna.foerster@comnets.uni-bremen.de)
-  - Anas bin Muslim (anas1@uni-bremen.de)
   - Vishnupriya Parimalam (vp@fb1.uni-bremen.de)
+
+
+
+Model Contributors
+------------------
+
+There are many individuals who have used and extended OPS, either by extending existing models or by introducing new models. This section lists the individuals who have done such contributions.
+
+  - Anas bin Muslim
+  - Jibin P. John
+  - Karima Khandaker 
+
+
+
