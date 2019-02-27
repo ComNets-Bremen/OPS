@@ -177,7 +177,10 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
                 cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
 
-                cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
+                // cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
+                cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
+                cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
+                cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
 
                 cacheEntry->createdTime = simTime().dbl();
                 cacheEntry->updatedTime = simTime().dbl();
@@ -233,7 +236,11 @@ void KRRSLayer::handleMessage(cMessage *msg)
                 dataMsg->setByteLength(cacheEntry->realPacketSize);
                 dataMsg->setMsgType(cacheEntry->msgType);
                 dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
-                dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
+                
+                // dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
+                dataMsg->setInitialOriginatorAddress(cacheEntry->initialOriginatorAddress.c_str());
+                dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
+                dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
 
                 send(dataMsg, "lowerLayerOut");
 
@@ -256,7 +263,10 @@ void KRRSLayer::handleMessage(cMessage *msg)
             // if destination oriented data sent around, then cache message only if not destined to self
             // or if no destination in data, cache all messages
             bool cacheData = TRUE;
-            if (omnetDataMsg->getDestinationOriented() && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+            // if (omnetDataMsg->getDestinationOriented()
+            //     && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+            if (omnetDataMsg->getDestinationOriented() 
+                && strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL) {
                 cacheData = FALSE;
             }
 
@@ -310,7 +320,10 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
                     cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
 
-                    cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
+                    // cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
+                    cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
+                    cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
+                    cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
 
                     cacheEntry->createdTime = simTime().dbl();
                     cacheEntry->updatedTime = simTime().dbl();

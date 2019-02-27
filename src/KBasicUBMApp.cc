@@ -96,8 +96,8 @@ void KBasicUBMApp::handleMessage(cMessage *msg)
 			
 				send(lowerLayerMsg, "lowerLayerOut");
 			
-				if(strstr(getParentModule()->getFullName(), dataMsg->getFinalDestinationNodeName()) != NULL) {
-			    }
+                // if(strstr(getParentModule()->getFullName(), dataMsg->getFinalDestinationNodeName()) != NULL) {
+                //                 }
 		    }
 	    }
 		

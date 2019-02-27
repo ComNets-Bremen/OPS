@@ -19,9 +19,13 @@ simple KWirelessInterface
         double neighbourScanInterval @unit(s) = default(1s);
         double bandwidthBitRate @unit(bps) = default(100000bps); // 100 Kbps
         int wirelessHeaderSize @unit(byte) = default(16byte); // 32byte = 802.11 a/b/g, 16byte = BT
-        
+
         // logging at layer - 0 = disabled, 1 = enabled
         int logging = default(0);
+
+        // OMNET RNG for random numbers
+        // not used - for future use
+        int usedRNG = default(0);        
 
         // icon
         @display("i=device/card");

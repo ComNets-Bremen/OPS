@@ -43,7 +43,11 @@ simple KKeetchiLayer like IForwardingLayer
 
         // logging at layer - 0 = disabled, 1 = enabled
         int logging = default(1);
-
+        
+        // OMNeT RNG used for generation of random numbers
+        // currently not used - for future use
+        int usedRNG = default(0);
+ 
         // icon used
         @display("i=block/transport");
 

@@ -26,12 +26,14 @@ packet KDataMsg {
 
     int realPayloadSize;
     int realPacketSize;
-    
+
     int hopsTravelled = 0;
 
     // destination oriented delivery specific fields
-    string originatorNodeName;
-    string finalDestinationNodeName;
+//    string originatorNodeName;
+//    string finalDestinationNodeName;
+    string initialOriginatorAddress;
+    string finalDestinationAddress;
     bool destinationOriented = false;
 
     // keetchi specific fields
@@ -40,6 +42,9 @@ packet KDataMsg {
     // epidemic routing specific fields
     string messageID;
     int hopCount = 255;
+
+    // spray & wait specific fields
+    int duplicates;
 }
 
 //
@@ -118,6 +123,10 @@ packet KDataRequestMsg {
 
     // epidemic routing specific fields
     string messageIDHashVector[];  // request vector
+
+    //spay & wait specific
+    //string originatorNodeName;
+    string initialOriginatorAddress;
 }
 
 //
@@ -140,12 +149,60 @@ enum reactionType {
 };
 
 packet KReactionMsg {
-    
+
     // common fields
     string sourceAddress;
     string destinationAddress;
     string dataName;
-        
+
     // UBM specific fields
-    int reaction @enum(reactionType); 
+    int reaction @enum(reactionType);
 }
+
+//
+// DP table request message (used with Prophet Routing).
+//
+//
+//
+//
+//
+// example sizes in bytes
+//
+//                addrs |  total  |
+//                s & d | (bytes) |
+// Prophet  ->    6 + 6      12
+
+
+packet KDPtableRequestMsg {
+
+    // common fields
+    string sourceAddress;
+    string destinationAddress;
+}
+
+
+//
+// Dp table message (used with Prophet Routing).
+//
+//
+//
+//
+// example sizes in bytes
+//
+//                addrs | dplist         | total  |
+//                s & d | 14 bytes x count| (bytes)|
+// Prophet  ->   6 + 6     (6+6+2)           26
+struct MsgDelivPredictability {
+   string nodeMACAddress;
+   double nodeDP;
+};
+
+packet KDPtableDataMsg {
+
+    // common fields
+    string sourceAddress;
+    string destinationAddress;
+
+    MsgDelivPredictability dpList[];
+}
+

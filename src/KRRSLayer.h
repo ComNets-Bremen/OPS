@@ -56,7 +56,10 @@ class KRRSLayer: public cSimpleModule
 
             int realPacketSize;
 
-            string finalDestinationNodeName;
+            // string finalDestinationNodeName;
+            string initialOriginatorAddress;
+            string finalDestinationAddress;
+            bool destinationOriented;
 
             double createdTime;
             double updatedTime;

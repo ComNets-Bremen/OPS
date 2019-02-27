@@ -1,16 +1,16 @@
 //
 // The model implementation for the Epidemic Routing layer
 //
-// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @author : Jibin John (adu@comnets.uni-bremen.de)
 // @date   : 02-may-2017
 //
 //
 
-#include "KEpidemicRoutingLayer.h"
+#include "KSpraywaitRoutingLayer.h"
 
-Define_Module(KEpidemicRoutingLayer);
+Define_Module(KSpraywaitRoutingLayer);
 
-void KEpidemicRoutingLayer::initialize(int stage)
+void KSpraywaitRoutingLayer::initialize(int stage)
 {
     if (stage == 0) {
         // get parameters
@@ -22,44 +22,58 @@ void KEpidemicRoutingLayer::initialize(int stage)
         maximumHopCount = par("maximumHopCount");
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         logging = par("logging");
-        useTTL = par("useTTL");
         usedRNG = par("usedRNG");
-        numEventsHandled = 0;
-        
+
         syncedNeighbourListIHasChanged = TRUE;
-        
+
+        L = par("noDuplicate");
+
+        EV_INFO  << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "The # copies:"<<L<<" \n";
+
+        sprayFlavour = par("spraywaitFlavour").stringValue();
+        EV_INFO  << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Theflavour:"<<sprayFlavour<<" \n";
+        DisableExcesslog = par("disableExcesslog");
+
     } else if (stage == 1) {
 
 
     } else if (stage == 2) {
 
+        // setup the trigger to age data
+        ageDataTimeoutEvent = new cMessage("Age Data Timeout Event");
+        ageDataTimeoutEvent->setKind(108);
+        scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
 
     } else {
-        EV_FATAL << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
+        EV_FATAL << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
     }
+
+
 }
 
-int KEpidemicRoutingLayer::numInitStages() const
+int KSpraywaitRoutingLayer::numInitStages() const
 {
     return 3;
 }
 
-void KEpidemicRoutingLayer::handleMessage(cMessage *msg)
+void KSpraywaitRoutingLayer::handleMessage(cMessage *msg)
 {
     cGate *gate;
     char gateName[64];
     KNeighbourListMsg *neighListMsg;
-    
-    numEventsHandled++;
-    
-    // age the data in the cache only if needed (e.g. a message arrived)
-    if (useTTL)
-    	ageDataInCache();
 
     // self messages
     if (msg->isSelfMessage()) {
-	    EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
-        delete msg;
+
+        // age data trigger fired
+        if (msg->getKind() == 108) {
+
+            handleDataAgingTrigger(msg);
+
+        } else {
+            EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
+            delete msg;
+        }
 
     // messages from other layers
     } else {
@@ -114,13 +128,13 @@ void KEpidemicRoutingLayer::handleMessage(cMessage *msg)
         // received some unexpected packet
         } else {
 
-            EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Received unexpected packet" << "\n";
+            EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Received unexpected packet" << "\n";
             delete msg;
         }
     }
 }
 
-void KEpidemicRoutingLayer::ageDataInCache()
+void KSpraywaitRoutingLayer::handleDataAgingTrigger(cMessage *msg)
 {
 
     // remove expired data items
@@ -148,15 +162,18 @@ void KEpidemicRoutingLayer::ageDataInCache()
         }
     }
 
+    // setup next age data trigger
+    scheduleAt(simTime() + 1.0, msg);
+
 }
 
-
-void KEpidemicRoutingLayer::handleAppRegistrationMsg(cMessage *msg)
+void KSpraywaitRoutingLayer::handleAppRegistrationMsg(cMessage *msg)
 {
     KRegisterAppMsg *regAppMsg = dynamic_cast<KRegisterAppMsg*>(msg);
     AppInfo *appInfo = NULL;
     int found = FALSE;
     list<AppInfo*>::iterator iteratorRegisteredApps = registeredAppList.begin();
+
     while (iteratorRegisteredApps != registeredAppList.end()) {
         appInfo = *iteratorRegisteredApps;
         if (appInfo->appName == regAppMsg->getAppName()) {
@@ -175,16 +192,15 @@ void KEpidemicRoutingLayer::handleAppRegistrationMsg(cMessage *msg)
     }
     appInfo->prefixName = regAppMsg->getPrefixName();
     delete msg;
-
 }
 
-void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
+void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
-    if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
+    if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
         << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-        << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+        << omnetDataMsg->getByteLength() <<L<< "\n";}
 
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
@@ -207,6 +223,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
                 && (currentCacheSize + omnetDataMsg->getRealPayloadSize()) > maximumCacheSize
                 && cacheList.size() > 0) {
             iteratorCache = cacheList.begin();
+
             CacheEntry *removingCacheEntry = *iteratorCache;
             iteratorCache = cacheList.begin();
             while (iteratorCache != cacheList.end()) {
@@ -216,27 +233,27 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
                 }
                 iteratorCache++;
             }
-            currentCacheSize -= removingCacheEntry->realPayloadSize;
+            currentCacheSize -= removingCacheEntry->realPacketSize;
             cacheList.remove(removingCacheEntry);
 
-            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<" 
+            if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<"
                 << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
-                << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << "\n";}
+                << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << ">!<"
+                << removingCacheEntry->copies << "\n";}
 
             delete removingCacheEntry;
 
         }
 
         cacheEntry = new CacheEntry;
-
         cacheEntry->messageID = omnetDataMsg->getDataName();
         cacheEntry->hopCount = 0;
+        cacheEntry->copies = L;      //Added no. of duplicates.
         cacheEntry->dataName = omnetDataMsg->getDataName();
         cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
         cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
         cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
         cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-        
         //cacheEntry->originatorNodeName = omnetDataMsg->getOriginatorNodeName();
         cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
         cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
@@ -246,25 +263,24 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         }
         cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
         cacheEntry->hopsTravelled = 0;
-        
+
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
 
         cacheList.push_back(cacheEntry);
 
         currentCacheSize += cacheEntry->realPayloadSize;
-
     }
 
     cacheEntry->lastAccessedTime = simTime().dbl();
-    
+
     // log cache update or add
     if (found) {
-        if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<" 
+        if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<"
             << omnetDataMsg->getDataName() << ">!<" << cacheEntry->realPayloadSize << ">!<0>!<"
             << currentCacheSize << ">!<0>!<0>!<" << cacheEntry->hopsTravelled << "\n";}
     } else {
-        if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<" 
+        if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<"
             << omnetDataMsg->getDataName() << ">!<" << cacheEntry->realPayloadSize << ">!<0>!<"
             << currentCacheSize << ">!<0>!<0>!<" << cacheEntry->hopsTravelled << "\n";}
     }
@@ -272,11 +288,12 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
     delete msg;
 }
 
-void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
+void KSpraywaitRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
 {
     KNeighbourListMsg *neighListMsg = dynamic_cast<KNeighbourListMsg*>(msg);
 
-    if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<NM>!<NC>!<" <<
+
+    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<NM>!<NC>!<" <<
                         neighListMsg->getNeighbourNameListArraySize() << ">!<CS>!<"
                             << cacheList.size() << "\n";}
 
@@ -288,7 +305,7 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
             syncedNeighbourListIHasChanged = FALSE;
         }
-        
+
         delete msg;
         return;
     }
@@ -355,7 +372,7 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
             send(summaryVectorMsg, "lowerLayerOut");
 
-            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<SVM>!<"
+            if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<SVM>!<"
                 << summaryVectorMsg->getSourceAddress() << ">!<" << summaryVectorMsg->getDestinationAddress()
                 << ">!<CE>!<" << summaryVectorMsg->getMessageIDHashVectorArraySize() << ">!<"
                 << summaryVectorMsg->getByteLength() << "\n";}
@@ -376,17 +393,16 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
     delete msg;
 }
 
-void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
+void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
     bool found;
-    
+
     // increment the travelled hop count
     omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
     omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
-    
 
-    if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
+    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
         << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
         << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
@@ -399,7 +415,12 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     //     || omnetDataMsg->getHopCount() >= maximumHopCount) {
     if ((omnetDataMsg->getDestinationOriented()
          && strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL)
-         || omnetDataMsg->getHopCount() >= maximumHopCount) {
+        || omnetDataMsg->getHopCount() >= maximumHopCount) {
+
+          if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress
+              << ">!<"<<"THE MESSAGE IN DESTINATION"<<">!<"<< omnetDataMsg->getSourceAddress()
+              << ">!<"<<omnetDataMsg->getDataName() <<">!<"<<omnetDataMsg->getFinalDestinationAddress()
+              << ">!<"<<getParentModule()->getFullName()<<">!<"<<omnetDataMsg->getHopsTravelled()<<"\n";}
 
         cacheData = FALSE;
     }
@@ -428,28 +449,32 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 && (currentCacheSize + omnetDataMsg->getRealPayloadSize()) > maximumCacheSize
                 && cacheList.size() > 0) {
                 iteratorCache = cacheList.begin();
+
                 CacheEntry *removingCacheEntry = *iteratorCache;
                 iteratorCache = cacheList.begin();
                 while (iteratorCache != cacheList.end()) {
                     cacheEntry = *iteratorCache;
                     if (cacheEntry->validUntilTime < removingCacheEntry->validUntilTime) {
                         removingCacheEntry = cacheEntry;
-                    }
+                      }
+
                     iteratorCache++;
                 }
-                currentCacheSize -= removingCacheEntry->realPayloadSize;
-                cacheList.remove(removingCacheEntry);
+                currentCacheSize -= removingCacheEntry->realPacketSize;
 
-                if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<" 
+                if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<"
                     << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
-                    << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << "\n";}
+                    << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled<<">!<"<<removingCacheEntry->copies << "\n";}
 
+                cacheList.remove(removingCacheEntry);
                 delete removingCacheEntry;
+
             }
 
             cacheEntry = new CacheEntry;
 
             cacheEntry->messageID = omnetDataMsg->getMessageID();
+                  cacheEntry->copies = omnetDataMsg->getDuplicates();    //extracting parameter Duplicates from message.
             cacheEntry->dataName = omnetDataMsg->getDataName();
             cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
             cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
@@ -463,7 +488,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
             }
             cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
-
             cacheEntry->createdTime = simTime().dbl();
             cacheEntry->updatedTime = simTime().dbl();
 
@@ -476,17 +500,6 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
         cacheEntry->hopCount = omnetDataMsg->getHopCount();
         cacheEntry->lastAccessedTime = simTime().dbl();
-
-        // log cache update or add
-        if (found) {
-            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<" 
-                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
-                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
-        } else {
-            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<" 
-                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
-                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
-        }
     }
 
     // if registered app exist, send data msg to app
@@ -502,22 +515,33 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         iteratorRegisteredApps++;
     }
     if (found) {
-        send(msg, "upperLayerOut");
-
-        if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-            << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-            << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
-
+        if (omnetDataMsg->getDestinationOriented())
+        {
+            // if(strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+            if(strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL) {
+                send(msg, "upperLayerOut");
+                if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
+                      << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
+                      << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+            } else {
+                delete msg;
+            }
+        } else {
+            send(msg, "upperLayerOut");
+            if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
+                  << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
+                  << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+        }
     } else {
         delete msg;
     }
 }
 
-void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
+void KSpraywaitRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 {
     KSummaryVectorMsg *summaryVectorMsg = dynamic_cast<KSummaryVectorMsg*>(msg);
 
-    if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<SVM>!<" << summaryVectorMsg->getSourceAddress() << ">!<"
+    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<SVM>!<" << summaryVectorMsg->getSourceAddress() << ">!<"
         << summaryVectorMsg->getDestinationAddress() << ">!<" << summaryVectorMsg->getByteLength() << "\n";}
 
     // when a summary vector is received, it means that the neighbour started the syncing
@@ -556,7 +580,11 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     KDataRequestMsg *dataRequestMsg = new KDataRequestMsg();
     dataRequestMsg->setSourceAddress(ownMACAddress.c_str());
     dataRequestMsg->setDestinationAddress(summaryVectorMsg->getSourceAddress());
-    int realPacketSize = 6 + 6 + (selectedMessageIDList.size() * KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE);
+    //dataRequestMsg->setOriginatorNodeName(getParentModule()->getFullName());
+    dataRequestMsg->setInitialOriginatorAddress(ownMACAddress.c_str());
+
+    int realPacketSize = 6 + 6 + (selectedMessageIDList.size() * KSPRAYWAITROUTINGLAYER_MSG_ID_HASH_SIZE);
+    //IMP EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO <<"real packet size:"<<realPacketSize<<"\n";
     dataRequestMsg->setRealPacketSize(realPacketSize);
     dataRequestMsg->setByteLength(realPacketSize);
     dataRequestMsg->setMessageIDHashVectorArraySize(selectedMessageIDList.size());
@@ -574,9 +602,8 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 
     send(dataRequestMsg, "lowerLayerOut");
 
-    if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DRM>!<" << dataRequestMsg->getSourceAddress() << ">!<"
+    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DRM>!<" << dataRequestMsg->getSourceAddress() << ">!<"
         << dataRequestMsg->getDestinationAddress() << ">!<" << dataRequestMsg->getByteLength() << "\n";}
-
 
     // cancel the random backoff timer (because neighbour started syncing)
     string nodeMACAddress = summaryVectorMsg->getSourceAddress();
@@ -593,16 +620,14 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     // as there were changes
     syncedNeighbourListIHasChanged = TRUE;
 
-
     delete msg;
 }
 
-void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
+void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 {
     KDataRequestMsg *dataRequestMsg = dynamic_cast<KDataRequestMsg*>(msg);
 
-
-    if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DRM>!<" << dataRequestMsg->getSourceAddress() << ">!<"
+    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DRM>!<" << dataRequestMsg->getSourceAddress() << ">!<"
         << dataRequestMsg->getDestinationAddress() << ">!<" << dataRequestMsg->getByteLength() << "\n";}
 
     int i = 0;
@@ -625,6 +650,8 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
         if (found) {
 
+            bool Directtrans=FALSE;
+            bool destOriented=TRUE;
             KDataMsg *dataMsg = new KDataMsg();
 
             dataMsg->setSourceAddress(ownMACAddress.c_str());
@@ -633,41 +660,106 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             dataMsg->setDummyPayloadContent(cacheEntry->dummyPayloadContent.c_str());
             dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
             dataMsg->setRealPayloadSize(cacheEntry->realPayloadSize);
-            // check KOPSMsg.msg on sizing mssages
-            int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6 + 1;
+            //code specific to spray and wait
+            newcopies = cacheEntry->copies;
+            if(newcopies==1) {
+                Directtrans = TRUE;
+                dataMsg->setDuplicates(1);
+            }
+            // else following code.
+
+            int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6 + 1+1;
+
             dataMsg->setRealPacketSize(realPacketSize);
             dataMsg->setByteLength(realPacketSize);
-            
-            // dataMsg->setOriginatorNodeName(cacheEntry->originatorNodeName.c_str());
-            dataMsg->setInitialOriginatorAddress(cacheEntry->initialOriginatorAddress.c_str());            
+            //dataMsg->setOriginatorNodeName(cacheEntry->originatorNodeName.c_str());
+            dataMsg->setInitialOriginatorAddress(cacheEntry->initialOriginatorAddress.c_str());
             dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
-            
             if (cacheEntry->destinationOriented) {
-                // dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
+                //dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
                 dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
+
+            } else {
+              destOriented = FALSE;
             }
             dataMsg->setMessageID(cacheEntry->messageID.c_str());
             dataMsg->setHopCount(cacheEntry->hopCount);
             dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
             dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
 
-            send(dataMsg, "lowerLayerOut");
+            if(!Directtrans) {
+                // if((strstr(cacheEntry->finalDestinationNodeName.c_str(), dataRequestMsg->getOriginatorNodeName()) != NULL)&&destOriented) {
+                if((strstr(cacheEntry->finalDestinationAddress.c_str(), dataRequestMsg->getInitialOriginatorAddress()) != NULL)
+                    && destOriented) {
 
-            if (logging) {EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
-                << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << ">!<" 
-                << dataMsg->getHopsTravelled() << "\n";}
+                    //if destination is found  only one copy of message
+                    //is being transmitted in order to reduce metric number of transmission
 
+                    dataMsg->setDuplicates(1);
+
+                    //code to remove message from cache is added
+                    CacheEntry *removingCacheEntry;
+                    removingCacheEntry = cacheEntry;
+
+                    currentCacheSize -= removingCacheEntry->realPacketSize;
+
+                    cacheList.remove(removingCacheEntry);
+                    delete removingCacheEntry;
+                } else {
+                    if(sprayFlavour == "source") {
+                        int oldcopy = newcopies;
+                        newcopies = 1;
+                    } else if(sprayFlavour == "vanila") {
+                        int oldcopy = newcopies;
+                        newcopies = intuniform(1, oldcopy-1, usedRNG);
+                    } else {
+                        newcopies = (double)newcopies/2.0;
+                        newcopies = floor(newcopies);
+                    }
+                    dataMsg->setDuplicates(int(newcopies));
+                    ///update the cache
+                    cacheEntry->copies = (cacheEntry->copies)-newcopies;
+                }
+
+                send(dataMsg, "lowerLayerOut");
+                if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
+                                << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName()<<">!<"<<dataMsg->getHopsTravelled()<< ">!<"<<dataMsg->getDuplicates()<< "\n";}
+            } else {
+
+                //compare the source adress and destination address in cache if matches send to destination
+
+                // if((strstr(cacheEntry->finalDestinationNodeName.c_str(), dataRequestMsg->getOriginatorNodeName()) != NULL&&destOriented)||!destOriented) {
+                if((strstr(cacheEntry->finalDestinationAddress.c_str(),
+                           dataRequestMsg->getInitialOriginatorAddress()) != NULL
+                    && destOriented) || !destOriented) {
+                    send(dataMsg, "lowerLayerOut");
+
+                    if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
+                                    << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << ">!<"<<dataMsg->getHopsTravelled()<< ">!<"
+                                    << dataMsg->getDuplicates() << "\n";}
+                    //code to remove message from cache is added
+                    CacheEntry *removingCacheEntry;
+                    removingCacheEntry = cacheEntry;
+
+                    currentCacheSize -= removingCacheEntry->realPacketSize;
+
+                    cacheList.remove(removingCacheEntry);
+                    delete removingCacheEntry;
+                } else {
+                    delete  dataMsg;
+                }
+            }
         }
-
         i++;
     }
 
     delete msg;
 }
 
-KEpidemicRoutingLayer::SyncedNeighbour* KEpidemicRoutingLayer::getSyncingNeighbourInfo(string nodeMACAddress)
+KSpraywaitRoutingLayer::SyncedNeighbour* KSpraywaitRoutingLayer::getSyncingNeighbourInfo(string nodeMACAddress)
 {
     // check if sync entry is there
+
     SyncedNeighbour *syncedNeighbour = NULL;
     list<SyncedNeighbour*>::iterator iteratorSyncedNeighbour;
     bool found = FALSE;
@@ -701,11 +793,12 @@ KEpidemicRoutingLayer::SyncedNeighbour* KEpidemicRoutingLayer::getSyncingNeighbo
     return syncedNeighbour;
 }
 
-void KEpidemicRoutingLayer::setSyncingNeighbourInfoForNextRound()
+void KSpraywaitRoutingLayer::setSyncingNeighbourInfoForNextRound()
 {
     // loop thru syncing neighbor list and set for next round
     list<SyncedNeighbour*>::iterator iteratorSyncedNeighbour;
     iteratorSyncedNeighbour = syncedNeighbourList.begin();
+
     while (iteratorSyncedNeighbour != syncedNeighbourList.end()) {
         SyncedNeighbour *syncedNeighbour = *iteratorSyncedNeighbour;
 
@@ -724,12 +817,13 @@ void KEpidemicRoutingLayer::setSyncingNeighbourInfoForNextRound()
         syncedNeighbour->nodeConsidered = FALSE;
 
         iteratorSyncedNeighbour++;
-    }
+   }
 }
 
-void KEpidemicRoutingLayer::setSyncingNeighbourInfoForNoNeighboursOrEmptyCache()
+void KSpraywaitRoutingLayer::setSyncingNeighbourInfoForNoNeighboursOrEmptyCache()
 {
     // loop thru syncing neighbor list and set for next round
+
     list<SyncedNeighbour*>::iterator iteratorSyncedNeighbour;
     iteratorSyncedNeighbour = syncedNeighbourList.begin();
     while (iteratorSyncedNeighbour != syncedNeighbourList.end()) {
@@ -745,9 +839,9 @@ void KEpidemicRoutingLayer::setSyncingNeighbourInfoForNoNeighboursOrEmptyCache()
     }
 }
 
-KSummaryVectorMsg* KEpidemicRoutingLayer::makeSummaryVectorMessage()
+KSummaryVectorMsg* KSpraywaitRoutingLayer::makeSummaryVectorMessage()
 {
-    
+
     // identify the entries of the summary vector
     vector<string> selectedMessageIDList;
     CacheEntry *cacheEntry;
@@ -758,10 +852,10 @@ KSummaryVectorMsg* KEpidemicRoutingLayer::makeSummaryVectorMessage()
         if ((cacheEntry->hopCount + 1) < maximumHopCount) {
             selectedMessageIDList.push_back(cacheEntry->messageID);
         }
-        
+
         iteratorCache++;
     }
-    
+
     // make a summary vector message
     KSummaryVectorMsg *summaryVectorMsg = new KSummaryVectorMsg();
     summaryVectorMsg->setSourceAddress(ownMACAddress.c_str());
@@ -777,19 +871,20 @@ KSummaryVectorMsg* KEpidemicRoutingLayer::makeSummaryVectorMessage()
         i++;
         iteratorMessageIDList++;
     }
-    int realPacketSize = 6 + 6 + (selectedMessageIDList.size() * KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE);
+    int realPacketSize = 6 + 6 + (selectedMessageIDList.size() * KSPRAYWAITROUTINGLAYER_MSG_ID_HASH_SIZE);
     summaryVectorMsg->setRealPacketSize(realPacketSize);
     summaryVectorMsg->setByteLength(realPacketSize);
 
     return summaryVectorMsg;
 }
 
-void KEpidemicRoutingLayer::finish()
+void KSpraywaitRoutingLayer::finish()
 {
 
-	recordScalar("numEventsHandled", numEventsHandled);
-	
-    
+    // remove age data trigger
+    cancelEvent(ageDataTimeoutEvent);
+    delete ageDataTimeoutEvent;
+
     // clear resgistered app list
     while (registeredAppList.size() > 0) {
         list<AppInfo*>::iterator iteratorRegisteredApp = registeredAppList.begin();
@@ -797,7 +892,7 @@ void KEpidemicRoutingLayer::finish()
         registeredAppList.remove(appInfo);
         delete appInfo;
     }
-    
+
     // clear resgistered app list
     while (cacheList.size() > 0) {
         list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
@@ -815,4 +910,3 @@ void KEpidemicRoutingLayer::finish()
         delete syncedNeighbour;
     }
 }
-

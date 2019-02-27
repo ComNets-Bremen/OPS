@@ -29,7 +29,7 @@ module KUBMNode
         string userBahaviourApp = default("KBasicUBMApp");
 
         // type of forwarding layer used
-        string forwardingLayer @enum(KRRSLayer,KKeetchiLayer,KEpidemicRoutingLayer) = default("KKeetchiLayer");
+        string forwardingLayer @enum(KRRSLayer,KKeetchiLayer,KEpidemicRoutingLayer) = default("KEpidemicRoutingLayer");
 
 		// Static node (currently only routers) or mobile node
 		// Static swim = 0, swim = 1, Extended swim = 2

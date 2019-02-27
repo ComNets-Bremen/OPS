@@ -1,13 +1,13 @@
 //
 // The model implementation for the Epidemic Routing layer
 //
-// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @author : Jibin John (adu@comnets.uni-bremen.de)
 // @date   : 02-may-2017
 //
 //
 
-#ifndef KEPIDEMICROUTINGLAYER_H_
-#define KEPIDEMICROUTINGLAYER_H_
+#ifndef KSPRAYWAITROUTINGLAYER_H_
+#define KSPRAYWAITROUTINGLAYER_H_
 
 #define TRUE                            1
 #define FALSE                           0
@@ -26,7 +26,7 @@ using namespace omnetpp;
 
 using namespace std;
 
-class KEpidemicRoutingLayer: public cSimpleModule
+class KSpraywaitRoutingLayer: public cSimpleModule
 {
     protected:
         virtual void initialize(int stage);
@@ -36,17 +36,19 @@ class KEpidemicRoutingLayer: public cSimpleModule
 
     private:
         string ownMACAddress;
+        string sprayFlavour;
         int nextAppID;
         int maximumCacheSize;
         double antiEntropyInterval;
         int maximumHopCount;
         double maximumRandomBackoffDuration;
         int logging;
-        bool useTTL;
         int usedRNG;
-        
-        int numEventsHandled;
 
+        int newcopies;
+        int L;
+
+        bool DisableExcesslog;
         int currentCacheSize;
 
         struct AppInfo {
@@ -58,7 +60,7 @@ class KEpidemicRoutingLayer: public cSimpleModule
         struct CacheEntry {
             string messageID;
             int hopCount;
-
+            int copies;
             string dataName;
             int realPayloadSize;
             string dummyPayloadContent;
@@ -68,12 +70,10 @@ class KEpidemicRoutingLayer: public cSimpleModule
             int realPacketSize;
 
             bool destinationOriented;
-
-            string initialOriginatorAddress;
-            string finalDestinationAddress;
-
             // string originatorNodeName;
             // string finalDestinationNodeName;
+            string initialOriginatorAddress;
+            string finalDestinationAddress;
 
             int goodnessValue;
             int hopsTravelled;
@@ -94,7 +94,6 @@ class KEpidemicRoutingLayer: public cSimpleModule
             double neighbourSyncEndTime;
 
             bool nodeConsidered;
-
         };
 
         list<AppInfo*> registeredAppList;
@@ -102,9 +101,9 @@ class KEpidemicRoutingLayer: public cSimpleModule
         list<SyncedNeighbour*> syncedNeighbourList;
         bool syncedNeighbourListIHasChanged;
 
-    
+        cMessage *ageDataTimeoutEvent;
 
-        void ageDataInCache();
+        void handleDataAgingTrigger(cMessage *msg);
         void handleAppRegistrationMsg(cMessage *msg);
         void handleDataMsgFromUpperLayer(cMessage *msg);
         void handleNeighbourListMsgFromLowerLayer(cMessage *msg);
@@ -118,9 +117,9 @@ class KEpidemicRoutingLayer: public cSimpleModule
         KSummaryVectorMsg* makeSummaryVectorMessage();
 
 };
-#define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         " KEpidemicRoutingLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
-#define KEPIDEMICROUTINGLAYER_DEBUG                 ">!<DEBUG>!<" << ownMACAddress
+#define KSPRAYWAITROUTINGLAYER_SIMMODULEINFO          ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define KSPRAYWAITROUTINGLAYER_DEBUG                  ">!<DEBUG>!<" << ownMACAddress
 
-#define KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes
+#define KSPRAYWAITROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes
 
 #endif /* KEPIDEMICROUTINGLAYER_H_ */

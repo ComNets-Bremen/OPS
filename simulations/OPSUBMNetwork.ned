@@ -3,7 +3,7 @@ package ops.simulations;
 
 import ops.*;
 
-network OPSNetwork
+network OPSUBMNetwork
 {
    
     parameters:
