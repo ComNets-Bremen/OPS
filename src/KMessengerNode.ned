@@ -19,7 +19,7 @@ module KMessengerNode
         int nodeID;
 
         // app deployed (or is node just a forwarder?)
-        boolean appDeployed = default(true);
+        bool appDeployed = default(true);
 
         // type of forwarding layer used
         string forwardingLayer @enum(KRRSLayer,KKeetchiLayer,KEpidemicRoutingLayer,KSpraywaitRoutingLayer,KProphetRoutingLayer) = default("KEpidemicRoutingLayer");
