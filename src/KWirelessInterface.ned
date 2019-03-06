@@ -15,7 +15,6 @@ simple KWirelessInterface
         string ownMACAddress;
         string interfaceTypeName = default("wireless");
         double wirelessRange @unit(m) = default(30m);
-        string expectedNodeTypes = default("KNode, KHeraldNode, KUBMNode, KPromoteNode");
         double neighbourScanInterval @unit(s) = default(1s);
         double bandwidthBitRate @unit(bps) = default(100000bps); // 100 Kbps
         int wirelessHeaderSize @unit(byte) = default(16byte); // 32byte = 802.11 a/b/g, 16byte = BT

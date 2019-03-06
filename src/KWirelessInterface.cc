@@ -17,7 +17,6 @@ void KWirelessInterface::initialize(int stage)
         // get parameters
         ownMACAddress = par("ownMACAddress").stringValue();
         wirelessRange = par("wirelessRange");
-        expectedNodeTypes = par("expectedNodeTypes").stringValue();
         neighbourScanInterval = par("neighbourScanInterval");
         bandwidthBitRate = par("bandwidthBitRate");
         wirelessHeaderSize = par("wirelessHeaderSize");
@@ -26,21 +25,14 @@ void KWirelessInterface::initialize(int stage)
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
 
-
     } else if (stage == 1) {
-
 
         // get own module info
         ownNodeInfo = new KBaseNodeInfo();
         ownNodeInfo->nodeModule = getParentModule();
-        for (cModule::SubmoduleIterator it(getParentModule()); !it.end(); ++it) {
-            ownNodeInfo->nodeMobilityModule = dynamic_cast<inet::IMobility*>(*it);
-            if (ownNodeInfo->nodeMobilityModule != NULL) {
-                break;
-            }
-        }
+        cModule *unknownModule = getParentModule()->getSubmodule("mobility");
+        ownNodeInfo->nodeMobilityModule = check_and_cast<inet::IMobility*>(unknownModule);
         ownNodeInfo->nodeWirelessIfcModule = this;
-
 
     } else if (stage == 2) {
 
@@ -51,39 +43,33 @@ void KWirelessInterface::initialize(int stage)
                 continue;
             }
 
-            // has to be a node type module given in expectedNodeTypes parameter
-            if(strstr(expectedNodeTypes.c_str(), unknownModule->getModuleType()->getName()) == NULL) {
-                continue;
-            }
-
             // if module is a KNode or KHeraldNode but is yourself
             if (unknownModule == ownNodeInfo->nodeModule) {
                 continue;
             }
 
-            KBaseNodeInfo *nodeInfo = new KBaseNodeInfo();
-            nodeInfo->nodeModule = unknownModule;
-
             // find the wireless ifc module & mobility module
+            cModule *unknownMobilityModule = NULL;
+            cModule *unknownWirelessIfcModule = NULL;
+
             for (cModule::SubmoduleIterator it(unknownModule); !it.end(); ++it) {
 
                 if (dynamic_cast<inet::IMobility*>(*it) != NULL) {
-                    nodeInfo->nodeMobilityModule = dynamic_cast<inet::IMobility*>(*it);
+                    unknownMobilityModule = *it;
                 }
                 if (dynamic_cast<KWirelessInterface*>(*it) != NULL) {
-                    nodeInfo->nodeWirelessIfcModule = dynamic_cast<KWirelessInterface*>(*it);
+                    unknownWirelessIfcModule = *it;
                 }
             }
 
-            // wireless ifc module & mobility module must be present, else something wrong
-            if (nodeInfo->nodeMobilityModule == NULL || nodeInfo->nodeWirelessIfcModule == NULL) {
-                delete nodeInfo;
-                continue;
+            if (unknownMobilityModule != NULL && unknownWirelessIfcModule != NULL) {
+                KBaseNodeInfo *nodeInfo = new KBaseNodeInfo();
+                nodeInfo->nodeModule = unknownModule;
+                nodeInfo->nodeMobilityModule = dynamic_cast<inet::IMobility*>(unknownMobilityModule);
+                nodeInfo->nodeWirelessIfcModule = dynamic_cast<KWirelessInterface*>(unknownWirelessIfcModule);
+                allNodeInfoList.push_back(nodeInfo);
             }
-
-            allNodeInfoList.push_back(nodeInfo);
         }
-
 
         // setup first event to build neighbourhood node list and send to forwarding layer
         cMessage *sendNeighEvent = new cMessage("Send Neighbourhood Event");
@@ -94,11 +80,9 @@ void KWirelessInterface::initialize(int stage)
         sendPacketTimeoutEvent = new cMessage("Send Packet Timeout Event");
         sendPacketTimeoutEvent->setKind(KWIRELESSINTERFACE_PKTSEND_EVENT_CODE);
 
-
     } else {
         EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << "Something is radically wrong\n";
     }
-
 }
 
 int KWirelessInterface::numInitStages() const
@@ -337,22 +321,21 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
 
 void KWirelessInterface::finish()
 {
-    // // remove send msg timeout
-    // if (sendPacketTimeoutEvent->isScheduled()) {
-    //     cancelEvent(sendPacketTimeoutEvent);
-    // }
-    // delete sendPacketTimeoutEvent;
-    // sendPacketTimeoutEvent = NULL;
-    //
-    // // remove all messages
-    // while(!packetQueue.empty()) {
-    //     cMessage *nextMsg = packetQueue.front();
-    //     packetQueue.pop();
-    //     delete nextMsg;
-    // }
-    // if (currentPendingMsg != NULL) {
-    //     delete currentPendingMsg;
-    //     currentPendingMsg = NULL;
-    // }
+    // remove send msg timeout
+    if (sendPacketTimeoutEvent->isScheduled()) {
+        cancelEvent(sendPacketTimeoutEvent);
+    }
+    delete sendPacketTimeoutEvent;
+
+    // remove all messages
+    while(!packetQueue.empty()) {
+        cMessage *nextMsg = packetQueue.front();
+        packetQueue.pop();
+        delete nextMsg;
+    }
+    if (currentPendingMsg != NULL) {
+        delete currentPendingMsg;
+        currentPendingMsg = NULL;
+    }
 }
 

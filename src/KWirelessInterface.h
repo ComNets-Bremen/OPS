@@ -49,7 +49,6 @@ class KWirelessInterface: public cSimpleModule
     private:
         string ownMACAddress;
         double wirelessRange;
-        string expectedNodeTypes;
         double neighbourScanInterval;
         double bandwidthBitRate;
         int wirelessHeaderSize;

@@ -61,7 +61,7 @@ module KMessengerNode
         }
 
         // wifi adhoc interface
-        wirelessIfc: KWirelessInterface {
+        link: KWirelessInterface {
             @display("p=120,269");
         }
 
@@ -79,12 +79,12 @@ module KMessengerNode
         forwarding.lowerLayerOut --> linkAdapt.upperLayerIn;
 
         // gate connections between link adaptation layer and the wireless interface
-        linkAdapt.lowerLayerIn <-- wirelessIfc.upperLayerOut;
-        linkAdapt.lowerLayerOut --> wirelessIfc.upperLayerIn;
+        linkAdapt.lowerLayerIn <-- link.upperLayerOut;
+        linkAdapt.lowerLayerOut --> link.upperLayerIn;
 
         // gate connections between wireless interface and physical layer
         // only considered receipts as @directIn is specified and nodes send
         // directly to other nodes
-        wirelessIfc.lowerLayerIn <-- radioIn;
+        link.lowerLayerIn <-- radioIn;
 
 }
