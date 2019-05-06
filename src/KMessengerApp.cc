@@ -145,9 +145,9 @@ void KMessengerApp::handleMessage(cMessage *msg)
 	    scheduleAt(simTime() + (dataGenerationInterval * totalNumNodes), msg);
         
         // make receivable node generate stats
-        KStatisticsMsg *statMsg = new KStatMsg("StatMsg");
-        statMsg->likedDataCountReceivable = 1;
-        statMsg->likedDataBytesReceivable = dataSizeInBytes;
+        KStatisticsMsg *statMsg = new KStatisticsMsg("StatMsg");
+        statMsg->setLikedDataCountReceivable(1);
+        statMsg->setLikedDataBytesReceivable(dataSizeInBytes);
         emit(selectedNodeInfo->likedDataReceivableSignalID, statMsg);
 
     } else if (dynamic_cast<KDataMsg*>(msg) != NULL) {
@@ -170,11 +170,11 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
 void KMessengerApp::receiveSignal(cComponent *source, simsignal_t signalID, cObject *value, cObject *details)
 {
-    if (signalID == ownNodeInfo.likedDataReceivableSignalID) {
-        KStatisticsMsg *statMsg = check_and_cast<Packet *>(value);
+    if (signalID == ownNodeInfo->likedDataReceivableSignalID) {
+        KStatisticsMsg *statMsg = check_and_cast<KStatisticsMsg *>(value);
 
-        ownNodeInfo->likedDataBytesMaxReceivable += statMsg->likedDataBytesReceivable;
-        ownNodeInfo->likedDataCountMaxReceivable += statMsg->likedDataCountReceivable;
+        ownNodeInfo->likedDataBytesMaxReceivable += statMsg->getLikedDataBytesReceivable();
+        ownNodeInfo->likedDataCountMaxReceivable += statMsg->getLikedDataCountReceivable();
 
         // generate stats
 
