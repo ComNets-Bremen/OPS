@@ -76,14 +76,12 @@ module KUBMNode
         // link adaptation layer
         linkAdapt: KLinkAdaptLayer {
             parameters:
-                ownMACAddress = ownAddress;
                 @display("p=90,250;t=PassThru,l,blue");
         }
 
         // wifi adhoc interface
         link: KWirelessInterface {
             parameters:
-                ownMACAddress = ownAddress;
                 @display("p=90,350;t=WirelessIfc,l,blue");
         }
 
