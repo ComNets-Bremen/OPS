@@ -26,25 +26,25 @@ using namespace omnetpp;
 using namespace std;
 
 
-#define KMESSENGERAPP_SIMMODULEINFO        " KMessengerApp>!<" << simTime() << ">!<" << getParentModule()->getFullName()
-#define TRUE                            1
-#define FALSE                           0
-#define KMESSENGERAPP_MSGTYPE_NONE         0
-#define KMESSENGERAPP_MSGTYPE_IMMEDIATE    1
-#define KMESSENGERAPP_MSGTYPE_PREFERENCE   2
-#define KMESSENGERAPP_START_ITEM_ID        22000
+#define KMESSENGERAPP_SIMMODULEINFO         " KMessengerApp>!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define TRUE                                1
+#define FALSE                               0
+#define KMESSENGERAPP_MSGTYPE_NONE          0
+#define KMESSENGERAPP_MSGTYPE_IMMEDIATE     1
+#define KMESSENGERAPP_MSGTYPE_PREFERENCE    2
+#define KMESSENGERAPP_START_ITEM_ID         22000
 #define KMESSENGERAPP_REGISTRATION_EVENT	92
 #define KMESSENGERAPP_DATASEND_EVENT		93
 
 
-
-class KMessengerApp : public cSimpleModule
+class KMessengerApp : public cSimpleModule, public cListener
 {
     protected:
         virtual void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
         virtual int numInitStages() const;
         virtual void finish();
+        virtual void receiveSignal(cComponent *source, simsignal_t signalID, long realPayloadSize, cObject *details);
 
     private:
         string ownMACAddress;
@@ -56,10 +56,10 @@ class KMessengerApp : public cSimpleModule
         int nodeIndex;
         int totalNumNodes;
         double dataGenerationInterval;
-        int nextGenerationNotification;
-
         int notificationCount;
-        vector<int> timesMessagesReceived;
+        
+        int ownNextGenerationOrder;
+        int nextGenerationOrder;
 
         int usedRNG;
 
@@ -68,6 +68,35 @@ class KMessengerApp : public cSimpleModule
 
         int dataSizeInBytes;
         int logging;
+
+        KBaseNodeInfo* ownNodeInfo;
+        
+        // variables to generate signals
+        simsignal_t likedDataBytesReceivedSignal;
+        simsignal_t nonLikedDataBytesReceivedSignal;
+        simsignal_t duplicateDataBytesReceivedSignal;
+        simsignal_t totalDataBytesReceivedSignal;
+
+        simsignal_t likedDataCountReceivedSignal;
+        simsignal_t nonLikedDataCountReceivedSignal;
+        simsignal_t duplicateDataCountReceivedSignal;
+        simsignal_t totalDataCountReceivedSignal;
+
+        simsignal_t likedDataBytesMaxReceivableSignal;
+        simsignal_t nonLikedDataBytesMaxReceivableSignal;
+        simsignal_t totalDataBytesMaxReceivableSignal;
+
+        simsignal_t likedDataCountMaxReceivableSignal;
+        simsignal_t nonLikedDataCountMaxReceivableSignal;
+        simsignal_t totalDataCountMaxReceivableSignal;
+
+        simsignal_t likedDataReceivedAvgDelaySignal;
+        simsignal_t nonLikedDataReceivedAvgDelaySignal;
+        simsignal_t totalDataReceivedAvgDelaySignal;
+
+        simsignal_t likedDataDeliveryRatioSignal;
+        simsignal_t nonLikedDataDeliveryRatioSignal;
+        simsignal_t totalDataDeliveryRatioSignal;
 
 };
 

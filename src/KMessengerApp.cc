@@ -10,7 +10,7 @@
 
 Define_Module(KMessengerApp);
 
-vector<string> addressList;
+vector<KBaseNodeInfo*> nodeInfoList;
 
 void KMessengerApp::initialize(int stage)
 {
@@ -29,32 +29,12 @@ void KMessengerApp::initialize(int stage)
 		totalNumNodes = getParentModule()->getParentModule()->par("numNodes");
 
         // add own address to global list to use for random destination selections
-        addressList.push_back(ownMACAddress);
-
-		if (logging) {EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
-		
-        // setup the event notification array
-        for (int i = 0; i < notificationCount; i++)
-        {
-        	timesMessagesReceived.push_back(0);
-
-        	if(logging)
-        	{
-        		char dataName[128];
-        		sprintf(dataName, "/messengers/item-%0d", KMESSENGERAPP_START_ITEM_ID + i);
-        		EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<NE>!<" 
-        			<< dataName << ">!<"
-                	<< "100" << ">!<" << "100" << ">!<"
-                	<< "100" << ">!<"
-                	<< "L" << ">!<"
-                	<< ttl << "\n";
-        	}
-        }
-        
-        if (logging) {EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
-        
-        nextGenerationNotification = 0;
-  
+        ownNodeInfo = new KBaseNodeInfo();
+        ownNodeInfo.nodeAddress = ownMACAddress;
+        string signalName = ownMACAddress + "-likedDataReceivable";
+        ownNodeInfo.likedDataReceivableSignalID = registerSignal(signalName);
+        subscribe(ownNodeInfo.likedDataReceivableSignalID, this);
+        nodeInfoList.push_back(ownNodeInfo);
 
     } else if (stage == 1) {
 
@@ -67,14 +47,33 @@ void KMessengerApp::initialize(int stage)
         scheduleAt(simTime(), appRegistrationEvent);
 
         // this is a round-robin scheduling of traffic: in a row, everybody gets a chance to send the next packet.
-            
     	dataTimeoutEvent = new cMessage("Data Timeout Event");
         dataTimeoutEvent->setKind(KMESSENGERAPP_DATASEND_EVENT);
+        nextGenerationIndex = nodeIndex;
         // add 0.1 secs to the first sending to avoid the simulation to send one more message than expected.
-        scheduleAt(simTime() + dataGenerationInterval*nodeIndex + 0.1, dataTimeoutEvent);
-        nextGenerationNotification = nodeIndex;
+        scheduleAt(simTime() + (dataGenerationInterval * nextGenerationIndex) + 0.1, dataTimeoutEvent);
 
-        if (logging) {EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<SUTG "<< notificationCount << " DI" << "\n";}
+        // registering statistic signals
+        likedDataBytesReceivedSignal = registerSignal("likedDataBytesReceivedApp");
+        nonLikedDataBytesReceivedSignal = registerSignal("nonLikedDataBytesReceivedApp");
+        duplicateDataBytesReceivedSignal = registerSignal("duplicateDataBytesReceivedApp");
+        totalDataBytesReceivedSignal = registerSignal("totalDataBytesReceivedApp");
+        likedDataCountReceivedSignal = registerSignal("likedDataCountReceivedApp");
+        nonLikedDataCountReceivedSignal = registerSignal("nonLikedDataCountReceivedApp");
+        duplicateDataCountReceivedSignal = registerSignal("duplicateDataCountReceivedApp");
+        totalDataCountReceivedSignal = registerSignal("totalDataCountReceivedApp");
+        likedDataBytesMaxReceivableSignal = registerSignal("likedDataBytesMaxReceivableApp");
+        nonLikedDataBytesMaxReceivableSignal = registerSignal("nonLikedDataBytesMaxReceivableApp");
+        totalDataBytesMaxReceivableSignal = registerSignal("totalDataBytesMaxReceivableApp");
+        likedDataCountMaxReceivableSignal = registerSignal("likedDataCountMaxReceivableApp");
+        nonLikedDataCountMaxReceivableSignal = registerSignal("nonLikedDataCountMaxReceivableApp");
+        totalDataCountMaxReceivableSignal = registerSignal("totalDataCountMaxReceivableApp");
+        likedDataReceivedAvgDelaySignal = registerSignal("likedDataReceivedAvgDelayApp");
+        nonLikedDataReceivedAvgDelaySignal = registerSignal("nonLikedDataReceivedAvgDelayApp");
+        totalDataReceivedAvgDelaySignal = registerSignal("totalDataReceivedAvgDelayApp");
+        likedDataDeliveryRatioSignal = registerSignal("likedDataDeliveryRatioApp");
+        nonLikedDataDeliveryRatioSignal = registerSignal("nonLikedDataDeliveryRatioApp");
+        totalDataDeliveryRatioSignal = registerSignal("totalDataDeliveryRatioApp");
 
     } else {
         EV_FATAL << KMESSENGERAPP_SIMMODULEINFO << "Something is radically wrong\n";
@@ -99,74 +98,90 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
         send(regAppMsg, "lowerLayerOut");
 
-        if (logging) {EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
-
     } else if (msg->isSelfMessage() && msg->getKind() == KMESSENGERAPP_DATASEND_EVENT) {
 
-		// mark this message as received by this node
-		timesMessagesReceived[nextGenerationNotification]++;
-        
         // find random destination to send
-        string finalDestinationAddress = ownMACAddress;
-        while(finalDestinationAddress != ownMACAddress) {
-            int destIndex = intuniform(0, (addressList.size() - 1), usedRNG);
-            finalDestinationAddress = addressList[destIndex];
+        bool found = FALSE;
+        KBaseNodeInfo* selectedNodeInfo = nodeInfoList[0];
+        while (!found) {
+            int destIndex = intuniform(0, (nodeInfoList.size() - 1), usedRNG);
+            selectedNodeInfo = nodeInfoList[destIndex];
+            if (selectedNodeInfo->nodeAddress != ownMACAddress) {
+                found = TRUE;
+            }
         }
 
-		//setup the data message for sending down to forwarding layer
-		char tempString[128];
-		sprintf(tempString, "D item-%0d", KMESSENGERAPP_START_ITEM_ID + nextGenerationNotification);
-		
-		KDataMsg *dataMsg = new KDataMsg(tempString);
+        //setup the data message for sending down to forwarding layer
+        char tempString[128];
+        sprintf(tempString, "D item-%0d", KMESSENGERAPP_START_ITEM_ID + nextGenerationIndex);
 
-		dataMsg->setSourceAddress("");
-		dataMsg->setDestinationAddress("");
+        KDataMsg *dataMsg = new KDataMsg(tempString);
+
+        dataMsg->setSourceAddress("");
+        dataMsg->setDestinationAddress("");
+
+        sprintf(tempString, "/messenger/item-%0d", KMESSENGERAPP_START_ITEM_ID + nextGenerationIndex);
+
+        dataMsg->setDataName(tempString);
+        dataMsg->setGoodnessValue(100);
+        dataMsg->setRealPayloadSize(dataSizeInBytes);
+        dataMsg->setMsgUniqueID(nextGenerationIndex);
+
+        sprintf(tempString, "Details of item-%0d", KMESSENGERAPP_START_ITEM_ID + nextGenerationIndex);
+        dataMsg->setDummyPayloadContent(tempString);
 		
-		sprintf(tempString, "/messenger/item-%0d", KMESSENGERAPP_START_ITEM_ID + nextGenerationNotification);
-		
-		dataMsg->setDataName(tempString);
-		dataMsg->setGoodnessValue(100);
-		dataMsg->setRealPayloadSize(dataSizeInBytes);
-		dataMsg->setMsgUniqueID(nextGenerationNotification);
-		
-		sprintf(tempString, "Details of item-%0d", KMESSENGERAPP_START_ITEM_ID + nextGenerationNotification);
-		dataMsg->setDummyPayloadContent(tempString);
-		
-		dataMsg->setByteLength(dataSizeInBytes);
-		dataMsg->setMsgType(0);
-		dataMsg->setValidUntilTime(ttl);
+        dataMsg->setByteLength(dataSizeInBytes);
+        dataMsg->setMsgType(0);
+        dataMsg->setValidUntilTime(ttl);
 
         dataMsg->setInitialOriginatorAddress(ownMACAddress.c_str());
         dataMsg->setDestinationOriented(true);
-        dataMsg->setFinalDestinationAddress(finalDestinationAddress.c_str());
+        dataMsg->setFinalDestinationAddress(selectedNodeInfo->nodeAddress.c_str());
 
-		send(dataMsg, "lowerLayerOut");
+        send(dataMsg, "lowerLayerOut");
 
-		if (logging) {EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<GD>!<" << dataMsg->getDataName() << "\n";}
-		
-		// schedule again after a complete round robin of all nodes
-		nextGenerationNotification += totalNumNodes;	
-	    scheduleAt(simTime() + dataGenerationInterval*totalNumNodes, msg);
-
+		// schedule again
+		nextGenerationIndex += totalNumNodes;	
+	    scheduleAt(simTime() + dataGenerationInterval, msg);
+        
+        // make receivable node generate stats
+        KStatMsg *statMsg = new KStatMsg("StatMsg");
+        statMsg->likedDataCountReceivable = 1;
+        statMsg->likedDataBytesReceivable = dataSizeInBytes;
+        emit(selectedNodeInfo->likedDataReceivableSignalID, statMsg);
 
     } else if (dynamic_cast<KDataMsg*>(msg) != NULL) {
 
         // message received from outside so, process received data message
         KDataMsg *dataMsg = check_and_cast<KDataMsg *>(msg);
 
-        if (logging) {EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
+        // generate stats
 
-        // increment number of times seen
-        timesMessagesReceived[dataMsg->getMsgUniqueID()]++;
         
         delete msg;
-
+        
     } else {
 
         EV_INFO << KMESSENGERAPP_SIMMODULEINFO << ">!<Received unexpected packet \n";
         delete msg;
     }
 
+}
+
+void KMessengerApp::receiveSignal(cComponent *source, simsignal_t signalID, cObject *value, cObject *details)
+{
+    if (signalID == ownNodeInfo.likedDataReceivableSignalID) {
+        KStatisticsMsg *statMsg = check_and_cast<Packet *>(value);
+
+        ownNodeInfo->likedDataBytesMaxReceivable += statMsg->likedDataBytesReceivable;
+        ownNodeInfo->likedDataCountMaxReceivable += statMsg->likedDataCountReceivable;
+
+        // generate stats
+        
+
+        delete statMsg;
+    }
+    
 }
 
 void KMessengerApp::finish()
@@ -176,6 +191,11 @@ void KMessengerApp::finish()
     cancelEvent(dataTimeoutEvent);
     delete dataTimeoutEvent;
 
-    addressList.clear();
-    timesMessagesReceived.clear();
+    if (nodeInfoList.size() > 0) {
+        for (int i = 0; i < nodeInfoList.size(); i++) {
+            KBaseNodeInfo* nodeInfo = nodeInfoList[i];
+            delete nodeInfo;
+        }
+        nodeInfoList.clear();
+    }
 }

@@ -206,3 +206,11 @@ packet KDPtableDataMsg {
     MsgDelivPredictability dpList[];
 }
 
+
+// message used to send statistic information between models
+packet KStatisticsMsg {
+
+    // liked receivable info
+    int likedDataCountReceivable;
+    int likedDataBytesReceivable;
+}

@@ -37,6 +37,33 @@ simple KMessengerApp
         // icon used
         @display("i=block/app");
 
+        //statistic signals
+        @signal[likedDataBytesReceivedApp](type=long);
+        @signal[nonLikedDataBytesReceivedApp](type=long);
+        @signal[duplicateDataBytesReceivedApp](type=long);
+        @signal[totalDataBytesReceivedApp](type=long);
+
+        @signal[likedDataCountReceivedApp](type=long);
+        @signal[nonLikedDataCountReceivedApp](type=long);
+        @signal[duplicateDataCountReceivedApp](type=long);
+        @signal[totalDataCountReceivedApp](type=long);
+
+        @signal[likedDataBytesMaxReceivableApp](type=long);
+        @signal[nonLikedDataBytesMaxReceivableApp](type=long);
+        @signal[totalDataBytesMaxReceivableApp](type=long);
+
+        @signal[likedDataCountMaxReceivableApp](type=long);
+        @signal[nonLikedDataCountMaxReceivableApp](type=long);
+        @signal[totalDataCountMaxReceivableApp](type=long);
+
+        @signal[likedDataReceivedAvgDelayApp](type=simtime_t);
+        @signal[nonLikedDataReceivedAvgDelayApp](type=simtime_t);
+        @signal[totalDataReceivedAvgDelayApp](type=simtime_t);
+
+        @signal[likedDataDeliveryRatioApp](type=double);
+        @signal[nonLikedDataDeliveryRatioApp](type=double);
+        @signal[totalDataDeliveryRatioApp](type=double);
+
     gates:
 
         // interfaces to the lower layer
