@@ -30,10 +30,10 @@ void KMessengerApp::initialize(int stage)
 
         // add own address to global list to use for random destination selections
         ownNodeInfo = new KBaseNodeInfo();
-        ownNodeInfo.nodeAddress = ownMACAddress;
+        ownNodeInfo->nodeAddress = ownMACAddress;
         string signalName = ownMACAddress + "-likedDataReceivable";
-        ownNodeInfo.likedDataReceivableSignalID = registerSignal(signalName);
-        subscribe(ownNodeInfo.likedDataReceivableSignalID, this);
+        ownNodeInfo->likedDataReceivableSignalID = registerSignal(signalName);
+        subscribe(ownNodeInfo->likedDataReceivableSignalID, this);
         nodeInfoList.push_back(ownNodeInfo);
 
     } else if (stage == 1) {

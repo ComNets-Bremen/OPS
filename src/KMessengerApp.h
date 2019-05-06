@@ -17,6 +17,7 @@
 
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
+#include "KBaseNodeInfo.h"
 
 #if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
