@@ -32,7 +32,7 @@ void KMessengerApp::initialize(int stage)
         ownNodeInfo = new KBaseNodeInfo();
         ownNodeInfo->nodeAddress = ownMACAddress;
         string signalName = ownMACAddress + "-likedDataReceivable";
-        ownNodeInfo->likedDataReceivableSignalID = registerSignal(signalName);
+        ownNodeInfo->likedDataReceivableSignalID = registerSignal(signalName.c_str());
         subscribe(ownNodeInfo->likedDataReceivableSignalID, this);
         nodeInfoList.push_back(ownNodeInfo);
 
@@ -142,10 +142,10 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
 		// schedule again
 		nextGenerationIndex += totalNumNodes;	
-	    scheduleAt(simTime() + dataGenerationInterval, msg);
+	    scheduleAt(simTime() + (dataGenerationInterval * totalNumNodes), msg);
         
         // make receivable node generate stats
-        KStatMsg *statMsg = new KStatMsg("StatMsg");
+        KStatisticsMsg *statMsg = new KStatMsg("StatMsg");
         statMsg->likedDataCountReceivable = 1;
         statMsg->likedDataBytesReceivable = dataSizeInBytes;
         emit(selectedNodeInfo->likedDataReceivableSignalID, statMsg);
@@ -177,11 +177,10 @@ void KMessengerApp::receiveSignal(cComponent *source, simsignal_t signalID, cObj
         ownNodeInfo->likedDataCountMaxReceivable += statMsg->likedDataCountReceivable;
 
         // generate stats
-        
+
 
         delete statMsg;
     }
-    
 }
 
 void KMessengerApp::finish()

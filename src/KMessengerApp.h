@@ -45,7 +45,7 @@ class KMessengerApp : public cSimpleModule, public cListener
         virtual void handleMessage(cMessage *msg);
         virtual int numInitStages() const;
         virtual void finish();
-        virtual void receiveSignal(cComponent *source, simsignal_t signalID, long realPayloadSize, cObject *details);
+        virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *value, cObject *details);
 
     private:
         string ownMACAddress;
@@ -59,8 +59,7 @@ class KMessengerApp : public cSimpleModule, public cListener
         double dataGenerationInterval;
         int notificationCount;
         
-        int ownNextGenerationOrder;
-        int nextGenerationOrder;
+        int nextGenerationIndex;
 
         int usedRNG;
 
