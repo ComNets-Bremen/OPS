@@ -65,7 +65,7 @@ class KSpraywaitRoutingLayer: public cSimpleModule
             int realPayloadSize;
             string dummyPayloadContent;
 
-            double validUntilTime;
+            simtime_t validUntilTime;
 
             int realPacketSize;
 
@@ -77,6 +77,9 @@ class KSpraywaitRoutingLayer: public cSimpleModule
 
             int goodnessValue;
             int hopsTravelled;
+
+            int msgUniqueID;
+            simtime_t initialInjectionTime;
 
             double createdTime;
             double updatedTime;

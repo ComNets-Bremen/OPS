@@ -58,6 +58,7 @@ class KMessengerApp : public cSimpleModule, public cListener
         int totalNumNodes;
         double dataGenerationInterval;
         int notificationCount;
+        vector<int> timesMessagesReceived;
         
         int nextGenerationIndex;
 
@@ -98,6 +99,7 @@ class KMessengerApp : public cSimpleModule, public cListener
         simsignal_t nonLikedDataDeliveryRatioSignal;
         simsignal_t totalDataDeliveryRatioSignal;
 
+        void generateStats();
 };
 
 

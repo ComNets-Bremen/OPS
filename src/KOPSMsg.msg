@@ -21,8 +21,9 @@ packet KDataMsg {
     string dataName;
     string dummyPayloadContent;
     int msgType;
-    double validUntilTime = 0;
+    simtime_t validUntilTime = 0;
     int msgUniqueID;
+    simtime_t initialInjectionTime;
 
     int realPayloadSize;
     int realPacketSize;

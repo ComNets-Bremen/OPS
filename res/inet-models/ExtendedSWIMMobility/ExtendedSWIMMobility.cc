@@ -648,7 +648,7 @@ Coord ExtendedSWIMMobility::spreadInsideRadius(Coord location){
     return newLocation;
 }
 
-void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgType, double validUntilTime,
+void ExtendedSWIMMobility::setNewTargetPosition(std::string dataName, int msgType, simtime_t validUntilTime,
                                                 std::string eventName) {
     bool found = false;
     double distance;

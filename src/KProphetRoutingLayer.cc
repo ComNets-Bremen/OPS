@@ -47,7 +47,7 @@ void KProphetRoutingLayer::handleMessage(cMessage *msg)
 {
     cGate *gate;
     char gateName[64];
-    KNeighbourListMsg *neighListMsg;
+    //KNeighbourListMsg *neighListMsg;
 
     numEventsHandled++;
 
@@ -112,7 +112,7 @@ void KProphetRoutingLayer::ageDataInCache()
 {
 
     // remove expired data items
-    int originalSize = cacheList.size();
+    //int originalSize = cacheList.size();
     int expiredFound = TRUE;
     while (expiredFound) {
         expiredFound = FALSE;
@@ -254,10 +254,14 @@ void KProphetRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
         if (omnetDataMsg->getDestinationOriented()) {
             //cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
-            cacheEntry->finalDestinationNodeAddress = omnetDataMsg->getFinalDestinationAddress();
+            cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
         }
         cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
         cacheEntry->hopsTravelled = 0;
+
+        cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+        cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
+
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
 
@@ -493,7 +497,7 @@ void KProphetRoutingLayer::sendDataMsg(vector<string> destinationNodes, string n
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
         cacheEntry = *iteratorCache;
-        if (std::find(destinationNodes.begin(), destinationNodes.end(), cacheEntry->finalDestinationNodeAddress)!=destinationNodes.end())
+        if (std::find(destinationNodes.begin(), destinationNodes.end(), cacheEntry->finalDestinationAddress)!=destinationNodes.end())
             {
             KDataMsg *dataMsg = new KDataMsg();
             dataMsg->setSourceAddress(ownMACAddress.c_str());
@@ -512,14 +516,17 @@ void KProphetRoutingLayer::sendDataMsg(vector<string> destinationNodes, string n
             dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
             if (cacheEntry->destinationOriented) {
                 //dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
-                dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationNodeAddress.c_str());
+                dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
             }
             dataMsg->setMessageID(cacheEntry->messageID.c_str());
             dataMsg->setHopCount(cacheEntry->hopCount);
             dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
             dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
 
-            if(cacheEntry->finalDestinationNodeAddress.c_str() == nodeMACAddress)
+            dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
+            dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
+
+            if(cacheEntry->finalDestinationAddress.c_str() == nodeMACAddress)
                 {
                 sentdatanamelist.push_back(cacheEntry->dataName.c_str());
                 }
@@ -652,9 +659,13 @@ void KProphetRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
             if (omnetDataMsg->getDestinationOriented()) {
                 //cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
-                cacheEntry->finalDestinationNodeAddress = omnetDataMsg->getFinalDestinationAddress();
+                cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
             }
             cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
+
+            cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+            cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
+
             cacheEntry->createdTime = simTime().dbl();
             cacheEntry->updatedTime = simTime().dbl();
 
@@ -685,7 +696,10 @@ void KProphetRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     list<AppInfo*>::iterator iteratorRegisteredApps = registeredAppList.begin();
     while (iteratorRegisteredApps != registeredAppList.end()) {
         appInfo = *iteratorRegisteredApps;
-        if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL) {
+        if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL
+                && ((omnetDataMsg->getDestinationOriented()
+                        && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)
+                     || (!omnetDataMsg->getDestinationOriented()))) {
             found = TRUE;
             break;
         }

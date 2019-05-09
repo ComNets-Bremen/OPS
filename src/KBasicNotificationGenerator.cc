@@ -197,7 +197,7 @@ void KBasicNotificationGenerator::handleMessage(cMessage *msg)
 	}
 	
 	else if (msg->isSelfMessage() && msg->getKind() == 115){
-		float x, y, radi;
+		float x, y;
 		std::string payload, temp;
 		payload = msg->getName();
 		for(idx = 0; idx < strlen(payload.c_str()); idx++){
@@ -432,7 +432,6 @@ void KBasicNotificationGenerator::handleMessage(cMessage *msg)
 //Read events from text file
 bool KBasicNotificationGenerator::readEvents()
 {
-	int i=0;
 	std::string line;
 	std::ifstream infile;
 	

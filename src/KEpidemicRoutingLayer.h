@@ -20,106 +20,110 @@
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
 
-#if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
-#endif
 
 using namespace std;
 
-class KEpidemicRoutingLayer: public cSimpleModule
+class KEpidemicRoutingLayer : public cSimpleModule
 {
-    protected:
-        virtual void initialize(int stage);
-        virtual void handleMessage(cMessage *msg);
-        virtual int numInitStages() const;
-        virtual void finish();
+protected:
+    virtual void initialize(int stage);
+    virtual void handleMessage(cMessage *msg);
+    virtual int numInitStages() const;
+    virtual void finish();
 
-    private:
-        string ownMACAddress;
-        int nextAppID;
-        int maximumCacheSize;
-        double antiEntropyInterval;
-        int maximumHopCount;
-        double maximumRandomBackoffDuration;
-        int logging;
-        bool useTTL;
-        int usedRNG;
-        
-        int numEventsHandled;
+private:
+    string ownMACAddress;
+    int nextAppID;
+    int maximumCacheSize;
+    double antiEntropyInterval;
+    int maximumHopCount;
+    double maximumRandomBackoffDuration;
+    bool useTTL;
+    int usedRNG;
 
-        int currentCacheSize;
+    int numEventsHandled;
 
-        struct AppInfo {
-            int appID;
-            string appName;
-            string prefixName;
-        };
+    int currentCacheSize;
 
-        struct CacheEntry {
-            string messageID;
-            int hopCount;
+    struct AppInfo {
+        int appID;
+        string appName;
+        string prefixName;
+    };
 
-            string dataName;
-            int realPayloadSize;
-            string dummyPayloadContent;
+    struct CacheEntry {
+        string messageID;
+        int hopCount;
 
-            double validUntilTime;
+        string dataName;
+        int realPayloadSize;
+        string dummyPayloadContent;
 
-            int realPacketSize;
+        simtime_t validUntilTime;
 
-            bool destinationOriented;
+        int realPacketSize;
 
-            string initialOriginatorAddress;
-            string finalDestinationAddress;
+        bool destinationOriented;
+//        string originatorNodeName;
+//        string finalDestinationNodeName;
+        string initialOriginatorAddress;
+        string finalDestinationAddress;
 
-            // string originatorNodeName;
-            // string finalDestinationNodeName;
+        int goodnessValue;
+        int hopsTravelled;
 
-            int goodnessValue;
-            int hopsTravelled;
+        int msgUniqueID;
+        simtime_t initialInjectionTime;
 
-            double createdTime;
-            double updatedTime;
-            double lastAccessedTime;
-        };
+        double createdTime;
+        double updatedTime;
+        double lastAccessedTime;
+    };
 
-        struct SyncedNeighbour {
-            string nodeMACAddress;
-            double syncCoolOffEndTime;
+    struct SyncedNeighbour {
+        string nodeMACAddress;
+        double syncCoolOffEndTime;
 
-            bool randomBackoffStarted;
-            double randomBackoffEndTime;
+        bool randomBackoffStarted;
+        double randomBackoffEndTime;
 
-            bool neighbourSyncing;
-            double neighbourSyncEndTime;
+        bool neighbourSyncing;
+        double neighbourSyncEndTime;
 
-            bool nodeConsidered;
+        bool nodeConsidered;
 
-        };
+    };
 
-        list<AppInfo*> registeredAppList;
-        list<CacheEntry*> cacheList;
-        list<SyncedNeighbour*> syncedNeighbourList;
-        bool syncedNeighbourListIHasChanged;
+    list<AppInfo*> registeredAppList;
+    list<CacheEntry*> cacheList;
+    list<SyncedNeighbour*> syncedNeighbourList;
+    bool syncedNeighbourListIHasChanged;
 
-    
+    void ageDataInCache();
+    void handleAppRegistrationMsg(cMessage *msg);
+    void handleDataMsgFromUpperLayer(cMessage *msg);
+    void handleNeighbourListMsgFromLowerLayer(cMessage *msg);
+    void handleDataMsgFromLowerLayer(cMessage *msg);
+    void handleSummaryVectorMsgFromLowerLayer(cMessage *msg);
+    void handleDataRequestMsgFromLowerLayer(cMessage *msg);
 
-        void ageDataInCache();
-        void handleAppRegistrationMsg(cMessage *msg);
-        void handleDataMsgFromUpperLayer(cMessage *msg);
-        void handleNeighbourListMsgFromLowerLayer(cMessage *msg);
-        void handleDataMsgFromLowerLayer(cMessage *msg);
-        void handleSummaryVectorMsgFromLowerLayer(cMessage *msg);
-        void handleDataRequestMsgFromLowerLayer(cMessage *msg);
+    SyncedNeighbour* getSyncingNeighbourInfo(string nodeMACAddress);
+    void setSyncingNeighbourInfoForNextRound();
+    void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
+    KSummaryVectorMsg* makeSummaryVectorMessage();
 
-        SyncedNeighbour* getSyncingNeighbourInfo(string nodeMACAddress);
-        void setSyncingNeighbourInfoForNextRound();
-        void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
-        KSummaryVectorMsg* makeSummaryVectorMessage();
-
+    // stats related variables
+    simsignal_t dataBytesReceivedSignal;
+    simsignal_t sumVecBytesReceivedSignal;
+    simsignal_t dataReqBytesReceivedSignal;
+    simsignal_t totalBytesReceivedSignal;
+    simsignal_t cacheBytesRemovedSignal;
+    simsignal_t cacheBytesAddedSignal;
+    simsignal_t cacheBytesUpdatedSignal;
 };
+
 #define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         " KEpidemicRoutingLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
-#define KEPIDEMICROUTINGLAYER_DEBUG                 ">!<DEBUG>!<" << ownMACAddress
 
 #define KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes
 

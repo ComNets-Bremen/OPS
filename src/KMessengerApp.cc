@@ -36,6 +36,10 @@ void KMessengerApp::initialize(int stage)
         subscribe(ownNodeInfo->likedDataReceivableSignalID, this);
         nodeInfoList.push_back(ownNodeInfo);
 
+        for (int i = 0; i < notificationCount; i++) {
+            timesMessagesReceived.push_back(0);
+        }
+
     } else if (stage == 1) {
 
 
@@ -126,6 +130,7 @@ void KMessengerApp::handleMessage(cMessage *msg)
         dataMsg->setGoodnessValue(100);
         dataMsg->setRealPayloadSize(dataSizeInBytes);
         dataMsg->setMsgUniqueID(nextGenerationIndex);
+        dataMsg->setInitialInjectionTime(simTime().dbl());
 
         sprintf(tempString, "Details of item-%0d", KMESSENGERAPP_START_ITEM_ID + nextGenerationIndex);
         dataMsg->setDummyPayloadContent(tempString);
@@ -155,9 +160,38 @@ void KMessengerApp::handleMessage(cMessage *msg)
         // message received from outside so, process received data message
         KDataMsg *dataMsg = check_and_cast<KDataMsg *>(msg);
 
-        // generate stats
+        // check if it is a duplicate receipt
+        int i = dataMsg->getMsgUniqueID();
+        timesMessagesReceived[i]++;
 
-        
+        // compute stats
+        if (timesMessagesReceived[i] > 1) {
+            ownNodeInfo->duplicateDataCountReceived++;
+            ownNodeInfo->duplicateDataBytesReceived += dataMsg->getRealPayloadSize();
+        } else {
+            ownNodeInfo->likedDataCountReceived++;
+            ownNodeInfo->likedDataBytesReceived += dataMsg->getRealPayloadSize();
+
+            simtime_t diff = simTime() - dataMsg->getInitialInjectionTime();
+            if(ownNodeInfo->likedDataReceivedAvgDelay == 0.0) {
+                ownNodeInfo->likedDataReceivedAvgDelay = diff;
+            } else {
+                ownNodeInfo->likedDataReceivedAvgDelay = (ownNodeInfo->likedDataReceivedAvgDelay + diff) / 2.0;
+            }
+
+            if(ownNodeInfo->totalDataReceivedAvgDelay == 0.0) {
+                ownNodeInfo->totalDataReceivedAvgDelay = diff;
+            } else {
+                ownNodeInfo->totalDataReceivedAvgDelay = (ownNodeInfo->totalDataReceivedAvgDelay + diff) / 2.0;
+            }
+
+            ownNodeInfo->likedDataDeliveryRatio = ownNodeInfo->likedDataCountReceived / ownNodeInfo->likedDataBytesMaxReceivable;
+        }
+
+        // generate stats
+        generateStats();
+
+
         delete msg;
         
     } else {
@@ -173,14 +207,44 @@ void KMessengerApp::receiveSignal(cComponent *source, simsignal_t signalID, cObj
     if (signalID == ownNodeInfo->likedDataReceivableSignalID) {
         KStatisticsMsg *statMsg = check_and_cast<KStatisticsMsg *>(value);
 
+        // update receivables
         ownNodeInfo->likedDataBytesMaxReceivable += statMsg->getLikedDataBytesReceivable();
         ownNodeInfo->likedDataCountMaxReceivable += statMsg->getLikedDataCountReceivable();
 
-        // generate stats
+        // compute stats
+        ownNodeInfo->likedDataDeliveryRatio = ownNodeInfo->likedDataCountReceived / ownNodeInfo->likedDataBytesMaxReceivable;
 
+        // generate stats
+        generateStats();
 
         delete statMsg;
     }
+}
+
+void KMessengerApp::generateStats()
+{
+    emit(likedDataBytesReceivedSignal, ownNodeInfo->likedDataBytesReceived);
+    emit(nonLikedDataBytesReceivedSignal, ownNodeInfo->nonLikedDataBytesReceived);
+    emit(duplicateDataBytesReceivedSignal, ownNodeInfo->duplicateDataBytesReceived);
+    emit(totalDataBytesReceivedSignal, (ownNodeInfo->likedDataBytesReceived + ownNodeInfo->nonLikedDataBytesReceived
+                                            + ownNodeInfo->duplicateDataBytesReceived));
+    emit(likedDataCountReceivedSignal, ownNodeInfo->likedDataCountReceived);
+    emit(nonLikedDataCountReceivedSignal, ownNodeInfo->nonLikedDataCountReceived);
+    emit(duplicateDataCountReceivedSignal, ownNodeInfo->duplicateDataCountReceived);
+    emit(totalDataCountReceivedSignal, (ownNodeInfo->likedDataCountReceived + ownNodeInfo->nonLikedDataCountReceived
+                                                + ownNodeInfo->duplicateDataCountReceived));
+    emit(likedDataBytesMaxReceivableSignal, ownNodeInfo->likedDataBytesMaxReceivable);
+    emit(nonLikedDataBytesMaxReceivableSignal, ownNodeInfo->nonLikedDataBytesMaxReceivable);
+    emit(totalDataBytesMaxReceivableSignal, (ownNodeInfo->likedDataBytesMaxReceivable + ownNodeInfo->nonLikedDataBytesMaxReceivable));
+    emit(likedDataCountMaxReceivableSignal, ownNodeInfo->likedDataCountMaxReceivable);
+    emit(nonLikedDataCountMaxReceivableSignal, ownNodeInfo->nonLikedDataCountMaxReceivable);
+    emit(totalDataCountMaxReceivableSignal, (ownNodeInfo->likedDataCountMaxReceivable + ownNodeInfo->nonLikedDataCountMaxReceivable));
+    emit(likedDataReceivedAvgDelaySignal, ownNodeInfo->likedDataReceivedAvgDelay);
+    emit(nonLikedDataReceivedAvgDelaySignal, ownNodeInfo->nonLikedDataReceivedAvgDelay);
+    emit(totalDataReceivedAvgDelaySignal, ownNodeInfo->totalDataReceivedAvgDelay);
+    emit(likedDataDeliveryRatioSignal, ownNodeInfo->likedDataDeliveryRatio);
+    emit(nonLikedDataDeliveryRatioSignal, ownNodeInfo->nonLikedDataDeliveryRatio);
+    emit(totalDataDeliveryRatioSignal, ownNodeInfo->totalDataDeliveryRatio);
 }
 
 void KMessengerApp::finish()

@@ -47,19 +47,28 @@ class KRRSLayer: public cSimpleModule
         };
 
         struct CacheEntry {
+            string messageID;
+            int hopCount;
+
             string dataName;
-            int goodnessValue;
             int realPayloadSize;
             string dummyPayloadContent;
+
             int msgType;
-            double validUntilTime;
+            simtime_t validUntilTime;
 
             int realPacketSize;
 
+            bool destinationOriented;
             // string finalDestinationNodeName;
             string initialOriginatorAddress;
             string finalDestinationAddress;
-            bool destinationOriented;
+
+            int goodnessValue;
+            int hopsTravelled;
+
+            int msgUniqueID;
+            simtime_t initialInjectionTime;
 
             double createdTime;
             double updatedTime;

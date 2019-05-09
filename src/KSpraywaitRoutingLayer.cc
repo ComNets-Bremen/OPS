@@ -5,7 +5,6 @@
 // @date   : 02-may-2017
 //
 //
-
 #include "KSpraywaitRoutingLayer.h"
 
 Define_Module(KSpraywaitRoutingLayer);
@@ -60,7 +59,7 @@ void KSpraywaitRoutingLayer::handleMessage(cMessage *msg)
 {
     cGate *gate;
     char gateName[64];
-    KNeighbourListMsg *neighListMsg;
+    //KNeighbourListMsg *neighListMsg;
 
     // self messages
     if (msg->isSelfMessage()) {
@@ -138,7 +137,7 @@ void KSpraywaitRoutingLayer::handleDataAgingTrigger(cMessage *msg)
 {
 
     // remove expired data items
-    int originalSize = cacheList.size();
+    //int originalSize = cacheList.size();
     int expiredFound = TRUE;
     while (expiredFound) {
         expiredFound = FALSE;
@@ -254,15 +253,16 @@ void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
         cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
         cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-        //cacheEntry->originatorNodeName = omnetDataMsg->getOriginatorNodeName();
         cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
         cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
         if (omnetDataMsg->getDestinationOriented()) {
-            //cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
             cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
         }
         cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
         cacheEntry->hopsTravelled = 0;
+
+        cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+        cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
 
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
@@ -480,14 +480,16 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
             cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
             cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-            //cacheEntry->originatorNodeName = omnetDataMsg->getOriginatorNodeName();
+
             cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
             cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
             if (omnetDataMsg->getDestinationOriented()) {
-                //cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
                 cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
             }
             cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
+            cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+            cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
+
             cacheEntry->createdTime = simTime().dbl();
             cacheEntry->updatedTime = simTime().dbl();
 
@@ -508,7 +510,10 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     list<AppInfo*>::iterator iteratorRegisteredApps = registeredAppList.begin();
     while (iteratorRegisteredApps != registeredAppList.end()) {
         appInfo = *iteratorRegisteredApps;
-        if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL) {
+        if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL
+                && ((omnetDataMsg->getDestinationOriented()
+                      && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)
+                    || (!omnetDataMsg->getDestinationOriented()))) {
             found = TRUE;
             break;
         }
@@ -580,11 +585,11 @@ void KSpraywaitRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
     KDataRequestMsg *dataRequestMsg = new KDataRequestMsg();
     dataRequestMsg->setSourceAddress(ownMACAddress.c_str());
     dataRequestMsg->setDestinationAddress(summaryVectorMsg->getSourceAddress());
-    //dataRequestMsg->setOriginatorNodeName(getParentModule()->getFullName());
+
     dataRequestMsg->setInitialOriginatorAddress(ownMACAddress.c_str());
 
     int realPacketSize = 6 + 6 + (selectedMessageIDList.size() * KSPRAYWAITROUTINGLAYER_MSG_ID_HASH_SIZE);
-    //IMP EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO <<"real packet size:"<<realPacketSize<<"\n";
+
     dataRequestMsg->setRealPacketSize(realPacketSize);
     dataRequestMsg->setByteLength(realPacketSize);
     dataRequestMsg->setMessageIDHashVectorArraySize(selectedMessageIDList.size());
@@ -686,6 +691,8 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             dataMsg->setHopCount(cacheEntry->hopCount);
             dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
             dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
+            dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
+            dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
 
             if(!Directtrans) {
                 // if((strstr(cacheEntry->finalDestinationNodeName.c_str(), dataRequestMsg->getOriginatorNodeName()) != NULL)&&destOriented) {
@@ -707,7 +714,7 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
                     delete removingCacheEntry;
                 } else {
                     if(sprayFlavour == "source") {
-                        int oldcopy = newcopies;
+                        //int oldcopy = newcopies;
                         newcopies = 1;
                     } else if(sprayFlavour == "vanila") {
                         int oldcopy = newcopies;

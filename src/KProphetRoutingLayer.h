@@ -46,7 +46,7 @@ class KProphetRoutingLayer: public cSimpleModule
         double gamma;
         double delta;
         double alpha;
-        double agingTimeUnit;
+//        double agingTimeUnit;
         double lastTimeAged;
         double standardTimeInterval;
         int usedRNG;
@@ -63,15 +63,24 @@ class KProphetRoutingLayer: public cSimpleModule
             string dataName;
             int realPayloadSize;
             string dummyPayloadContent;
-            double validUntilTime;
+            simtime_t validUntilTime;
             int realPacketSize;
             bool destinationOriented;
             //string originatorNodeName;
+
+//            string initialOriginatorAddress;
+//            string finalDestinationNodeName;
+//            string finalDestinationNodeAddress;
+
             string initialOriginatorAddress;
-            string finalDestinationNodeName;
-            string finalDestinationNodeAddress;
+            string finalDestinationAddress;
+
             int goodnessValue;
             int hopsTravelled;
+
+            int msgUniqueID;
+            simtime_t initialInjectionTime;
+
             double createdTime;
             double updatedTime;
             double lastAccessedTime;
@@ -112,7 +121,7 @@ class KProphetRoutingLayer: public cSimpleModule
         bool syncedNeighbourListIHasChanged;
 
 
-        cMessage *ageDataTimeoutEvent;
+//        cMessage *ageDataTimeoutEvent;
 
         void ageDataInCache();
         void handleAppRegistrationMsg(cMessage *msg);

@@ -180,14 +180,20 @@ void KRRSLayer::handleMessage(cMessage *msg)
                 // cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
                 cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
                 cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
-                cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+                if (omnetDataMsg->getDestinationOriented()) {
+                    cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+                }
+                cacheEntry->hopsTravelled = 0;
+
+                cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+                cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
 
                 cacheEntry->createdTime = simTime().dbl();
                 cacheEntry->updatedTime = simTime().dbl();
 
                 cacheList.push_back(cacheEntry);
 
-                currentCacheSize += cacheEntry->realPacketSize;
+                currentCacheSize += cacheEntry->realPayloadSize;
             }
 
             cacheEntry->lastAccessedTime = simTime().dbl();
@@ -227,20 +233,33 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
                 dataMsg->setSourceAddress(ownMACAddress.c_str());
                 dataMsg->setDestinationAddress(broadcastMACAddress.c_str());
+
                 dataMsg->setDataName(cacheEntry->dataName.c_str());
                 dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
+
                 dataMsg->setRealPayloadSize(cacheEntry->realPayloadSize);
                 dataMsg->setDummyPayloadContent(cacheEntry->dummyPayloadContent.c_str());
-                dataMsg->setRealPacketSize(cacheEntry->realPacketSize);
-                dataMsg->setByteLength(cacheEntry->realPacketSize);
-                dataMsg->setByteLength(cacheEntry->realPacketSize);
+                int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6 + 1;
+
+
+                dataMsg->setRealPacketSize(realPacketSize);
+                dataMsg->setByteLength(realPacketSize);
+
                 dataMsg->setMsgType(cacheEntry->msgType);
                 dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
                 
                 // dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
                 dataMsg->setInitialOriginatorAddress(cacheEntry->initialOriginatorAddress.c_str());
                 dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
-                dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
+                if (cacheEntry->destinationOriented) {
+                    dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
+                }
+                dataMsg->setMessageID(cacheEntry->messageID.c_str());
+                dataMsg->setHopCount(cacheEntry->hopCount);
+                dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
+                dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
+                dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
+                dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
 
                 send(dataMsg, "lowerLayerOut");
 
@@ -255,6 +274,10 @@ void KRRSLayer::handleMessage(cMessage *msg)
         } else if (strstr(gateName, "lowerLayerIn") != NULL && (omnetDataMsg = dynamic_cast<KDataMsg*>(msg)) != NULL) {
 
             int found;
+
+            // increment the travelled hop count
+            omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
+            omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
 
             if (logging) {EV_INFO << KRRSLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
                 << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
@@ -311,28 +334,34 @@ void KRRSLayer::handleMessage(cMessage *msg)
                     }
 
                     cacheEntry = new CacheEntry;
+
+                    cacheEntry->messageID = omnetDataMsg->getMessageID();
                     cacheEntry->dataName = omnetDataMsg->getDataName();
-                    cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
                     cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
                     cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
                     cacheEntry->msgType = omnetDataMsg->getMsgType();
                     cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
-
                     cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-
-                    // cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
                     cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
                     cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
-                    cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+                    if (omnetDataMsg->getDestinationOriented()) {
+                        cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+                    }
+                    cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
+
+                    cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+                    cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
 
                     cacheEntry->createdTime = simTime().dbl();
                     cacheEntry->updatedTime = simTime().dbl();
 
                     cacheList.push_back(cacheEntry);
 
-                    currentCacheSize += cacheEntry->realPacketSize;
+                    currentCacheSize += cacheEntry->realPayloadSize;
                 }
 
+                cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
+                cacheEntry->hopCount = omnetDataMsg->getHopCount();
                 cacheEntry->lastAccessedTime = simTime().dbl();
             }
 
@@ -342,7 +371,10 @@ void KRRSLayer::handleMessage(cMessage *msg)
             list<AppInfo*>::iterator iteratorRegisteredApps = registeredAppList.begin();
             while (iteratorRegisteredApps != registeredAppList.end()) {
                 appInfo = *iteratorRegisteredApps;
-                if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL) {
+                if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL
+                        && ((omnetDataMsg->getDestinationOriented()
+                                && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)
+                             || (!omnetDataMsg->getDestinationOriented()))) {
                     found = TRUE;
                     break;
                 }

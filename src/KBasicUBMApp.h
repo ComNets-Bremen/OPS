@@ -37,7 +37,7 @@ class KBasicUBMApp : public cSimpleModule, public IUBMApp
         virtual void finish();
         
     private:
-        int sameMsgCount;                     // Count of the same message which is received from multiple different nodes
+        //int sameMsgCount;                     // Count of the same message which is received from multiple different nodes
                 
         cMessage *appRegistrationEvent;       // Message for registering application at forwarding layer
         
@@ -45,7 +45,7 @@ class KBasicUBMApp : public cSimpleModule, public IUBMApp
         
         string appPrefix;                     // Prefix to be appended in the message names so the message will reach its specific app layer application 
         string appNameGenPrefix;              // Same as appPrefix but it is an application Name
-        KDataMsg *neighborDataMsg;
+        //KDataMsg *neighborDataMsg;
         
         int dataSizeInBytes;
         int logging;
