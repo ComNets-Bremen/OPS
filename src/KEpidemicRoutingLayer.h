@@ -121,6 +121,9 @@ private:
     simsignal_t cacheBytesRemovedSignal;
     simsignal_t cacheBytesAddedSignal;
     simsignal_t cacheBytesUpdatedSignal;
+    simsignal_t currentCacheSizeBytesSignal;
+    simsignal_t currentCacheSizeReportedCountSignal;
+
 };
 
 #define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         " KEpidemicRoutingLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()

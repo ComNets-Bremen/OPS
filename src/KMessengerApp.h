@@ -17,15 +17,14 @@
 
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
-#include "KBaseNodeInfo.h"
 
 #if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
 #endif
 
-
 using namespace std;
 
+class KBaseNodeInfo;
 
 #define KMESSENGERAPP_SIMMODULEINFO         " KMessengerApp>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define TRUE                                1
@@ -38,14 +37,13 @@ using namespace std;
 #define KMESSENGERAPP_DATASEND_EVENT		93
 
 
-class KMessengerApp : public cSimpleModule, public cListener
+class KMessengerApp : public cSimpleModule
 {
-    protected:
+    public:
         virtual void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
         virtual int numInitStages() const;
         virtual void finish();
-        virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *value, cObject *details);
 
     private:
         string ownMACAddress;
@@ -73,33 +71,43 @@ class KMessengerApp : public cSimpleModule, public cListener
         KBaseNodeInfo* ownNodeInfo;
         
         // variables to generate signals
+
         simsignal_t likedDataBytesReceivedSignal;
         simsignal_t nonLikedDataBytesReceivedSignal;
         simsignal_t duplicateDataBytesReceivedSignal;
         simsignal_t totalDataBytesReceivedSignal;
+
+        simsignal_t likedDataBytesMaxReceivableSignal;
+        simsignal_t nonLikedDataBytesMaxReceivableSignal;
+        simsignal_t totalDataBytesMaxReceivableSignal;
 
         simsignal_t likedDataCountReceivedSignal;
         simsignal_t nonLikedDataCountReceivedSignal;
         simsignal_t duplicateDataCountReceivedSignal;
         simsignal_t totalDataCountReceivedSignal;
 
-        simsignal_t likedDataBytesMaxReceivableSignal;
-        simsignal_t nonLikedDataBytesMaxReceivableSignal;
-        simsignal_t totalDataBytesMaxReceivableSignal;
-
         simsignal_t likedDataCountMaxReceivableSignal;
         simsignal_t nonLikedDataCountMaxReceivableSignal;
         simsignal_t totalDataCountMaxReceivableSignal;
 
-        simsignal_t likedDataReceivedAvgDelaySignal;
-        simsignal_t nonLikedDataReceivedAvgDelaySignal;
-        simsignal_t totalDataReceivedAvgDelaySignal;
 
-        simsignal_t likedDataDeliveryRatioSignal;
-        simsignal_t nonLikedDataDeliveryRatioSignal;
-        simsignal_t totalDataDeliveryRatioSignal;
+        simsignal_t likedDataReceivedDelaySignal;
+        simsignal_t nonLikedDataReceivedDelaySignal;
+        simsignal_t totalDataReceivedDelaySignal;
 
-        void generateStats();
+        simsignal_t likedDataCountReceivedForAvgDelayCompSignal;
+        simsignal_t nonLikedDataCountReceivedForAvgDelayCompSignal;
+        simsignal_t totalDataCountReceivedForAvgDelayCompSignal;
+
+
+
+        simsignal_t likedDataCountReceivedForRatioCompSignal;
+        simsignal_t nonLikedDataCountReceivedForRatioCompSignal;
+        simsignal_t totalDataCountReceivedForRatioCompSignal;
+
+        simsignal_t likedDataCountMaxReceivableForRatioCompSignal;
+        simsignal_t nonLikedDataCountMaxReceivableForRatioCompSignal;
+        simsignal_t totalDataCountMaxReceivableForRatioCompSignal;
 };
 
 

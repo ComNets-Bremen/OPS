@@ -33,17 +33,19 @@ void KEpidemicRoutingLayer::initialize(int stage)
     } else if (stage == 2) {
 
         // setup statistics signals
-        dataBytesReceivedSignal = registerSignal("dataBytesReceivedFwd");
-        sumVecBytesReceivedSignal = registerSignal("sumVecBytesReceivedFwd");
-        dataReqBytesReceivedSignal = registerSignal("dataReqBytesReceivedFwd");
-        totalBytesReceivedSignal = registerSignal("totalBytesReceivedFwd");
+        dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
+        sumVecBytesReceivedSignal = registerSignal("fwdSumVecBytesReceived");
+        dataReqBytesReceivedSignal = registerSignal("fwdDataReqBytesReceived");
+        totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
 
-        cacheBytesRemovedSignal = registerSignal("cacheBytesRemovedFwd");
-        cacheBytesAddedSignal = registerSignal("cacheBytesAddedFwd");
-        cacheBytesUpdatedSignal = registerSignal("cacheBytesUpdatedFwd");
+        cacheBytesRemovedSignal = registerSignal("fwdCacheBytesRemoved");
+        cacheBytesAddedSignal = registerSignal("fwdCacheBytesAdded");
+        cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
+        currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
+        currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
     } else {
-        EV_FATAL << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
+        EV_FATAL << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialization \n";
     }
 }
 
@@ -208,7 +210,9 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
             currentCacheSize -= removingCacheEntry->realPayloadSize;
             cacheList.remove(removingCacheEntry);
 
-            emit(cacheBytesRemovedSignal, (long) removingCacheEntry->realPayloadSize);
+            emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+            emit(currentCacheSizeBytesSignal, currentCacheSize);
+            emit(currentCacheSizeReportedCountSignal, (int) 1);
 
             delete removingCacheEntry;
 
@@ -247,10 +251,12 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
     // log cache update or add
     if (found) {
-        emit(cacheBytesUpdatedSignal, (long) cacheEntry->realPayloadSize);
+        emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
     } else {
-        emit(cacheBytesAddedSignal, (long) cacheEntry->realPayloadSize);
+        emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
     }
+    emit(currentCacheSizeBytesSignal, currentCacheSize);
+    emit(currentCacheSizeReportedCountSignal, (int) 1);
 
     delete msg;
 }
@@ -359,17 +365,14 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
     omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
 
-    emit(dataBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
-    emit(totalBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+    emit(dataBytesReceivedSignal, (int) omnetDataMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (int) omnetDataMsg->getByteLength());
 
     // if destination oriented data sent around and this node is the destination
     // or if maximum hop count is reached
     // then cache or else don't cache
     bool cacheData = TRUE;
-    if ((omnetDataMsg->getDestinationOriented()
-         && strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL)
-        || omnetDataMsg->getHopCount() >= maximumHopCount) {
-
+    if (omnetDataMsg->getHopCount() >= maximumHopCount) {
         cacheData = FALSE;
     }
 
@@ -409,7 +412,9 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 currentCacheSize -= removingCacheEntry->realPayloadSize;
                 cacheList.remove(removingCacheEntry);
 
-                emit(cacheBytesRemovedSignal, (long) removingCacheEntry->realPayloadSize);
+                emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+                emit(currentCacheSizeBytesSignal, currentCacheSize);
+                emit(currentCacheSizeReportedCountSignal, (int) 1);
 
                 delete removingCacheEntry;
             }
@@ -447,10 +452,12 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
         // log cache update or add
         if (found) {
-            emit(cacheBytesUpdatedSignal, (long) omnetDataMsg->getRealPayloadSize());
+            emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
         } else {
-            emit(cacheBytesAddedSignal, (long) omnetDataMsg->getRealPayloadSize());
+            emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
         }
+        emit(currentCacheSizeBytesSignal, currentCacheSize);
+        emit(currentCacheSizeReportedCountSignal, (int) 1);
     }
 
     // if registered app exist, send data msg to app

@@ -7,7 +7,7 @@
 //
 package ops;
 
-simple KEpidemicRoutingLayer
+simple KEpidemicRoutingLayer like IForwardingLayer
 {
     parameters:
 
@@ -43,8 +43,9 @@ simple KEpidemicRoutingLayer
         @signal[cacheBytesRemovedFwd](type=long);
         @signal[cacheBytesAddedFwd](type=long);
         @signal[cacheBytesUpdatedFwd](type=long);
-        
-    
+        @signal[currentCacheSizeBytesFwd](type=long);
+        @signal[fwdCurrentCacheSizeReportedCount](type=long);
+
     gates:
 
         // interface to the upper layer (which may be the application)

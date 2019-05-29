@@ -9,6 +9,7 @@
 
 
 #include "KWirelessInterface.h"
+#include "KMessengerApp.h"
 
 #if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
@@ -28,30 +29,9 @@ class KBaseNodeInfo
 		inet::IMobility *nodeMobilityModule;
 		KWirelessInterface *nodeWirelessIfcModule;
 
-        // variables to collect stats
-        long likedDataBytesReceived = 0;
-        long nonLikedDataBytesReceived = 0;
-        long duplicateDataBytesReceived = 0;
+		// messenger app related info
+        KMessengerApp *nodeMessengerAppModule;
 
-        long likedDataCountReceived = 0;
-        long nonLikedDataCountReceived = 0;
-        long duplicateDataCountReceived = 0;
-
-        long likedDataBytesMaxReceivable = 0;
-        long nonLikedDataBytesMaxReceivable = 0;
-
-        long likedDataCountMaxReceivable = 0;
-        long nonLikedDataCountMaxReceivable = 0;
-
-        simtime_t likedDataReceivedAvgDelay = 0.0;
-        simtime_t nonLikedDataReceivedAvgDelay = 0.0;
-        simtime_t totalDataReceivedAvgDelay = 0.0;
-
-        double likedDataDeliveryRatio = 0.0;
-        double nonLikedDataDeliveryRatio = 0.0;
-        double totalDataDeliveryRatio = 0.0;
-        
-        simsignal_t likedDataReceivableSignalID;
 };
 
 #endif /* KBASENODEINFO_H_ */
