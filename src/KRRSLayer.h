@@ -36,7 +36,9 @@ class KRRSLayer: public cSimpleModule
         string ownMACAddress;
         int nextAppID;
         int maximumCacheSize;
-        int logging;
+        bool broadcastRRS;
+        int usedRNG;
+        bool ageCache;
 
         int currentCacheSize;
 
@@ -82,7 +84,17 @@ class KRRSLayer: public cSimpleModule
         list<CacheEntry*> cacheList;
         cMessage *ageDataTimeoutEvent;
 
+        // stats related variables
+        simsignal_t dataBytesReceivedSignal;
+        simsignal_t totalBytesReceivedSignal;
+        simsignal_t cacheBytesRemovedSignal;
+        simsignal_t cacheBytesAddedSignal;
+        simsignal_t cacheBytesUpdatedSignal;
+        simsignal_t currentCacheSizeBytesSignal;
+        simsignal_t currentCacheSizeReportedCountSignal;
+
 };
 #define KRRSLAYER_SIMMODULEINFO       " KRRSLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define KRRSLAYER_EVENTTYPE_AGEDATA   108
 
 #endif /* KRRSLAYER_H_ */
