@@ -140,7 +140,7 @@ with different scenarios. To run simulations, follow the procedure given below.
 3. Select `Run->Run As->OMNeT++ Simulation`. The following window should appear.
 
 <p align="center">
-  <img src="res/images/simulator-window.png" width="200"/>
+  <img src="res/images/simulator-window.png" width="800"/>
 </p>
 
 4. Start simulating the network by clicking on the simulation controls:
@@ -168,7 +168,7 @@ For more information, check Chapter 10 of the [IDE User Guide](https://www.omnet
 An example results chart generated using 2 simulations (Epidemic and RRS) is shown below.
 
 <p align="center">
-  <img src="res/images/delv-ratio-epi-rrs.png" width="200"/>
+  <img src="res/images/delv-ratio-epi-rrs.png" width="800"/>
 </p>
 
 
