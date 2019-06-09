@@ -154,7 +154,7 @@ with different scenarios. To run simulations, follow the procedure given below.
 3. Select `Run->Run As->OMNeT++ Simulation`. The following window should appear.
 
 <p align="center">
-  <img src="res/images/simulator-window.png" width="800"/>
+  <img src="res/images/simulator-window.png" width="600"/>
 </p>
 
 4. Start simulating the network by clicking on the simulation controls:
@@ -182,7 +182,7 @@ For more information, check Chapter 10 of the [IDE User Guide](https://www.omnet
 An example results chart generated using 2 simulations (Epidemic and RRS) is shown below.
 
 <p align="center">
-  <img src="res/images/delv-ratio-epi-rrs.png" width="800"/>
+  <img src="res/images/delv-ratio-epi-rrs.png" width="600"/>
 </p>
 
 
@@ -195,7 +195,7 @@ parameters as required. To know about all the model parameters, check the `.ned`
 
 ## Node Architectures
 
-There are two node models used in OPS configured with different protocol layers to simulate opportunistic 
+There are **two node models** used in OPS, configured with different protocol layers to simulate opportunistic 
 networks. A description of these models and the important model parameters is given below.
 
 ### User Behaviour based Node Model (KUBMNode)
@@ -205,7 +205,7 @@ network are based on user behaviour modelling (see []()). The node architecture 
 in the picture below.
 
 <p align="center">
-  <img src="res/images/ubm-node-model.png" width="200"/>
+  <img src="res/images/ubm-node-model.png" width="400"/>
 </p>
 
 The `KUBMNode` requires a Notification Generator which is a network-wide model that holds a set 
@@ -264,7 +264,7 @@ networks where every data item in the network is destined to another node. The n
 architecture is as shown in the picture below.
 
 <p align="center">
-  <img src="res/images/messenger-node-model.png" width="200"/>
+  <img src="res/images/messenger-node-model.png" width="400"/>
 </p>
 
 
