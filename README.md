@@ -41,13 +41,18 @@ version 4.1.0. So, do not install the default version prompted by the IDE when r
 
 There are many ways of installing INET 4.1.0. We recommend the following way.
 
-- Run the OMNeT++ IDE
-- Select `File->Import->Git->Projects from Git->Clone URI->` and provide the following parameters and 
+1. Run the OMNeT++ IDE
+
+2. Select `File->Import->Git->Projects from Git->Clone URI->` and provide the following parameters and 
 install INET
-- Parameters,
   - URI `https://github.com/inet-framework/inet.git`
   - Branch `v4.1.x`
-- Select the installed project in `Project Explorer` pane and build INET using `Project->Build Project`
+  - Wizard for project import `Import existing Eclipse projects`
+
+3. Select the installed project in `Project Explorer` pane and set the active configuration to `release` using
+`Project->Properties->C/C++ Build->Manage Configurations...`
+
+4. Select the installed project in `Project Explorer` pane and build INET using `Project->Build Project`
 
 **Note:** The build project should result in an error free build.
 
@@ -66,8 +71,12 @@ There are many ways of installing KeetchiLib. We recommend the following way.
 and install KeetchiLib
   - URI `https://github.com/ComNets-Bremen/KeetchiLib.git`
   - Branch `master`
+  - Wizard for project import `Import existing Eclipse projects`
 
-3. Select the installed project in `Project Explorer` pane and build KeetchiLib using `Project->Build Project`
+3. Select the installed project in `Project Explorer` pane and set the active configuration to `release` using
+`Project->Properties->C/C++ Build->Manage Configurations...`
+
+4. Select the installed project in `Project Explorer` pane and build KeetchiLib using `Project->Build Project`
 
 **Note:** The build project should result in an error free build.
 
@@ -86,11 +95,12 @@ There are many ways of installing SWIM. We recommend the following way.
 and install SWIMMobility
   - URI `https://github.com/ComNets-Bremen/SWIMMobility.git`
   - Branch `master`
+  - Wizard for project import `Import as general project`
 
 3. Copy the following 3 files into the INET project folder `src/inet/mobility/single`
-  - SWIMMobility.ned
-  - SWIMMobility.h
-  - SWIMMobility.cc
+  - `SWIMMobility.ned`
+  - `SWIMMobility.h`
+  - `SWIMMobility.cc`
 
 4. Select the INET project in `Project Explorer` pane and rebuild INET using `Project->Build Project`
 
@@ -105,24 +115,28 @@ Once the prerequisites are installed and built, to install and build OPS, follow
 and install OPS
   - URI `https://github.com/ComNets-Bremen/OPS.git`
   - Branch `master`
+  - Wizard for project import `Import existing Eclipse projects`
 
 3. Copy the following 2 files, located in `res/inet-models/ExtendedSWIMMobility` into the INET 
 project folder `src/inet/mobility/contract`
-  - IReactiveMobility.ned
-  - IReactiveMobility.h
+  - `IReactiveMobility.ned`
+  - `IReactiveMobility.h`
 
 4. Copy the following 2 files, located in `res/inet-models/ExtendedSWIMMobility` into the INET 
 project folder `src/inet/mobility/single`
-  - ExtendedSWIMMobility.ned
-  - ExtendedSWIMMobility.h
+  - `ExtendedSWIMMobility.ned`
+  - `ExtendedSWIMMobility.h`
 
-5. Select the INET project in `Project Explorer` pane and rebuild INET using `Project->Build Project`
+5. Select the installed project in `Project Explorer` pane and set the active configuration to `release` using
+`Project->Properties->C/C++ Build->Manage Configurations...`
 
-6. Select the OPS project in `Project Explorer` pane and select `File->Properties->Project References`
+6. Select the INET project in `Project Explorer` pane and rebuild INET using `Project->Build Project`
 
-7. Tick the installed INET and KeetchiLib, and click `Apply and Close`.
+7. Select the OPS project in `Project Explorer` pane and select `File->Properties->Project References`
 
-8. Select the OPS project again in `Project Explorer` pane and build using `Project->Build Project`
+8. Tick the installed INET and KeetchiLib, and click `Apply and Close`.
+
+9. Select the OPS project again in `Project Explorer` pane and build using `Project->Build Project`
 
 **Note:** The build project should result in an error free build.
 
@@ -155,7 +169,7 @@ using the OMNeT++ IDE.
 
 1. Run the OMNeT++ IDE
 
-2. In the `simulation/results` folder, create an `Analysis File` (`New -> Analysis File (anf)`)
+2. In the `simulation/results` folder, create an `Analysis File` by selecting `New -> Analysis File (anf)`
 
 3. Add the created results files (`*.vec` or `*.sca`) to the created file
 
@@ -179,8 +193,83 @@ parameters as required. To know about all the model parameters, check the `.ned`
 `src/` folder.
 
 
-## Model Information
-### Node Architectures
+## Node Architectures
+
+There are two node models used in OPS configured with different protocol layers to simulate opportunistic 
+networks. A description of these models and the important model parameters is given below.
+
+### User Behaviour based Node Model (KUBMNode)
+
+The `KUBMNode` consist of protocol layers to simulate opportunistic networks where the data in the
+network are based on user behaviour modelling (see []()). The node architecture is as shown 
+in the picture below.
+
+<p align="center">
+  <img src="res/images/ubm-node-model.png" width="200"/>
+</p>
+
+The `KUBMNode` requires a Notification Generator which is a network-wide model that holds a set 
+of messages and disseminates to the user behaviour models of nodes. The models associated with 
+notification generation are,
+
+   - `KBasicNotificationGenerator` - Notifications (i.e., messages) are held and disseminated to the user behaviour 
+models of each node to inject them into the network.
+
+
+The layers of a node can be configured to use different implementations relevant to the specific layer as 
+listed below.
+
+
+1. Application Layer with UBM - Applications generate data and feedback based on the preferences
+   of the users. The details of the application and the user behaviour model (UBM) are described in 
+   the publication [Reactive User Behaviour and Mobility Models](https://arxiv.org/pdf/1709.06395.pdf). 
+   Current models are,
+
+   - `KBasicUBM` - Performs the enforcement of user preferences on the notifications (messages)
+   - `KBasicUBMApp` - Injects and receives to/from network
+
+2. Opportunistic Networking Layer - Performs the forwarding of data and feedback according
+   to the forwarding strategy employed. Current implementations are,
+
+   - `KRRSLayer` - Implements a simple forwarding strategy based on the Randomised
+     Rumor Spreading (RRS) algorithm which randomly selects a data item to broadcast
+     to a node's neighbourhood
+   - `KKeetchiLayer` - Implements the Organic Data Dissemination algorithm as described
+     in the publication [A Novel Data Dissemination Model for Organic Data Flows](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18) by
+     A. Foerster et al
+   - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described
+     in the publication [Epidemic Routing for Partially-Connected Ad Hoc Networks](http://issg.cs.duke.edu/epidemic/epidemic.pdf)
+     by A. Vahdat and D. Becker
+
+3. Link Adaptation Layer - Tasked with converting packets sent by the Opportunistic
+   Networking Layer to the specific link technology used (at Link Layer). Currently
+   implemented has a simple pass-through layer.
+
+   - `KLinkAdaptLayer` - Pass-through layer
+
+4. Link Layer - Implements the operations of a link technology used. Currently has
+   the following implementation.
+
+   - `KWirelessInterface` - A simple wireless interface implementation (without the `INET
+     framework`)
+
+5. Mobility - Implements the mobility modelling for the node. Currently uses the interfaces
+   provided by the `INET framework` and therefore, is able to use any of the mobility models
+   supported by the `INET framework`.
+
+
+### Messenger Node Model (KMessengerNode)
+The `KMessengerNode` consist of protocol layers to simulate destination oriented opportunistic 
+networks where every data item in the network is destined to another node. The node 
+architecture is as shown in the picture below.
+
+<p align="center">
+  <img src="res/images/messenger-node-model.png" width="200"/>
+</p>
+
+
+
+
 ### Important Model Parameters
 
 

@@ -112,12 +112,27 @@ void KWirelessInterface::handleMessage(cMessage *msg)
             KBaseNodeInfo *nodeInfo = *iteratorAllNodeInfo;
             inet::Coord neighCoord = nodeInfo->nodeMobilityModule->getCurrentPosition();
 
+#ifdef KWIRELESSINTERFACE_EUCLIDEAN_DISTANCE
+            // check using euclidean distances
             double l = ((neighCoord.x - ownCoord.x) * (neighCoord.x - ownCoord.x))
                 + ((neighCoord.y - ownCoord.y) * (neighCoord.y - ownCoord.y));
             double r = wirelessRange * wirelessRange;
+
             if (l <= r) {
                 currentNeighbourNodeInfoList.push_back(nodeInfo);
             }
+#else
+            // check using chebyshev and euclidean distances
+            double l = MAX(POSITIVE(neighCoord.x - ownCoord.x), POSITIVE(neighCoord.y - ownCoord.y));
+            if (l <= wirelessRange) {
+                l = ((neighCoord.x - ownCoord.x) * (neighCoord.x - ownCoord.x))
+                    + ((neighCoord.y - ownCoord.y) * (neighCoord.y - ownCoord.y));
+                double r = wirelessRange * wirelessRange;
+                if (l <= r) {
+                    currentNeighbourNodeInfoList.push_back(nodeInfo);
+                }
+            }
+#endif
             iteratorAllNodeInfo++;
         }
 
