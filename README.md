@@ -154,14 +154,14 @@ with different scenarios. To run simulations, follow the procedure given below.
 3. Select `Run->Run As->OMNeT++ Simulation`. The following window should appear.
 
 <p align="center">
-  <img src="res/images/simulator-window.png" width="600"/>
+  <img src="res/images/simulator-window.png" width="700"/>
 </p>
 
 4. Start simulating the network by clicking on the simulation controls:
 ![simulator controls](res/images/simulator-controls.png "Simulator Controls")
 
 
-## Viewing Results
+## Creating Statistics Graphs
 
 Based on the standard configuration, the raw results (vector and scalar) collected after a simulation run 
 are located in the `simulation/results` folder. Below is a brief (high-level) procedure to create your charts
@@ -182,8 +182,17 @@ For more information, check Chapter 10 of the [IDE User Guide](https://www.omnet
 An example results chart generated using 2 simulations (Epidemic and RRS) is shown below.
 
 <p align="center">
-  <img src="res/images/delv-ratio-epi-rrs.png" width="600"/>
+  <img src="res/images/delv-ratio-epi-rrs.png" width="700"/>
 </p>
+
+
+
+
+## Available Statistics
+
+There are a set of network-level as well as node-level statistics collected by OPS in every 
+simulation run. Check the [STATS file](./STATS.md) to know about all the available statistics.
+
 
 
 ## Creating New Scenarios
@@ -193,19 +202,49 @@ parameters as required. To know about all the model parameters, check the `.ned`
 `src/` folder.
 
 
-## Node Architectures
+## Node and Network Architectures
 
-There are **two node models** used in OPS, configured with different protocol layers to simulate opportunistic 
-networks. A description of these models and the important model parameters is given below.
+There are **two node models** used in OPS, configured with different protocol layers to simulate 
+opportunistic  networks. To use the two distinct behavioural properties of these two node models, 
+**two network models** are used, each using one of the node models. A description of these models 
+and the important model parameters is given below.
+
+### User Behaviour based Network Model (OPSUBMNetwork)
+
+The `OPSUBMNetwork` is a network model to simulate networks that use `KUBMNode` type nodes
+in opportunistic networks. These nodes are configured with an application layer that uses
+the user behaviour model identified in 
+[Reactive User Behavior and Mobility Models](https://arxiv.org/abs/1709.06395). To cater 
+to the data traffic generation model used in these nodes, a `KBasicNotificationGenerator` 
+is configured at the network level. The picture below shows the `OPSUBMNetwork` model.
+
+<p align="center">
+  <img src="res/images/ubm-network.png" width="200"/>
+</p>
+
+Details of the `KUBMNode` node model follows.
+
+### Messenger based Network Model (OPSMessengerNetwork)
+
+The `OPSMessengerNetwork` is a network model to simulate a network deployed with `KMessengerNode`
+type node models. The node models contain application that generate destination oriented data.
+The picture below shows the `OPSMessengerNetwork` model. 
+
+<p align="center">
+  <img src="res/images/messenger-network.png" width="200"/>
+</p>
+
+
+Details of the `KMessengerNode` node model follows.
 
 ### User Behaviour based Node Model (KUBMNode)
 
 The `KUBMNode` consist of protocol layers to simulate opportunistic networks where the data in the
-network are based on user behaviour modelling (see []()). The node architecture is as shown 
+network are based on user behaviour modelling (see [Reactive User Behavior and Mobility Models](https://arxiv.org/abs/1709.06395)). The node architecture is as shown 
 in the picture below.
 
 <p align="center">
-  <img src="res/images/ubm-node-model.png" width="400"/>
+  <img src="res/images/ubm-node-model.png" width="200"/>
 </p>
 
 The `KUBMNode` requires a Notification Generator which is a network-wide model that holds a set 
@@ -264,26 +303,102 @@ networks where every data item in the network is destined to another node. The n
 architecture is as shown in the picture below.
 
 <p align="center">
-  <img src="res/images/messenger-node-model.png" width="400"/>
+  <img src="res/images/messenger-node-model.png" width="200"/>
 </p>
 
+The layers of a node can be configured to use different implementations relevant to the specific layer as 
+listed below.
 
 
+1. Application Layer with simple applications - Applications generate data destined to other nodes
+or receive data destined to itself. Current models are,
 
-### Important Model Parameters
+   - `KMessengerApp` - Injects and receives destination oriented data
 
+2. Opportunistic Networking Layer - Performs the forwarding of data and feedback according
+   to the forwarding strategy employed. Current implementations are,
+
+   - `KRRSLayer` - Implements a simple forwarding strategy based on the Randomised
+     Rumor Spreading (RRS) algorithm which randomly selects a data item to broadcast
+     to a node's neighbourhood
+   - `KKeetchiLayer` - Implements the Organic Data Dissemination algorithm as described
+     in the publication [A Novel Data Dissemination Model for Organic Data Flows](https://link.springer.com/chapter/10.1007%2F978-3-319-26925-2_18) by
+     A. Foerster et al
+   - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described
+     in the publication [Epidemic Routing for Partially-Connected Ad Hoc Networks](http://issg.cs.duke.edu/epidemic/epidemic.pdf)
+     by A. Vahdat and D. Becker
+
+3. Link Adaptation Layer - Tasked with converting packets sent by the Opportunistic
+   Networking Layer to the specific link technology used (at Link Layer). Currently
+   implemented has a simple pass-through layer.
+
+   - `KLinkAdaptLayer` - Pass-through layer
+
+4. Link Layer - Implements the operations of a link technology used. Currently has
+   the following implementation.
+
+   - `KWirelessInterface` - A simple wireless interface implementation (without the `INET
+     framework`)
+
+5. Mobility - Implements the mobility modelling for the node. Currently uses the interfaces
+   provided by the `INET framework` and therefore, is able to use any of the mobility models
+   supported by the `INET framework`.
+
+
+## Important Model Parameters
+
+The following list provides some of the most important parameters of the different models 
+in OPS. All these parameters are configurable using the `.ini`. **Not all parameters 
+are listed here**. Please check the respective model's `.ned` file to see all the parameters.
+
+### Parameters in `OPSMessengerNetwork.ned` and `OPSUBMNetwork`
+
+1. `numNodes` - The total number of nodes in the network
+2. Network level statistics
+
+
+### Parameters in `KEpidemicRoutingLayer.ned`
+
+1. `maximumCacheSize` - The size of the cache maintained by each node in bytes
+2. `maximumHopCount` - The maximum hops that a data packet is allowed to travel (be forwarded) before being discarded
+
+
+### Parameters in `KWirelessLayer.ned`
+
+1. `wirelessRange` - The wireless range of each node's wireless interface
+2. `bandwidthBitRate` - Communication bit rate of the wireless interface
 
 
 
 
 ## Help
 
-## Known Problems
+If you have any question or clarifications related to OMNeT++, please check the documentation provided at the [OMNeT++ site](https://www.omnetpp.org) and
+[INET](https://inet.omnetpp.org) sites. Here are the important documents.
+
+1. OMNeT++ - [Install Guide](https://www.omnetpp.org/doc/omnetpp/InstallGuide.pdf), 
+   [Simulation Manual](https://www.omnetpp.org/doc/omnetpp/SimulationManual.pdf), 
+   [IDE User Guide](https://www.omnetpp.org/doc/omnetpp/UserGuide.pdf)
+
+2. INET - [Documentation](https://inet.omnetpp.org/Introduction.html)
+
+3. Results processing in OMNeT++ IDE - Chapter 10 of the [IDE User Guide](https://www.omnetpp.org/doc/omnetpp/UserGuide.pdf)
+
+4. INET Mobility Models - [Node Mobility](https://inet.omnetpp.org/docs/users-guide/ch-mobility.html)
+
+
+
+## Frequently Asked Questions and Known Problems
+
+We have compiled a list of frequently asked questions and solutions to some known 
+problems. Check the [FAQ file](./FAQ.md) for these questions and answers.
+
+
 
 ## Questions or Comments
 
-Firstly, if you have any questions, please check the Known Problems section and if you cannot find answers there, then
-write to us. Secondly, if you have any comments or suggestions, we are very glad to hear them. In both cases, please
+Firstly, if you have any questions, please check the [FAQ file](./FAQ.md) and if you cannot find answers there, then
+write to us. Secondly, if you have any comments or suggestions, we will be very glad to hear them. In both cases, please
 write to us using any of the e-mail adresses below.
 
   - Asanga Udugama (adu@comnets.uni-bremen.de)
@@ -302,5 +417,5 @@ models. This section lists the individuals who have done such contributions.
   - Jibin P. John
   - Karima Khandaker 
   - Kirishanth Chethuraja
-  
-  
+
+
