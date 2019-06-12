@@ -191,7 +191,7 @@ An example results chart generated using 2 simulations (Epidemic and RRS) is sho
 ## Available Statistics
 
 There are a set of network-level as well as node-level statistics collected by OPS in every 
-simulation run. Check the [STATS file](./STATS.md) to know about all the available statistics.
+simulation run. Check the [STATS file](./res/info/STATS.md) to know about all the available statistics.
 
 
 
@@ -205,7 +205,7 @@ parameters as required. To know about all the model parameters, check the `.ned`
 ## Node and Network Architectures
 
 OPS has **two node models** and **two network models** to simulate opportunistic networks. A 
-description of these models is given in the [MODELINFO File](./MODELINFO.md).
+description of these models is given in the [MODELINFO File](./res/info/MODELINFO.md).
 
 
 
@@ -255,13 +255,13 @@ If you have any question or clarifications related to OMNeT++, please check the 
 ## Frequently Asked Questions and Known Problems
 
 We have compiled a list of frequently asked questions and solutions to some known 
-problems. Check the [FAQ file](./FAQ.md) for these questions and answers.
+problems. Check the [FAQ file](./res/info/FAQ.md) for these questions and answers.
 
 
 
 ## Questions or Comments
 
-Firstly, if you have any questions, please check the [FAQ file](./FAQ.md) and if you cannot find answers there, then
+Firstly, if you have any questions, please check the [FAQ file](./res/info/FAQ.md) and if you cannot find answers there, then
 write to us. Secondly, if you have any comments or suggestions, we will be very glad to hear them. In both cases, please
 write to us using any of the e-mail adresses below.
 

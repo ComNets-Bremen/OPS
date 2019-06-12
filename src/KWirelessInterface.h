@@ -76,7 +76,7 @@ class KWirelessInterface: public cSimpleModule
 #define KWIRELESSINTERFACE_BIT_RATE_10Mbps     10000000
 #define KWIRELESSINTERFACE_NEIGH_EVENT_CODE    112
 #define KWIRELESSINTERFACE_PKTSEND_EVENT_CODE  114
-// #define KWIRELESSINTERFACE_EUCLIDEAN_DISTANCE  1   // if defined, then uses Euclidean only,
+#define KWIRELESSINTERFACE_EUCLIDEAN_DISTANCE  1   // if defined, then uses Euclidean only,
                                                       // else, uses Chebyshev first and then Euclidean
 
 #endif /* KWIRELESSINTERFACE_H_ */
