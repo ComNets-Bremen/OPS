@@ -48,7 +48,13 @@ network OPSMessengerNetwork
         @statistic[fwdCacheBytesUpdated](source=sum(fwdCacheBytesUpdated); record=stats,vector; title="Cache Updates"; unit=byte);
         @statistic[fwdCurrentCacheSizeBytesAvg](source=sum(fwdCurrentCacheSizeBytes)/sum(fwdCurrentCacheSizeReportedCount); record=stats,vector; title="Average Cache Size"; unit=byte);
 
+        // statistics
+        // from link layer
+        @statistic[linkAvgNeighbourSize](source=sum(linkNeighSize)/sum(linkNeighSizeCount);record=stats,vector;title="Average Neighbour Size";unit=byte);
+        @statistic[linkAvgContactDuration](source=sum(linkContactDuration)/sum(linkContactDurationCount);record=stats,vector;title="Average Contact Duration";unit=byte);
+
         @display("bgb=190,171");
+   
     submodules:
 
         // nodes of the network

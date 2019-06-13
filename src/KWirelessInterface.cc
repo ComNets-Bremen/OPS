@@ -20,7 +20,6 @@ void KWirelessInterface::initialize(int stage)
         neighbourScanInterval = par("neighbourScanInterval");
         bandwidthBitRate = par("bandwidthBitRate");
         wirelessHeaderSize = par("wirelessHeaderSize");
-        logging = par("logging");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
@@ -80,6 +79,13 @@ void KWirelessInterface::initialize(int stage)
         sendPacketTimeoutEvent = new cMessage("Send Packet Timeout Event");
         sendPacketTimeoutEvent->setKind(KWIRELESSINTERFACE_PKTSEND_EVENT_CODE);
 
+        // setup statistics signals
+        neighSizeSignal = registerSignal("linkNeighSize");
+        neighSizeCountSignal = registerSignal("linkNeighSizeCount");
+        contactDurationSignal = registerSignal("linkContactDuration");
+        contactDurationCountSignal = registerSignal("linkContactDurationCount");
+
+
     } else {
         EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << "Something is radically wrong\n";
     }
@@ -136,6 +142,10 @@ void KWirelessInterface::handleMessage(cMessage *msg)
             iteratorAllNodeInfo++;
         }
 
+        // compute and emit stats
+#ifdef KWIRELESSINTERFACE_COMPUTE_STATS
+        generateStats();
+#endif
         // if there are neighbours, send message
         if (currentNeighbourNodeInfoList.size() > 0) {
 
@@ -152,9 +162,6 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
                 string nodeAddress = nodeInfo->nodeModule->par("ownAddress").stringValue();
                 neighListMsg->setNeighbourNameList(neighCount, nodeAddress.c_str());
-
-                if (logging) {EV_INFO << KWIRELESSINTERFACE_SIMMODULEINFO << ">!<NI>!<" << ownMACAddress << ">!<" << nodeAddress << ">!<" 
-                    << nodeInfo->nodeModule->getFullName() << "\n";}
 
                 neighCount++;
                 iteratorCurrentNeighbourNodeInfo++;
@@ -332,6 +339,80 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
     throw cRuntimeError("Unknown message type in KWirelessnterface");
 
     return string();
+}
+
+
+void KWirelessInterface::generateStats()
+{
+
+    emit(neighSizeSignal, currentNeighbourNodeInfoList.size());
+    emit(neighSizeCountSignal, 1);
+
+    // check and remove left neighbourhood
+    list<KBaseNodeInfo*>::iterator itPrevNeighNodeInfo = previousNeighbourNodeInfoList.begin();
+    while (itPrevNeighNodeInfo != previousNeighbourNodeInfoList.end()) {
+        KBaseNodeInfo *prevNodeInfo = *itPrevNeighNodeInfo;
+
+        list<KBaseNodeInfo*>::iterator itCurrNeighNodeInfo = currentNeighbourNodeInfoList.begin();
+        bool found = FALSE;
+        while (itCurrNeighNodeInfo != currentNeighbourNodeInfoList.end()) {
+            KBaseNodeInfo *currNodeInfo = *itCurrNeighNodeInfo;
+
+            if (currNodeInfo->nodeAddress == prevNodeInfo->nodeAddress) {
+                found = TRUE;
+                break;
+            }
+
+            itCurrNeighNodeInfo++;
+        }
+        if (!found) {
+            simtime_t duration = simTime() - prevNodeInfo->neighbourStartTime;
+            emit(contactDurationSignal, duration);
+            emit(contactDurationCountSignal, 1);
+            prevNodeInfo->neighbourStartTime = -1.0;
+        }
+
+        itPrevNeighNodeInfo++;
+    }
+    bool found = TRUE;
+    while (previousNeighbourNodeInfoList.size() > 0 && found) {
+        found = FALSE;
+        list<KBaseNodeInfo*>::iterator itPrevNeighNodeInfo = previousNeighbourNodeInfoList.begin();
+        while (itPrevNeighNodeInfo != previousNeighbourNodeInfoList.end()) {
+            KBaseNodeInfo *prevNodeInfo = *itPrevNeighNodeInfo;
+            if(prevNodeInfo->neighbourStartTime == -1.0) {
+                previousNeighbourNodeInfoList.remove(prevNodeInfo);
+                found = TRUE;
+                break;
+            }
+            itPrevNeighNodeInfo++;
+        }
+    }
+
+    // insert new neighbours
+    list<KBaseNodeInfo*>::iterator itCurrNeighNodeInfo = currentNeighbourNodeInfoList.begin();
+    while (itCurrNeighNodeInfo != currentNeighbourNodeInfoList.end()) {
+        KBaseNodeInfo *currNodeInfo = *itCurrNeighNodeInfo;
+
+        list<KBaseNodeInfo*>::iterator itPrevNeighNodeInfo = previousNeighbourNodeInfoList.begin();
+        bool found = FALSE;
+        while (itPrevNeighNodeInfo != previousNeighbourNodeInfoList.end()) {
+            KBaseNodeInfo *prevNodeInfo = *itPrevNeighNodeInfo;
+
+            if (prevNodeInfo->nodeAddress == currNodeInfo->nodeAddress) {
+                found = TRUE;
+                break;
+            }
+
+            itPrevNeighNodeInfo++;
+        }
+        if (!found) {
+            currNodeInfo->neighbourStartTime = simTime();
+            previousNeighbourNodeInfoList.push_back(currNodeInfo);
+        }
+
+        itCurrNeighNodeInfo++;
+    }
 }
 
 void KWirelessInterface::finish()

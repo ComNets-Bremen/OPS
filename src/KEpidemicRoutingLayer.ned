@@ -36,14 +36,14 @@ simple KEpidemicRoutingLayer like IForwardingLayer
         @display("i=block/transport");
 
         // statistics and signals
-        @signal[dataBytesReceivedFwd](type=long);
-        @signal[sumVecBytesReceivedFwd](type=long);
-        @signal[dataReqBytesReceivedFwd](type=long);
-        @signal[totalBytesReceivedFwd](type=long);
-        @signal[cacheBytesRemovedFwd](type=long);
-        @signal[cacheBytesAddedFwd](type=long);
-        @signal[cacheBytesUpdatedFwd](type=long);
-        @signal[currentCacheSizeBytesFwd](type=long);
+        @signal[fwdDataBytesReceived](type=long);
+        @signal[fwdSumVecBytesReceived](type=long);
+        @signal[fwdDataReqBytesReceived](type=long);
+        @signal[fwdTotalBytesReceived](type=long);
+        @signal[fwdCacheBytesRemoved](type=long);
+        @signal[fwdCacheBytesAdded](type=long);
+        @signal[fwdCacheBytesUpdated](type=long);
+        @signal[fwdCurrentCacheSizeBytes](type=long);
         @signal[fwdCurrentCacheSizeReportedCount](type=long);
 
     gates:

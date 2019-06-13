@@ -32,6 +32,9 @@ class KBaseNodeInfo
 		// messenger app related info
         KMessengerApp *nodeMessengerAppModule;
 
+        // used for neighbour contact durations
+        simtime_t neighbourStartTime;
+
 };
 
 #endif /* KBASENODEINFO_H_ */

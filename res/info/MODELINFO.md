@@ -15,7 +15,7 @@ to the data traffic generation model used in these nodes, a `KBasicNotificationG
 is configured at the network level. The picture below shows the `OPSUBMNetwork` model.
 
 <p align="center">
-  <img src="../images/ubm-network.png" width="200"/>
+  <img src="../images/ubm-network.png" width="300"/>
 </p>
 
 Details of the `KUBMNode` node model follows.
@@ -27,7 +27,7 @@ type node models. The node models contain application that generate destination 
 The picture below shows the `OPSMessengerNetwork` model. 
 
 <p align="center">
-  <img src="../images/messenger-network.png" width="200"/>
+  <img src="../images/messenger-network.png" width="300"/>
 </p>
 
 
@@ -40,7 +40,7 @@ network are based on user behaviour modelling (see [Reactive User Behavior and M
 in the picture below.
 
 <p align="center">
-  <img src="../images/ubm-node-model.png" width="200"/>
+  <img src="../images/ubm-node-model.png" width="300"/>
 </p>
 
 The `KUBMNode` requires a Notification Generator which is a network-wide model that holds a set 
@@ -99,7 +99,7 @@ networks where every data item in the network is destined to another node. The n
 architecture is as shown in the picture below.
 
 <p align="center">
-  <img src="../images/messenger-node-model.png" width="200"/>
+  <img src="../images/messenger-node-model.png" width="300"/>
 </p>
 
 The layers of a node can be configured to use different implementations relevant to the specific layer as 
