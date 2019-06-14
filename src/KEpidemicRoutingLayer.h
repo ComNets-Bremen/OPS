@@ -118,6 +118,8 @@ private:
     simsignal_t sumVecBytesReceivedSignal;
     simsignal_t dataReqBytesReceivedSignal;
     simsignal_t totalBytesReceivedSignal;
+    simsignal_t hopsTravelledSignal;
+    simsignal_t hopsTravelledCountSignal;    
     simsignal_t cacheBytesRemovedSignal;
     simsignal_t cacheBytesAddedSignal;
     simsignal_t cacheBytesUpdatedSignal;

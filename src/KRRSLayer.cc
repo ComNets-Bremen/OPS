@@ -27,15 +27,6 @@ void KRRSLayer::initialize(int stage)
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
 
     } else if (stage == 1) {
-        // setup statistics signals
-        dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
-        totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
-
-        cacheBytesRemovedSignal = registerSignal("fwdCacheBytesRemoved");
-        cacheBytesAddedSignal = registerSignal("fwdCacheBytesAdded");
-        cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
-        currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
-        currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
     } else if (stage == 2) {
 
@@ -45,6 +36,18 @@ void KRRSLayer::initialize(int stage)
             ageDataTimeoutEvent->setKind(KRRSLAYER_EVENTTYPE_AGEDATA);
             scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
         }
+
+        // setup statistics signals
+        dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
+        totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
+        hopsTravelledSignal = registerSignal("fwdHopsTravelled");
+        hopsTravelledCountSignal = registerSignal("fwdHopsTravelledCount");
+        
+        cacheBytesRemovedSignal = registerSignal("fwdCacheBytesRemoved");
+        cacheBytesAddedSignal = registerSignal("fwdCacheBytesAdded");
+        cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
+        currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
+        currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
     } else {
         EV_FATAL << KRRSLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
@@ -303,9 +306,10 @@ void KRRSLayer::handleMessage(cMessage *msg)
             omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
             omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
 
-            emit(dataBytesReceivedSignal, (int) omnetDataMsg->getByteLength());
-            emit(totalBytesReceivedSignal, (int) omnetDataMsg->getByteLength());
-
+            emit(dataBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+            emit(totalBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+            emit(hopsTravelledSignal, (long) omnetDataMsg->getHopsTravelled());
+            emit(hopsTravelledCountSignal, 1);
 
             // if destination oriented data sent around, then cache message only if not destined to self
             // or if no destination in data, cache all messages

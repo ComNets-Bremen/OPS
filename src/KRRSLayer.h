@@ -87,6 +87,8 @@ class KRRSLayer: public cSimpleModule
         // stats related variables
         simsignal_t dataBytesReceivedSignal;
         simsignal_t totalBytesReceivedSignal;
+        simsignal_t hopsTravelledSignal;
+        simsignal_t hopsTravelledCountSignal;
         simsignal_t cacheBytesRemovedSignal;
         simsignal_t cacheBytesAddedSignal;
         simsignal_t cacheBytesUpdatedSignal;

@@ -37,6 +37,8 @@ void KEpidemicRoutingLayer::initialize(int stage)
         sumVecBytesReceivedSignal = registerSignal("fwdSumVecBytesReceived");
         dataReqBytesReceivedSignal = registerSignal("fwdDataReqBytesReceived");
         totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
+        hopsTravelledSignal = registerSignal("fwdHopsTravelled");
+        hopsTravelledCountSignal = registerSignal("fwdHopsTravelledCount");
 
         cacheBytesRemovedSignal = registerSignal("fwdCacheBytesRemoved");
         cacheBytesAddedSignal = registerSignal("fwdCacheBytesAdded");
@@ -365,8 +367,10 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
     omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
 
-    emit(dataBytesReceivedSignal, (int) omnetDataMsg->getByteLength());
-    emit(totalBytesReceivedSignal, (int) omnetDataMsg->getByteLength());
+    emit(dataBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+    emit(hopsTravelledSignal, (long) omnetDataMsg->getHopsTravelled());
+    emit(hopsTravelledCountSignal, 1);
 
     // if destination oriented data sent around and this node is the destination
     // or if maximum hop count is reached
