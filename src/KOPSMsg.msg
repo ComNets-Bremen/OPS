@@ -211,7 +211,10 @@ packet KDPtableDataMsg {
 // message used to send statistic information between models
 packet KStatisticsMsg {
 
-    // liked receivable info
-    int likedDataCountReceivable;
-    int likedDataBytesReceivable;
+
+    // liked or non-liked data receivable info (based on bool)
+    bool likedData;
+    int dataCountReceivable;
+    int dataBytesReceivable;
+
 }

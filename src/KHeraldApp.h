@@ -1,13 +1,13 @@
 //
-// The model implementation for the Messenger application.
+// The model implementation for the Herald application.
 //
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de), Anna Förster (afoerster@uni-bremen.de)
 // @date   : 15-aug-2016, updated 6-febr-2018
 //
 //
 
-#ifndef KMESSENGERAPP_H_
-#define KMESSENGERAPP_H_
+#ifndef KHERALDAPP_H_
+#define KHERALDAPP_H_
 
 #include <omnetpp.h>
 #include <cstdlib>
@@ -26,20 +26,19 @@ using namespace std;
 
 class KBaseNodeInfo;
 
-#define KMESSENGERAPP_SIMMODULEINFO         " KMessengerApp>!<" << simTime() << ">!<" << getParentModule()->getFullName()
-#define TRUE                                1
-#define FALSE                               0
-#define KMESSENGERAPP_MSGTYPE_NONE          0
-#define KMESSENGERAPP_MSGTYPE_IMMEDIATE     1
-#define KMESSENGERAPP_MSGTYPE_PREFERENCE    2
-#define KMESSENGERAPP_START_ITEM_ID         22000
-#define KMESSENGERAPP_REGISTRATION_EVENT	92
-#define KMESSENGERAPP_DATASEND_EVENT		93
+#define KHERALDAPP_SIMMODULEINFO        " KHeraldApp>!<" << simTime() << ">!<" << getParentModule()->getFullName()
+#define TRUE                            1
+#define FALSE                           0
+#define KHERALDAPP_MSGTYPE_NONE         0
+#define KHERALDAPP_MSGTYPE_IMMEDIATE    1
+#define KHERALDAPP_MSGTYPE_PREFERENCE   2
+#define KHERALDAPP_START_ITEM_ID        22000
+#define KHERALDAPP_REGISTRATION_EVENT	92
+#define KHERALDAPP_DATASEND_EVENT		93
 
-
-class KMessengerApp : public cSimpleModule
+class KHeraldApp : public cSimpleModule
 {
-    public:
+    protected:
         virtual void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
         virtual int numInitStages() const;
@@ -49,22 +48,24 @@ class KMessengerApp : public cSimpleModule
         string ownMACAddress;
 
         double totalSimulationTime;
-        char prefixName[128] = "/messenger";
+        char prefixName[128] = "/herald";
 
 		double ttl;
         int nodeIndex;
         int totalNumNodes;
         double dataGenerationInterval;
+        int nextGenerationNotification;
+
         int notificationCount;
+        vector<int> myLikenesses;
         vector<int> timesMessagesReceived;
-        
-        int nextGenerationIndex;
 
         int usedRNG;
 
         cMessage *appRegistrationEvent;
         cMessage *dataTimeoutEvent;
 
+        double popularityAssignmentPercentage;
         int dataSizeInBytes;
 
         KBaseNodeInfo* ownNodeInfo;
@@ -89,7 +90,6 @@ class KMessengerApp : public cSimpleModule
         simsignal_t nonLikedDataCountMaxReceivableSignal;
         simsignal_t totalDataCountMaxReceivableSignal;
 
-
         simsignal_t likedDataReceivedDelaySignal;
         simsignal_t nonLikedDataReceivedDelaySignal;
         simsignal_t totalDataReceivedDelaySignal;
@@ -98,8 +98,6 @@ class KMessengerApp : public cSimpleModule
         simsignal_t nonLikedDataCountReceivedForAvgDelayCompSignal;
         simsignal_t totalDataCountReceivedForAvgDelayCompSignal;
 
-
-
         simsignal_t likedDataCountReceivedForRatioCompSignal;
         simsignal_t nonLikedDataCountReceivedForRatioCompSignal;
         simsignal_t totalDataCountReceivedForRatioCompSignal;
@@ -107,7 +105,8 @@ class KMessengerApp : public cSimpleModule
         simsignal_t likedDataCountMaxReceivableForRatioCompSignal;
         simsignal_t nonLikedDataCountMaxReceivableForRatioCompSignal;
         simsignal_t totalDataCountMaxReceivableForRatioCompSignal;
+
 };
 
 
-#endif /* KMESSENGERAPP_H_ */
+#endif /* KHERALDAPP_H_ */

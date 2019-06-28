@@ -12,7 +12,7 @@
 
 Define_Module(KMessengerApp);
 
-vector<KBaseNodeInfo*> nodeInfoList;
+vector<KBaseNodeInfo*> messengerNodeInfoList;
 
 void KMessengerApp::initialize(int stage)
 {
@@ -24,7 +24,6 @@ void KMessengerApp::initialize(int stage)
         usedRNG = par("usedRNG");
         dataGenerationInterval = par("dataGenerationInterval");
         dataSizeInBytes = par("dataSizeInBytes");
-        logging = par("logging");
         ttl = par("ttl");
         totalSimulationTime = SimTime::parse(getEnvir()->getConfig()->getConfigValue("sim-time-limit")).dbl();
 		notificationCount = totalSimulationTime/dataGenerationInterval;
@@ -34,7 +33,7 @@ void KMessengerApp::initialize(int stage)
         ownNodeInfo = new KBaseNodeInfo();
         ownNodeInfo->nodeAddress = ownMACAddress;
         ownNodeInfo->nodeMessengerAppModule = this;
-        nodeInfoList.push_back(ownNodeInfo);
+        messengerNodeInfoList.push_back(ownNodeInfo);
 
         for (int i = 0; i < notificationCount; i++) {
             timesMessagesReceived.push_back(0);
@@ -119,10 +118,10 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
         // find random destination to send
         bool found = FALSE;
-        KBaseNodeInfo* selectedNodeInfo = nodeInfoList[0];
+        KBaseNodeInfo* selectedNodeInfo = messengerNodeInfoList[0];
         while (!found) {
-            int destIndex = intuniform(0, (nodeInfoList.size() - 1), usedRNG);
-            selectedNodeInfo = nodeInfoList[destIndex];
+            int destIndex = intuniform(0, (messengerNodeInfoList.size() - 1), usedRNG);
+            selectedNodeInfo = messengerNodeInfoList[destIndex];
             if (selectedNodeInfo->nodeAddress != ownMACAddress) {
                 found = TRUE;
             }
@@ -164,8 +163,9 @@ void KMessengerApp::handleMessage(cMessage *msg)
         
         // make receivable node generate stats
         KStatisticsMsg *statMsg = new KStatisticsMsg("StatMsg");
-        statMsg->setLikedDataCountReceivable(1);
-        statMsg->setLikedDataBytesReceivable(dataSizeInBytes);
+        statMsg->setLikedData(true);
+        statMsg->setDataCountReceivable(1);
+        statMsg->setDataBytesReceivable(dataSizeInBytes);
         sendDirect(statMsg, selectedNodeInfo->nodeMessengerAppModule, "statIn");
 
         //cout << KMESSENGERAPP_SIMMODULEINFO << " sending: " << (nextGenerationIndex - totalNumNodes) << " own addr " << ownMACAddress << " dest addr " << selectedNodeInfo->nodeAddress << "\n";
@@ -212,14 +212,14 @@ void KMessengerApp::handleMessage(cMessage *msg)
         KStatisticsMsg *statMsg = check_and_cast<KStatisticsMsg *>(msg);
 
         // update receivables
-        emit(likedDataCountMaxReceivableSignal, statMsg->getLikedDataCountReceivable());
-        emit(totalDataCountMaxReceivableSignal, statMsg->getLikedDataCountReceivable());
+        emit(likedDataCountMaxReceivableSignal, statMsg->getDataCountReceivable());
+        emit(totalDataCountMaxReceivableSignal, statMsg->getDataCountReceivable());
 
-        emit(likedDataBytesMaxReceivableSignal, statMsg->getLikedDataBytesReceivable());
-        emit(totalDataBytesMaxReceivableSignal, statMsg->getLikedDataBytesReceivable());
+        emit(likedDataBytesMaxReceivableSignal, statMsg->getDataBytesReceivable());
+        emit(totalDataBytesMaxReceivableSignal, statMsg->getDataBytesReceivable());
 
-        emit(likedDataCountMaxReceivableForRatioCompSignal, statMsg->getLikedDataCountReceivable());
-        emit(totalDataCountMaxReceivableForRatioCompSignal, statMsg->getLikedDataCountReceivable());
+        emit(likedDataCountMaxReceivableForRatioCompSignal, statMsg->getDataCountReceivable());
+        emit(totalDataCountMaxReceivableForRatioCompSignal, statMsg->getDataCountReceivable());
 
         //cout << KMESSENGERAPP_SIMMODULEINFO << " receivable stat update: " << " own addr " << ownMACAddress << "\n";
 
@@ -240,11 +240,11 @@ void KMessengerApp::finish()
     cancelEvent(dataTimeoutEvent);
     delete dataTimeoutEvent;
 
-    if (nodeInfoList.size() > 0) {
-        for (int i = 0; i < nodeInfoList.size(); i++) {
-            KBaseNodeInfo* nodeInfo = nodeInfoList[i];
+    if (messengerNodeInfoList.size() > 0) {
+        for (int i = 0; i < messengerNodeInfoList.size(); i++) {
+            KBaseNodeInfo* nodeInfo = messengerNodeInfoList[i];
             delete nodeInfo;
         }
-        nodeInfoList.clear();
+        messengerNodeInfoList.clear();
     }
 }
