@@ -19,8 +19,10 @@ But here are the most important links to get OPS running quickly.
 ## Prerequisites
 
 The models of OPS require OMNeT++, the INET framework, the KeetchiLib and some mobility models
-that are not part of the INEt framework. Each of the sections below describe how these are
+that are not part of the INET framework. Each of the sections below describe how these are
 installed and configured.
+
+These prerequisites **MUST** be installed before proceeding to install OPS.
 
 ### OMNeT++ (Version 5.4.1)
 
@@ -144,14 +146,14 @@ project folder `src/inet/mobility/single`
 
 ## Running Simulations
 
-To run simulations, an OMNeT++ `.ini` file has to be used. A number of sample `.ini` files are given
-with different scenarios. To run simulations, follow the procedure given below.
+To run simulations, an OMNeT++ `.ini` file has to be created. A number of sample `.ini` files are given
+with different scenarios. To run a simulation, follow the procedure given below.
 
 1. Run the OMNeT++ IDE
 
 2. Select a sample `.ini` file from the folder `simulations/` (e.g., `omnetpp-messenger-epidemic.ini`)
 
-3. Select `Run->Run As->OMNeT++ Simulation`. The following window should appear.
+3. Select `Run->Run As->OMNeT++ Simulation`. After clicking through other popups, the following window should appear.
 
 <p align="center">
   <img src="res/images/simulator-window.png" width="700"/>
@@ -161,7 +163,11 @@ with different scenarios. To run simulations, follow the procedure given below.
 ![simulator controls](res/images/simulator-controls.png "Simulator Controls")
 
 
-## Creating Statistics Graphs
+As indicated, there are many sample .ini file available in the simulations folder. Details of these
+files are given in the [SAMPLEINI File](./res/info/SAMPLEINI.md).
+
+
+## Creating Graphs of Results
 
 Based on the standard configuration, the raw results (vector and scalar) collected after a simulation run 
 are located in the `simulation/results` folder. Below is a brief (high-level) procedure to create your charts
@@ -204,7 +210,7 @@ parameters as required. To know about all the model parameters, check the `.ned`
 
 ## Node and Network Architectures
 
-OPS has **two node models** and **two network models** to simulate opportunistic networks. A 
+OPS has **three node models** and **three network models** to simulate opportunistic networks. A 
 description of these models is given in the [MODELINFO File](./res/info/MODELINFO.md).
 
 

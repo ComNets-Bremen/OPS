@@ -41,6 +41,9 @@ simple KKeetchiLayer like IForwardingLayer
         // when insignificant changes are present in the neighbourhood
         double backoffTimerIncrementFactor = default(1.5);
 
+        // OMNeT RNG which is used for generation of random numbers -- FOR FUTURE USED
+        int usedRNG = default(0);
+
         // icon used
         @display("i=block/transport");
 

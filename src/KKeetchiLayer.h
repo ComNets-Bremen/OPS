@@ -38,6 +38,7 @@ class KKeetchiLayer: public cSimpleModule
         double coolOffDuration;
         double learningConst;
         double backoffTimerIncrementFactor;
+        int usedRNG;
 
         KLKeetchi *keetchiAPI;
         void processUpperLayerInDataMsg(KDataMsg *dataMsg);

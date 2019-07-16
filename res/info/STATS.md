@@ -1,11 +1,22 @@
-# Collected Statistics
+# Collected Results (Statistics)
 
 There are different statistics collected by OPS during a simulation. These statistics
-are available at the **Node level** and **Network level**. Further, these statistics
-are generated from the different protocol layers of every node model. Information 
-about each of these statistics are given below.
+are available at the **Node level** and at the **Network level**. Statistics are initiated 
+from different protocol layers of a node model. There are two types of statistics 
+collected.
+
+1. Vector statistics - These are the continuous statistics that are collected. These 
+results can be plotted as graphs.
+
+2. Scalar statistics - These are the measures of dispersion type statistics collected. In 
+OPS, we only collect the **final value** of a scalar statistic.
+
+Information about each of these statistics are given below.
 
 ## Statistics from the Application Layer
+
+The table below lists the statistics generated from the application layer.
+
 
 | Statistic Name                     |         Description                     | Collected Level |
 | --------------                     |         -----------                     | --------------- |
@@ -34,8 +45,30 @@ about each of these statistics are given below.
 
 ## Statistics from the Forwarding Layer
 
+The table below lists the statistics generated from the forwarding layer. Since different
+forwarding layer protocols operation differently, they may not produce all the statistics
+list below.
 
-## Statistics from the (Wireless) Link Layer
+| Statistic Name              |         Description          | Collected Level |
+| --------------              |         -----------          | --------------- |
+| fwdDataBytesReceived        | Data Received                | Network, Node   |
+| fwdSumVecBytesReceived      | Summary Vectors Received     | Network, Node   |
+| fwdDataReqBytesReceived     | Data Requests Received       | Network, Node   |
+| fwdTotalBytesReceived       | Total Received               | Network, Node   |
+| fwdAvgHopsTravelled         | Average Hops Travelled       | Network, Node   |
+| fwdCacheBytesRemoved        | Cache Removals               | Network, Node   |
+| fwdCacheBytesAdded          | Cache Additions              | Network, Node   |
+| fwdCacheBytesUpdated        | Cache Updates                | Network, Node   |
+| fwdCurrentCacheSizeBytesAvg | Average Cache Size           | Network, Node   |
 
+
+## Statistics from the (WirelessInterface) Link Layer
+
+The table below lists the statistics generated from the link layer.
+ 
+| Statistic Name              |         Description          | Collected Level |
+| --------------              |         -----------          | --------------- |
+| linkAvgNeighbourSize        | Average Neighbour Size       | Network, Node   |
+| linkAvgContactDuration      | Average Contact Duration     | Network, Node   |
 
 

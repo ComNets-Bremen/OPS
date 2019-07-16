@@ -22,6 +22,7 @@ void KKeetchiLayer::initialize(int stage)
         coolOffDuration = par("coolOffDuration");
         learningConst = par("learningConst");
         backoffTimerIncrementFactor = par("backoffTimerIncrementFactor");
+        usedRNG = par("usedRNG");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";

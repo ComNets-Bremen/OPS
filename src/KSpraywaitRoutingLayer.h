@@ -42,13 +42,11 @@ class KSpraywaitRoutingLayer: public cSimpleModule
         double antiEntropyInterval;
         int maximumHopCount;
         double maximumRandomBackoffDuration;
-        int logging;
         int usedRNG;
 
         int newcopies;
         int L;
 
-        bool DisableExcesslog;
         int currentCacheSize;
 
         struct AppInfo {
@@ -118,6 +116,19 @@ class KSpraywaitRoutingLayer: public cSimpleModule
         void setSyncingNeighbourInfoForNextRound();
         void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
         KSummaryVectorMsg* makeSummaryVectorMessage();
+
+        // stats related variables
+        simsignal_t dataBytesReceivedSignal;
+        simsignal_t sumVecBytesReceivedSignal;
+        simsignal_t dataReqBytesReceivedSignal;
+        simsignal_t totalBytesReceivedSignal;
+        simsignal_t hopsTravelledSignal;
+        simsignal_t hopsTravelledCountSignal;
+        simsignal_t cacheBytesRemovedSignal;
+        simsignal_t cacheBytesAddedSignal;
+        simsignal_t cacheBytesUpdatedSignal;
+        simsignal_t currentCacheSizeBytesSignal;
+        simsignal_t currentCacheSizeReportedCountSignal;
 
 };
 #define KSPRAYWAITROUTINGLAYER_SIMMODULEINFO          ">!<" << simTime() << ">!<" << getParentModule()->getFullName()

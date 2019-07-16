@@ -20,18 +20,16 @@ void KSpraywaitRoutingLayer::initialize(int stage)
         antiEntropyInterval = par("antiEntropyInterval");
         maximumHopCount = par("maximumHopCount");
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
-        logging = par("logging");
         usedRNG = par("usedRNG");
 
         syncedNeighbourListIHasChanged = TRUE;
 
         L = par("noDuplicate");
 
-        EV_INFO  << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "The # copies:"<<L<<" \n";
+//        EV_INFO  << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "The # copies:"<<L<<" \n";
 
         sprayFlavour = par("spraywaitFlavour").stringValue();
-        EV_INFO  << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Theflavour:"<<sprayFlavour<<" \n";
-        DisableExcesslog = par("disableExcesslog");
+//        EV_INFO  << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Theflavour:"<<sprayFlavour<<" \n";
 
     } else if (stage == 1) {
 
@@ -42,6 +40,21 @@ void KSpraywaitRoutingLayer::initialize(int stage)
         ageDataTimeoutEvent = new cMessage("Age Data Timeout Event");
         ageDataTimeoutEvent->setKind(108);
         scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
+
+        // setup statistics signals
+        dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
+        sumVecBytesReceivedSignal = registerSignal("fwdSumVecBytesReceived");
+        dataReqBytesReceivedSignal = registerSignal("fwdDataReqBytesReceived");
+        totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
+        hopsTravelledSignal = registerSignal("fwdHopsTravelled");
+        hopsTravelledCountSignal = registerSignal("fwdHopsTravelledCount");
+
+        cacheBytesRemovedSignal = registerSignal("fwdCacheBytesRemoved");
+        cacheBytesAddedSignal = registerSignal("fwdCacheBytesAdded");
+        cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
+        currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
+        currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+
 
     } else {
         EV_FATAL << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
@@ -197,10 +210,6 @@ void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
-    if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-        << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-        << omnetDataMsg->getByteLength() <<L<< "\n";}
-
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
     int found = FALSE;
@@ -235,10 +244,9 @@ void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
             currentCacheSize -= removingCacheEntry->realPacketSize;
             cacheList.remove(removingCacheEntry);
 
-            if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<"
-                << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
-                << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << ">!<"
-                << removingCacheEntry->copies << "\n";}
+            emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+            emit(currentCacheSizeBytesSignal, currentCacheSize);
+            emit(currentCacheSizeReportedCountSignal, (int) 1);
 
             delete removingCacheEntry;
 
@@ -276,14 +284,14 @@ void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
     // log cache update or add
     if (found) {
-        if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<"
-            << omnetDataMsg->getDataName() << ">!<" << cacheEntry->realPayloadSize << ">!<0>!<"
-            << currentCacheSize << ">!<0>!<0>!<" << cacheEntry->hopsTravelled << "\n";}
+        emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+
     } else {
-        if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<"
-            << omnetDataMsg->getDataName() << ">!<" << cacheEntry->realPayloadSize << ">!<0>!<"
-            << currentCacheSize << ">!<0>!<0>!<" << cacheEntry->hopsTravelled << "\n";}
+        emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+
     }
+    emit(currentCacheSizeBytesSignal, currentCacheSize);
+    emit(currentCacheSizeReportedCountSignal, (int) 1);
 
     delete msg;
 }
@@ -291,11 +299,6 @@ void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 void KSpraywaitRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
 {
     KNeighbourListMsg *neighListMsg = dynamic_cast<KNeighbourListMsg*>(msg);
-
-
-    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<NM>!<NC>!<" <<
-                        neighListMsg->getNeighbourNameListArraySize() << ">!<CS>!<"
-                            << cacheList.size() << "\n";}
 
     // if no neighbours or cache is empty, just return
     if (neighListMsg->getNeighbourNameListArraySize() == 0 || cacheList.size() == 0) {
@@ -372,11 +375,6 @@ void KSpraywaitRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
             send(summaryVectorMsg, "lowerLayerOut");
 
-            if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<SVM>!<"
-                << summaryVectorMsg->getSourceAddress() << ">!<" << summaryVectorMsg->getDestinationAddress()
-                << ">!<CE>!<" << summaryVectorMsg->getMessageIDHashVectorArraySize() << ">!<"
-                << summaryVectorMsg->getByteLength() << "\n";}
-
         }
 
         i++;
@@ -402,9 +400,10 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
     omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
 
-    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-        << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-        << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+    emit(dataBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+    emit(hopsTravelledSignal, (long) omnetDataMsg->getHopsTravelled());
+    emit(hopsTravelledCountSignal, 1);
 
     // if destination oriented data sent around and this node is the destination
     // or if maximum hop count is reached
@@ -416,11 +415,6 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     if ((omnetDataMsg->getDestinationOriented()
          && strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL)
         || omnetDataMsg->getHopCount() >= maximumHopCount) {
-
-          if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress
-              << ">!<"<<"THE MESSAGE IN DESTINATION"<<">!<"<< omnetDataMsg->getSourceAddress()
-              << ">!<"<<omnetDataMsg->getDataName() <<">!<"<<omnetDataMsg->getFinalDestinationAddress()
-              << ">!<"<<getParentModule()->getFullName()<<">!<"<<omnetDataMsg->getHopsTravelled()<<"\n";}
 
         cacheData = FALSE;
     }
@@ -462,13 +456,14 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 }
                 currentCacheSize -= removingCacheEntry->realPacketSize;
 
-                if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<"
-                    << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
-                    << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled<<">!<"<<removingCacheEntry->copies << "\n";}
+                emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+                emit(currentCacheSizeBytesSignal, currentCacheSize);
+                emit(currentCacheSizeReportedCountSignal, (int) 1);
 
                 cacheList.remove(removingCacheEntry);
-                delete removingCacheEntry;
 
+
+                delete removingCacheEntry;
             }
 
             cacheEntry = new CacheEntry;
@@ -502,6 +497,16 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
         cacheEntry->hopCount = omnetDataMsg->getHopCount();
         cacheEntry->lastAccessedTime = simTime().dbl();
+
+        // log cache update or add
+        if (found) {
+            emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+        } else {
+            emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+        }
+        emit(currentCacheSizeBytesSignal, currentCacheSize);
+        emit(currentCacheSizeReportedCountSignal, (int) 1);
+
     }
 
     // if registered app exist, send data msg to app
@@ -525,17 +530,13 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             // if(strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
             if(strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL) {
                 send(msg, "upperLayerOut");
-                if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-                      << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                      << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+
             } else {
                 delete msg;
             }
         } else {
             send(msg, "upperLayerOut");
-            if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-                  << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                  << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+
         }
     } else {
         delete msg;
@@ -546,8 +547,8 @@ void KSpraywaitRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 {
     KSummaryVectorMsg *summaryVectorMsg = dynamic_cast<KSummaryVectorMsg*>(msg);
 
-    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<SVM>!<" << summaryVectorMsg->getSourceAddress() << ">!<"
-        << summaryVectorMsg->getDestinationAddress() << ">!<" << summaryVectorMsg->getByteLength() << "\n";}
+    emit(sumVecBytesReceivedSignal, (long) summaryVectorMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (long) summaryVectorMsg->getByteLength());
 
     // when a summary vector is received, it means that the neighbour started the syncing
     // so send the data request message with the required data items
@@ -607,9 +608,6 @@ void KSpraywaitRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 
     send(dataRequestMsg, "lowerLayerOut");
 
-    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DRM>!<" << dataRequestMsg->getSourceAddress() << ">!<"
-        << dataRequestMsg->getDestinationAddress() << ">!<" << dataRequestMsg->getByteLength() << "\n";}
-
     // cancel the random backoff timer (because neighbour started syncing)
     string nodeMACAddress = summaryVectorMsg->getSourceAddress();
     SyncedNeighbour *syncedNeighbour = getSyncingNeighbourInfo(nodeMACAddress);
@@ -632,8 +630,8 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 {
     KDataRequestMsg *dataRequestMsg = dynamic_cast<KDataRequestMsg*>(msg);
 
-    if (logging&&!DisableExcesslog) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DRM>!<" << dataRequestMsg->getSourceAddress() << ">!<"
-        << dataRequestMsg->getDestinationAddress() << ">!<" << dataRequestMsg->getByteLength() << "\n";}
+    emit(dataReqBytesReceivedSignal, (long) dataRequestMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (long) dataRequestMsg->getByteLength());
 
     int i = 0;
     while (i < dataRequestMsg->getMessageIDHashVectorArraySize()) {
@@ -710,6 +708,11 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
                     currentCacheSize -= removingCacheEntry->realPacketSize;
 
+                    emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+                    emit(currentCacheSizeBytesSignal, currentCacheSize);
+                    emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+
                     cacheList.remove(removingCacheEntry);
                     delete removingCacheEntry;
                 } else {
@@ -729,8 +732,7 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
                 }
 
                 send(dataMsg, "lowerLayerOut");
-                if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
-                                << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName()<<">!<"<<dataMsg->getHopsTravelled()<< ">!<"<<dataMsg->getDuplicates()<< "\n";}
+
             } else {
 
                 //compare the source adress and destination address in cache if matches send to destination
@@ -741,14 +743,16 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
                     && destOriented) || !destOriented) {
                     send(dataMsg, "lowerLayerOut");
 
-                    if (logging) {EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
-                                    << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << ">!<"<<dataMsg->getHopsTravelled()<< ">!<"
-                                    << dataMsg->getDuplicates() << "\n";}
                     //code to remove message from cache is added
                     CacheEntry *removingCacheEntry;
                     removingCacheEntry = cacheEntry;
 
                     currentCacheSize -= removingCacheEntry->realPacketSize;
+
+                    emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+                    emit(currentCacheSizeBytesSignal, currentCacheSize);
+                    emit(currentCacheSizeReportedCountSignal, (int) 1);
+
 
                     cacheList.remove(removingCacheEntry);
                     delete removingCacheEntry;

@@ -16,8 +16,6 @@ simple KSpraywaitRoutingLayer like IForwardingLayer
         string ownMACAddress;
         string spraywaitFlavour = default("binary");
 
-        bool disableExcesslog = default(false);
-
         // size of cache in bytes - zero means unlimited caching
         int maximumCacheSize @unit(byte) = default(0byte);
 
@@ -27,20 +25,30 @@ simple KSpraywaitRoutingLayer like IForwardingLayer
         // maximum amount of hops to forward for a data
         int maximumHopCount = default(10);
 
-        // maximum amount of hops to forward for a data
+        // maximum amount of hops to forward for a data (the initial K value)
         int noDuplicate = default(4);
 
         // maximum duration to use when obtaining a random backoff duration
         double maximumRandomBackoffDuration @unit(s) = default(5s);
 
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
-
-	    // OMNeT RNG which is used for generation of random numbers
-	    int usedRNG = default(0);
+        // OMNeT RNG which is used for generation of random numbers
+        int usedRNG = default(0);
 
         // icon used
         @display("i=block/transport");
+
+        // statistics and signals
+        @signal[fwdDataBytesReceived](type=long);
+        @signal[fwdSumVecBytesReceived](type=long);
+        @signal[fwdDataReqBytesReceived](type=long);
+        @signal[fwdTotalBytesReceived](type=long);
+        @signal[fwdHopsTravelled](type=long);
+        @signal[fwdHopsTravelledCount](type=long);        
+        @signal[fwdCacheBytesRemoved](type=long);
+        @signal[fwdCacheBytesAdded](type=long);
+        @signal[fwdCacheBytesUpdated](type=long);
+        @signal[fwdCurrentCacheSizeBytes](type=long);
+        @signal[fwdCurrentCacheSizeReportedCount](type=long);
 
     gates:
 
