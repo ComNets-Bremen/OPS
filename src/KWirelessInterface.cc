@@ -334,6 +334,17 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
         return dataRequestMsg->getDestinationAddress();
     }
 
+    KDPtableRequestMsg *dpTableRequestMsg = dynamic_cast<KDPtableRequestMsg*>(msg);
+    if (dpTableRequestMsg) {
+        return dpTableRequestMsg->getDestinationAddress();
+    }
+
+    KDPtableDataMsg *dpTableDataMsg = dynamic_cast<KDPtableDataMsg*>(msg);
+    if (dpTableDataMsg) {
+        return dpTableDataMsg->getDestinationAddress();
+    }
+
+
     EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << ">!<Unknown message type. Check \"string KWirelessInterface::getDestinationAddress(cMessage *msg)\"\n";
 
     throw cRuntimeError("Unknown message type in KWirelessnterface");

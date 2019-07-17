@@ -139,6 +139,11 @@ void KEpidemicRoutingLayer::ageDataInCache()
         }
         if (expiredFound) {
             currentCacheSize -= cacheEntry->realPacketSize;
+            
+            emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
+            emit(currentCacheSizeBytesSignal, currentCacheSize);
+            emit(currentCacheSizeReportedCountSignal, (int) 1);
+            
             cacheList.remove(cacheEntry);
             delete cacheEntry;
 
@@ -210,12 +215,12 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
                 iteratorCache++;
             }
             currentCacheSize -= removingCacheEntry->realPayloadSize;
-            cacheList.remove(removingCacheEntry);
 
             emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+            cacheList.remove(removingCacheEntry);
             delete removingCacheEntry;
 
         }
@@ -414,11 +419,12 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                     iteratorCache++;
                 }
                 currentCacheSize -= removingCacheEntry->realPayloadSize;
-                cacheList.remove(removingCacheEntry);
 
                 emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
                 emit(currentCacheSizeBytesSignal, currentCacheSize);
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
+                
+                cacheList.remove(removingCacheEntry);
 
                 delete removingCacheEntry;
             }

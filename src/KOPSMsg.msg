@@ -179,6 +179,8 @@ packet KDPtableRequestMsg {
     // common fields
     string sourceAddress;
     string destinationAddress;
+
+    int realPacketSize;
 }
 
 
@@ -205,6 +207,8 @@ packet KDPtableDataMsg {
     string destinationAddress;
 
     MsgDelivPredictability dpList[];
+
+    int realPacketSize;
 }
 
 

@@ -1,4 +1,10 @@
+//
 //The model for the Prophet Routing Layer
+//
+// @author : Kirishanth Chethuraja
+// @date   : 25-feb-2019
+//
+//
 
 package ops;
 
@@ -21,9 +27,6 @@ simple KProphetRoutingLayer like IForwardingLayer
 
         // duration after which the next anti-entropy session must be started for a given host
         double antiEntropyInterval @unit(s) = default(300s);
-
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
 
         // switch on and off the TTL handling (expensive procedure)
         bool useTTL = default(false);
@@ -59,6 +62,21 @@ simple KProphetRoutingLayer like IForwardingLayer
 
         // icon used
         @display("i=block/transport");
+
+        // statistics and signals
+        @signal[fwdDataBytesReceived](type=long);
+        @signal[fwdSumVecBytesReceived](type=long);
+        @signal[fwdDataReqBytesReceived](type=long);
+        @signal[fwdDPTableRequestBytesReceived](type=long);
+        @signal[fwdDPTableDataBytesReceived](type=long);
+        @signal[fwdTotalBytesReceived](type=long);
+        @signal[fwdHopsTravelled](type=long);
+        @signal[fwdHopsTravelledCount](type=long);
+        @signal[fwdCacheBytesRemoved](type=long);
+        @signal[fwdCacheBytesAdded](type=long);
+        @signal[fwdCacheBytesUpdated](type=long);
+        @signal[fwdCurrentCacheSizeBytes](type=long);
+        @signal[fwdCurrentCacheSizeReportedCount](type=long);
 
     gates:
 

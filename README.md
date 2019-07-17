@@ -6,11 +6,11 @@ can be developed and plugged in. The details of prerequisites, installing OPS,
 configuring OPS, simulating with OPS and much more are given in the following 
 sections.
 
-But here are the most important links to get OPS running quickly.
+Here are the most important links to get OPS running quickly.
 
 1. Install and build components required by OPS - [Prerequisites](#prerequisites)
 
-2. Install OPS - [Install and Build OPS](#install-and-build-ops)
+2. Install and compile OPS - [Install and Build OPS](#install-and-build-ops)
 
 3. Run simulations - [Running Simulations](#running-simulations)
 
@@ -163,7 +163,7 @@ with different scenarios. To run a simulation, follow the procedure given below.
 ![simulator controls](res/images/simulator-controls.png "Simulator Controls")
 
 
-As indicated, there are many sample .ini file available in the simulations folder. Details of these
+As indicated, there are many sample `.ini` files available in the `simulations` folder. Details of these
 files are given in the [SAMPLEINI File](./res/info/SAMPLEINI.md).
 
 
@@ -267,14 +267,12 @@ problems. Check the [FAQ file](./res/info/FAQ.md) for these questions and answer
 
 ## Questions or Comments
 
-Firstly, if you have any questions, please check the [FAQ file](./res/info/FAQ.md) and if you cannot find answers there, then
-write to us. Secondly, if you have any comments or suggestions, we will be very glad to hear them. In both cases, please
-write to us using any of the e-mail adresses below.
+Firstly, if you have any questions, please check the [FAQ file](./res/info/FAQ.md) and if you cannot find answers there, then write to us. Secondly, if you have any comments or suggestions, we will be very glad to hear them. In both cases, please write to anyone of us listed blow using ops@comnets.uni-bremen.de.
 
-  - Asanga Udugama (adu@comnets.uni-bremen.de)
-  - Jens Dede (jd@comnets.uni-bremen.de)
-  - Anna Förster (anna.foerster@comnets.uni-bremen.de)
-  - Vishnupriya Parimalam (vp@fb1.uni-bremen.de)
+  - Asanga Udugama
+  - Jens Dede
+  - Anna Förster
+  - Vishnupriya Parimalam
 
 
 

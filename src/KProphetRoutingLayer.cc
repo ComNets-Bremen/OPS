@@ -1,3 +1,11 @@
+//
+//The model for the Prophet Routing Layer
+//
+// @author : Kirishanth Chethuraja
+// @date   : 25-feb-2019
+//
+//
+
 #include "KProphetRoutingLayer.h"
 
 Define_Module(KProphetRoutingLayer);
@@ -13,7 +21,6 @@ void KProphetRoutingLayer::initialize(int stage)
         antiEntropyInterval = par("antiEntropyInterval");
         maximumHopCount = par("maximumHopCount");
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
-        logging = par("logging");
         useTTL = par("useTTL");
         usedRNG = par("usedRNG");
         numEventsHandled = 0;
@@ -33,6 +40,24 @@ void KProphetRoutingLayer::initialize(int stage)
 
     } else if (stage == 1) {
     } else if (stage == 2) {
+        // setup statistics signals
+        dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
+        sumVecBytesReceivedSignal = registerSignal("fwdSumVecBytesReceived");
+        dataReqBytesReceivedSignal = registerSignal("fwdDataReqBytesReceived");
+
+        dpTableRequestBytesReceived = registerSignal("fwdDPTableRequestBytesReceived");
+        dpTableDataBytesReceived = registerSignal("fwdDPTableDataBytesReceived");
+
+        totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
+        hopsTravelledSignal = registerSignal("fwdHopsTravelled");
+        hopsTravelledCountSignal = registerSignal("fwdHopsTravelledCount");
+
+        cacheBytesRemovedSignal = registerSignal("fwdCacheBytesRemoved");
+        cacheBytesAddedSignal = registerSignal("fwdCacheBytesAdded");
+        cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
+        currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
+        currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+
     } else {
         EV_FATAL << KPROPHETROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
     }
@@ -57,12 +82,13 @@ void KProphetRoutingLayer::handleMessage(cMessage *msg)
 
     // self messages
     if (msg->isSelfMessage()) {
-    EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
-    delete msg;
+        EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
+        delete msg;
+
     // messages from other layers
     } else {
 
-    // get message arrival gate name
+        // get message arrival gate name
         gate = msg->getArrivalGate();
         strcpy(gateName, gate->getName());
 
@@ -130,6 +156,11 @@ void KProphetRoutingLayer::ageDataInCache()
         }
         if (expiredFound) {
             currentCacheSize -= cacheEntry->realPacketSize;
+
+            emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
+            emit(currentCacheSizeBytesSignal, currentCacheSize);
+            emit(currentCacheSizeReportedCountSignal, (int) 1);
+
             cacheList.remove(cacheEntry);
             delete cacheEntry;
         }
@@ -149,8 +180,8 @@ int KProphetRoutingLayer::agingDP()
 
     if(currentTime < lastTimeAged)
     {
-    EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO <<"Error: something went wrong \n";
-    exit(1);
+        EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO <<"Error: something went wrong \n";
+        exit(1);
     }
 
     double timeUnit = (currentTime - lastTimeAged) / standardTimeInterval ;
@@ -199,8 +230,8 @@ void KProphetRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
-    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-        << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getFinalDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" <<     omnetDataMsg->getGoodnessValue() << ">!<" << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+//    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
+//        << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getFinalDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" <<     omnetDataMsg->getGoodnessValue() << ">!<" << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
     int found = FALSE;
@@ -231,6 +262,11 @@ void KProphetRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
                 iteratorCache++;
             }
             currentCacheSize -= removingCacheEntry->realPayloadSize;
+
+            emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+            emit(currentCacheSizeBytesSignal, currentCacheSize);
+            emit(currentCacheSizeReportedCountSignal, (int) 1);
+
             cacheList.remove(removingCacheEntry);
 
             //if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<"
@@ -271,6 +307,16 @@ void KProphetRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
     }
     cacheEntry->lastAccessedTime = simTime().dbl();
+
+    // log cache update or add
+    if (found) {
+        emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+    } else {
+        emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+    }
+    emit(currentCacheSizeBytesSignal, currentCacheSize);
+    emit(currentCacheSizeReportedCountSignal, (int) 1);
+
     delete msg;
 }
 
@@ -360,10 +406,16 @@ void KProphetRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
         KDPtableRequestMsg *dptableRequestMsg = new KDPtableRequestMsg();
         dptableRequestMsg->setSourceAddress(ownMACAddress.c_str());
         dptableRequestMsg->setDestinationAddress(nodeMACAddress.c_str());
+
+        // check KOPSMsg.msg for sizing
+        int realPacketSize = 6 + 6;
+        dptableRequestMsg->setRealPacketSize(realPacketSize);
+        dptableRequestMsg->setByteLength(realPacketSize);
+
         send(dptableRequestMsg, "lowerLayerOut");
 
-        if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DPR>!<"
-         << dptableRequestMsg->getDestinationAddress()<< "\n";}
+//        if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DPR>!<"
+//         << dptableRequestMsg->getDestinationAddress()<< "\n";}
        }
 
         i++;
@@ -427,6 +479,9 @@ void KProphetRoutingLayer::handleDPTableRequestFromLowerLayer(cMessage *msg)
     //if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DPRM>!<" << dptableRequestMsg->getSourceAddress() << ">!<"
                  // << dptableRequestMsg->getByteLength() << "\n";}
 
+    emit(dpTableRequestBytesReceived, (long) dptableRequestMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (long) dptableRequestMsg->getByteLength());
+
     int listSize = agingDP();
     KDPtableDataMsg *dptableDataMsg = new KDPtableDataMsg();
     dptableDataMsg->setDpListArraySize(listSize);
@@ -454,8 +509,13 @@ void KProphetRoutingLayer::handleDPTableRequestFromLowerLayer(cMessage *msg)
     dptableDataMsg->setSourceAddress(dptableRequestMsg->getDestinationAddress());
     dptableDataMsg->setDestinationAddress(dptableRequestMsg->getSourceAddress());
 
-    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DPTM>!<" << dptableRequestMsg->getSourceAddress() << ">!<"
-                << dpList.size() << ">!<" << listSize << "\n";}
+    // check KOPSMsg.msg for sizing
+    int realPacketSize = 6 + 6 + (14 * dptableDataMsg->getDpListArraySize());
+    dptableDataMsg->setRealPacketSize(realPacketSize);
+    dptableDataMsg->setByteLength(realPacketSize);
+
+//    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DPTM>!<" << dptableRequestMsg->getSourceAddress() << ">!<"
+//                << dpList.size() << ">!<" << listSize << "\n";}
     send(dptableDataMsg, "lowerLayerOut");
     delete msg;
 
@@ -465,6 +525,10 @@ void KProphetRoutingLayer::handleDPTableRequestFromLowerLayer(cMessage *msg)
 void KProphetRoutingLayer::handleDPTableDataFromLowerLayer(cMessage *msg)
 {
     KDPtableDataMsg *dptableDataMsg  = dynamic_cast<KDPtableDataMsg*>(msg);
+
+    emit(dpTableDataBytesReceived, (long) dptableDataMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (long) dptableDataMsg->getByteLength());
+
     int i= 0;
     while (i< dptableDataMsg->getDpListArraySize())
     {
@@ -533,9 +597,9 @@ void KProphetRoutingLayer::sendDataMsg(vector<string> destinationNodes, string n
 
             send(dataMsg, "lowerLayerOut");
 
-            if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" <<
-                          dataMsg->getFinalDestinationAddress() << ">!<"<< dataMsg->getDestinationAddress() << ">!<"
-                          << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << ">!<" << dataMsg->getHopsTravelled() << "\n";}
+//            if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" <<
+//                          dataMsg->getFinalDestinationAddress() << ">!<"<< dataMsg->getDestinationAddress() << ">!<"
+//                          << dataMsg->getByteLength() << ">!<" << dataMsg->getDataName() << ">!<" << dataMsg->getHopsTravelled() << "\n";}
              }
         iteratorCache++;
     }
@@ -586,12 +650,19 @@ void KProphetRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
     bool found;
+
     // increment the travelled hop count
     omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
     omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
-    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-        << omnetDataMsg->getFinalDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-        << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+
+//    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
+//        << omnetDataMsg->getFinalDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
+//        << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+
+    emit(dataBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+    emit(totalBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+    emit(hopsTravelledSignal, (long) omnetDataMsg->getHopsTravelled());
+    emit(hopsTravelledCountSignal, 1);
 
     // if destination oriented data sent around and this node is the destination
     // or if maximum hop count is reached
@@ -637,11 +708,17 @@ void KProphetRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                     iteratorCache++;
                 }
                 currentCacheSize -= removingCacheEntry->realPayloadSize;
+
+                emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+                emit(currentCacheSizeBytesSignal, currentCacheSize);
+                emit(currentCacheSizeReportedCountSignal, (int) 1);
+
                 cacheList.remove(removingCacheEntry);
 
-                if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<"
-                    << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
-                    << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << "\n";}
+//                if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CR>!<"
+//                    << removingCacheEntry->dataName << ">!<" << removingCacheEntry->realPayloadSize << ">!<0>!<"
+//                    << currentCacheSize << ">!<0>!<0>!<" << removingCacheEntry->hopsTravelled << "\n";}
+
                 delete removingCacheEntry;
 
             }
@@ -680,15 +757,21 @@ void KProphetRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
         // log cache update or add
         if (found) {
-            if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<"
-                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
-                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+            emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+//            if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CU>!<"
+//                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
+//                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+
         } else {
-            if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<"
-                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
-                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+            emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+//            if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<CA>!<"
+//                << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getRealPayloadSize() << ">!<0>!<"
+//                << currentCacheSize << ">!<0>!<0>!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+
         }
-    }
+        emit(currentCacheSizeBytesSignal, currentCacheSize);
+        emit(currentCacheSizeReportedCountSignal, (int) 1);
+   }
 
     // if registered app exist, send data msg to app
     AppInfo *appInfo = NULL;
@@ -710,9 +793,9 @@ void KProphetRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         send(msg, "upperLayerOut");
 
 
-    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-            << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-            << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+//    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
+//            << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
+//            << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
 
 
     } else {

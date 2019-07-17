@@ -168,6 +168,11 @@ void KSpraywaitRoutingLayer::handleDataAgingTrigger(cMessage *msg)
         }
         if (expiredFound) {
             currentCacheSize -= cacheEntry->realPacketSize;
+
+            emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
+            emit(currentCacheSizeBytesSignal, currentCacheSize);
+            emit(currentCacheSizeReportedCountSignal, (int) 1);
+
             cacheList.remove(cacheEntry);
             delete cacheEntry;
 

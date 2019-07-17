@@ -1,3 +1,11 @@
+//
+//The model for the Prophet Routing Layer
+//
+// @author : Kirishanth Chethuraja
+// @date   : 25-feb-2019
+//
+//
+
 #ifndef KPROPHETROUTINGLAYER_H_
 #define KPROPHETROUTINGLAYER_H_
 
@@ -35,7 +43,6 @@ class KProphetRoutingLayer: public cSimpleModule
         double antiEntropyInterval;
         int maximumHopCount;
         double maximumRandomBackoffDuration;
-        int logging;
         bool useTTL;
         int numEventsHandled;
         int currentCacheSize;
@@ -145,6 +152,21 @@ class KProphetRoutingLayer: public cSimpleModule
         void setSyncingNeighbourInfoForNextRound();
         void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
         void updateNeighbourSyncStarted(string nodeMACAddress , string ownMACAddress );
+
+        // stats related variables
+        simsignal_t dataBytesReceivedSignal;
+        simsignal_t sumVecBytesReceivedSignal;
+        simsignal_t dataReqBytesReceivedSignal;
+        simsignal_t dpTableRequestBytesReceived;
+        simsignal_t dpTableDataBytesReceived;
+        simsignal_t totalBytesReceivedSignal;
+        simsignal_t hopsTravelledSignal;
+        simsignal_t hopsTravelledCountSignal;
+        simsignal_t cacheBytesRemovedSignal;
+        simsignal_t cacheBytesAddedSignal;
+        simsignal_t cacheBytesUpdatedSignal;
+        simsignal_t currentCacheSizeBytesSignal;
+        simsignal_t currentCacheSizeReportedCountSignal;
 
 };
 #define KPROPHETROUTINGLAYER_SIMMODULEINFO         ">!<" << simTime() << ">!<" << getParentModule()->getFullName()

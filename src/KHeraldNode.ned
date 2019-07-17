@@ -73,6 +73,8 @@ module KHeraldNode
         @statistic[fwdDataBytesReceived](source=sum(fwdDataBytesReceived);record=last,vector;title="Data Received";unit=byte);
         @statistic[fwdSumVecBytesReceived](source=sum(fwdSumVecBytesReceived);record=last,vector;title="Summary Vectors Received";unit=byte);
         @statistic[fwdDataReqBytesReceived](source=sum(fwdDataReqBytesReceived);record=last,vector;title="Data Requests Received";unit=byte);
+        @statistic[fwdDPTableRequestBytesReceived](source=sum(fwdDPTableRequestBytesReceived); record=last,vector; title="DP Table Requests Received"; unit=byte);
+        @statistic[fwdDPTableDataBytesReceived](source=sum(fwdDPTableDataBytesReceived); record=last,vector; title="DP Table Data Received"; unit=byte);
         @statistic[fwdTotalBytesReceived](source=sum(fwdTotalBytesReceived);record=last,vector;title="Total Received";unit=byte);
         @statistic[fwdAvgHopsTravelled](source=sum(fwdHopsTravelled)/sum(fwdHopsTravelledCount);record=last,vector;title="Average Hops Travelled");
         @statistic[fwdCacheBytesRemoved](source=sum(fwdCacheBytesRemoved);record=last,vector;title="Cache Removals";unit=byte);
