@@ -90,7 +90,8 @@ listed below.
    - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described
      in the publication [Epidemic Routing for Partially-Connected Ad Hoc Networks](http://issg.cs.duke.edu/epidemic/epidemic.pdf)
      by A. Vahdat and D. Becker
-
+     
+ 
 3. Link Adaptation Layer - Tasked with converting packets sent by the Opportunistic
    Networking Layer to the specific link technology used (at Link Layer). Currently
    implemented has a simple pass-through layer.
@@ -139,6 +140,13 @@ or receive data destined to itself. Current models are,
    - `KEpidemicRoutingLayer` - Implements the epidemic routing algorithm as described
      in the publication [Epidemic Routing for Partially-Connected Ad Hoc Networks](http://issg.cs.duke.edu/epidemic/epidemic.pdf)
      by A. Vahdat and D. Becker
+   - `KProphetRoutingLayer` - Implements the PROPHET protocol, a probabilistic routing 
+     protocol for intermittently connected networks 
+     as described in [Probabilistic Routing in Intermittently Connected Networks](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.59.6027&rep=rep1&type=pdf)
+   - `KSpraywaitRoutingLayer` - Implements the Spray and Wait protocol, a protocol that “sprays” 
+      a number of copies into the network, and then “waits” till one of these nodes meets the 
+      destination as described in [Spray and Wait: An Efficient Routing Scheme for Intermittently Connected Mobile Networks](http://chants.cs.ucsb.edu/2005/papers/paper-SpyPso.pdf)
+
 
 3. Link Adaptation Layer - Tasked with converting packets sent by the Opportunistic
    Networking Layer to the specific link technology used (at Link Layer). Currently
