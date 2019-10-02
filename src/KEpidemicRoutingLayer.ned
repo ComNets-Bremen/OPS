@@ -5,7 +5,6 @@
 // @date   : 02-may-2017
 //
 //
-
 package ops;
 
 simple KEpidemicRoutingLayer like IForwardingLayer
@@ -16,7 +15,7 @@ simple KEpidemicRoutingLayer like IForwardingLayer
         string ownMACAddress;
 
         // size of cache in bytes - zero means unlimited caching
-        int maximumCacheSize @unit(byte) = default(5000000 byte);
+        int maximumCacheSize @unit(byte) = default(5000000byte);
 
         // duration after which the next anti-entropy session must be started for a given host
         double antiEntropyInterval @unit(s) = default(300s);
@@ -26,9 +25,6 @@ simple KEpidemicRoutingLayer like IForwardingLayer
 
         // maximum duration to use when obtaining a random backoff duration
         double maximumRandomBackoffDuration @unit(s) = default(5s);
-
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
         
         // switch on and off the TTL handling (expensive procedure)
         bool useTTL = default(false);
@@ -38,6 +34,19 @@ simple KEpidemicRoutingLayer like IForwardingLayer
 
         // icon used
         @display("i=block/transport");
+
+        // statistics and signals
+        @signal[fwdDataBytesReceived](type=long);
+        @signal[fwdSumVecBytesReceived](type=long);
+        @signal[fwdDataReqBytesReceived](type=long);
+        @signal[fwdTotalBytesReceived](type=long);
+        @signal[fwdHopsTravelled](type=long);
+        @signal[fwdHopsTravelledCount](type=long);        
+        @signal[fwdCacheBytesRemoved](type=long);
+        @signal[fwdCacheBytesAdded](type=long);
+        @signal[fwdCacheBytesUpdated](type=long);
+        @signal[fwdCurrentCacheSizeBytes](type=long);
+        @signal[fwdCurrentCacheSizeReportedCount](type=long);
 
     gates:
 
@@ -50,4 +59,3 @@ simple KEpidemicRoutingLayer like IForwardingLayer
         output lowerLayerOut;
 
 }
-

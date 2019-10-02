@@ -41,11 +41,22 @@ simple KKeetchiLayer like IForwardingLayer
         // when insignificant changes are present in the neighbourhood
         double backoffTimerIncrementFactor = default(1.5);
 
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
+        // OMNeT RNG which is used for generation of random numbers -- FOR FUTURE USED
+        int usedRNG = default(0);
 
         // icon used
         @display("i=block/transport");
+
+        // statistics and signals
+        @signal[fwdDataBytesReceived](type=long);
+        @signal[fwdTotalBytesReceived](type=long);
+        @signal[fwdHopsTravelled](type=long);
+        @signal[fwdHopsTravelledCount](type=long);
+        @signal[fwdCacheBytesRemoved](type=long);
+        @signal[fwdCacheBytesAdded](type=long);
+        @signal[fwdCacheBytesUpdated](type=long);
+        @signal[fwdCurrentCacheSizeBytes](type=long);
+        @signal[fwdCurrentCacheSizeReportedCount](type=long);
 
     gates:
 

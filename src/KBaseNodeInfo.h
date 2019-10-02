@@ -9,6 +9,8 @@
 
 
 #include "KWirelessInterface.h"
+#include "KMessengerApp.h"
+#include "KHeraldApp.h"
 
 #if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
@@ -23,11 +25,19 @@ class KBaseNodeInfo
     public:
         string nodeAddress;
 
+        // mobility related info
         cModule *nodeModule;
 		inet::IMobility *nodeMobilityModule;
 		KWirelessInterface *nodeWirelessIfcModule;
 
+		// messenger app related info
+        KMessengerApp *nodeMessengerAppModule;
 
+        // herald app related info
+        KHeraldApp *nodeHeraldAppModule;
+
+        // used for neighbour contact durations
+        simtime_t neighbourStartTime;
 
 };
 

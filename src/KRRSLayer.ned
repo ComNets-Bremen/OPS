@@ -17,13 +17,30 @@ simple KRRSLayer like IForwardingLayer
         
         // size of cache in bytes - zero means unlimited caching
         int maximumCacheSize @unit(byte) = default(5000000 byte);
-        		
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
+        
+        // unicast (selects one neighbour) or broadcast RRS (broadcasts to all)
+        bool broadcastRRS = default(true);
+
+        // RNG used for random numbers
+        int usedRNG = default(0);
+
+        // enable/disable aging cache
+        bool ageCache = default(false);
 
         // icon used
       	@display("i=block/transport");
-        
+
+        // statistics and signals
+        @signal[fwdDataBytesReceived](type=long);
+        @signal[fwdTotalBytesReceived](type=long);
+        @signal[fwdHopsTravelled](type=long);
+        @signal[fwdHopsTravelledCount](type=long);        
+        @signal[fwdCacheBytesRemoved](type=long);
+        @signal[fwdCacheBytesAdded](type=long);
+        @signal[fwdCacheBytesUpdated](type=long);
+        @signal[fwdCurrentCacheSizeBytes](type=long);
+        @signal[fwdCurrentCacheSizeReportedCount](type=long);
+
 	gates:
 	    
 	    // interface to the upper layer (which may be the application)

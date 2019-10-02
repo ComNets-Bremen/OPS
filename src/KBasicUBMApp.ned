@@ -15,9 +15,10 @@ package ops;
 simple KBasicUBMApp like IUBMApp
 {
     parameters:
+        
         // node index
         int nodeIndex;
-        
+
 		// prefix assigned to the app
     	string appPrefix = default("/basicubm-");
 

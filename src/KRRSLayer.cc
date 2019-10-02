@@ -18,22 +18,36 @@ void KRRSLayer::initialize(int stage)
         ownMACAddress = par("ownMACAddress").stringValue();
         nextAppID = 1;
         maximumCacheSize = par("maximumCacheSize");
+        broadcastRRS = par("broadcastRRS");
+        usedRNG = par("usedRNG");
+        ageCache = par("ageCache");
         currentCacheSize = 0;
-
-        logging = par("logging");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
 
     } else if (stage == 1) {
 
-
     } else if (stage == 2) {
 
         // setup the trigger to age data
-        ageDataTimeoutEvent = new cMessage("Age Data Timeout Event");
-        ageDataTimeoutEvent->setKind(108);
-        scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
+        if (ageCache) {
+            ageDataTimeoutEvent = new cMessage("Age Data Timeout Event");
+            ageDataTimeoutEvent->setKind(KRRSLAYER_EVENTTYPE_AGEDATA);
+            scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
+        }
+
+        // setup statistics signals
+        dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
+        totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
+        hopsTravelledSignal = registerSignal("fwdHopsTravelled");
+        hopsTravelledCountSignal = registerSignal("fwdHopsTravelledCount");
+        
+        cacheBytesRemovedSignal = registerSignal("fwdCacheBytesRemoved");
+        cacheBytesAddedSignal = registerSignal("fwdCacheBytesAdded");
+        cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
+        currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
+        currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
     } else {
         EV_FATAL << KRRSLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
@@ -58,7 +72,7 @@ void KRRSLayer::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
 
         // age data trigger fired
-        if (msg->getKind() == 108) {
+        if (msg->getKind() == KRRSLAYER_EVENTTYPE_AGEDATA) {
 
             // remove expired data items
             int expiredFound = TRUE;
@@ -79,6 +93,11 @@ void KRRSLayer::handleMessage(cMessage *msg)
                 if (expiredFound) {
                     currentCacheSize -= cacheEntry->realPacketSize;
                     cacheList.remove(cacheEntry);
+
+                    emit(cacheBytesRemovedSignal, cacheEntry->realPacketSize);
+                    emit(currentCacheSizeBytesSignal, currentCacheSize);
+                    emit(currentCacheSizeReportedCountSignal, (int) 1);
+
                     delete cacheEntry;
                 }
             }
@@ -126,10 +145,6 @@ void KRRSLayer::handleMessage(cMessage *msg)
         // data message arrived from the upper layer (app layer)
         } else if (strstr(gateName, "upperLayerIn") != NULL && (omnetDataMsg = dynamic_cast<KDataMsg*>(msg)) != NULL) {
 
-            if (logging) {EV_INFO << KRRSLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-                << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                << omnetDataMsg->getByteLength() << "\n";}
-
             CacheEntry *cacheEntry;
             list<CacheEntry*>::iterator iteratorCache;
             int found = FALSE;
@@ -163,6 +178,11 @@ void KRRSLayer::handleMessage(cMessage *msg)
                     }
                     currentCacheSize -= removingCacheEntry->realPacketSize;
                     cacheList.remove(removingCacheEntry);
+
+                    emit(cacheBytesRemovedSignal, removingCacheEntry->realPacketSize);
+                    emit(currentCacheSizeBytesSignal, currentCacheSize);
+                    emit(currentCacheSizeReportedCountSignal, (int) 1);
+
                     delete removingCacheEntry;
 
                 }
@@ -177,17 +197,35 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
                 cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
 
-                cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
+                // cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
+                cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
+                cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
+                if (omnetDataMsg->getDestinationOriented()) {
+                    cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+                }
+                cacheEntry->hopsTravelled = 0;
+
+                cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+                cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
 
                 cacheEntry->createdTime = simTime().dbl();
                 cacheEntry->updatedTime = simTime().dbl();
 
                 cacheList.push_back(cacheEntry);
 
-                currentCacheSize += cacheEntry->realPacketSize;
+                currentCacheSize += cacheEntry->realPayloadSize;
             }
 
             cacheEntry->lastAccessedTime = simTime().dbl();
+
+            // log cache update or add
+            if (found) {
+                emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+            } else {
+                emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+            }
+            emit(currentCacheSizeBytesSignal, currentCacheSize);
+            emit(currentCacheSizeReportedCountSignal, (int) 1);
 
             delete msg;
 
@@ -201,11 +239,6 @@ void KRRSLayer::handleMessage(cMessage *msg)
         // neighbour list message arrived from the lower layer (link layer)
         } else if (strstr(gateName, "lowerLayerIn") != NULL && (neighListMsg = dynamic_cast<KNeighbourListMsg*>(msg)) != NULL) {
 
-            if (logging) {EV_INFO << KRRSLAYER_SIMMODULEINFO << ">!<NM>!<NC>!<" <<
-                                neighListMsg->getNeighbourNameListArraySize() << ">!<CS>!<"
-                                    << cacheList.size() << "\n";}
-
-
             if (neighListMsg->getNeighbourNameListArraySize() > 0 && cacheList.size() > 0) {
 
                 // if there are nodes in the neighbourhood and entries in the cache
@@ -213,7 +246,7 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
                 int cacheIndex = 0;
                 if (cacheList.size() > 1) {
-                    cacheIndex = intuniform(0, (cacheList.size() - 1));
+                    cacheIndex = intuniform(0, (cacheList.size() - 1), usedRNG);
                 }
 
                 list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
@@ -223,23 +256,43 @@ void KRRSLayer::handleMessage(cMessage *msg)
                 KDataMsg *dataMsg = new KDataMsg();
 
                 dataMsg->setSourceAddress(ownMACAddress.c_str());
-                dataMsg->setDestinationAddress(broadcastMACAddress.c_str());
+
+                if (broadcastRRS) {
+                    dataMsg->setDestinationAddress(broadcastMACAddress.c_str());
+                } else {
+                    int neighbourIndex = intuniform(0, (neighListMsg->getNeighbourNameListArraySize() - 1), usedRNG);
+                    dataMsg->setDestinationAddress(neighListMsg->getNeighbourNameList(neighbourIndex));
+                }
+
                 dataMsg->setDataName(cacheEntry->dataName.c_str());
                 dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
+
                 dataMsg->setRealPayloadSize(cacheEntry->realPayloadSize);
                 dataMsg->setDummyPayloadContent(cacheEntry->dummyPayloadContent.c_str());
-                dataMsg->setRealPacketSize(cacheEntry->realPacketSize);
-                dataMsg->setByteLength(cacheEntry->realPacketSize);
-                dataMsg->setByteLength(cacheEntry->realPacketSize);
+                int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6 + 1;
+
+
+                dataMsg->setRealPacketSize(realPacketSize);
+                dataMsg->setByteLength(realPacketSize);
+
                 dataMsg->setMsgType(cacheEntry->msgType);
                 dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
-                dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
+                
+                // dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
+                dataMsg->setInitialOriginatorAddress(cacheEntry->initialOriginatorAddress.c_str());
+                dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
+                if (cacheEntry->destinationOriented) {
+                    dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
+                }
+                dataMsg->setMessageID(cacheEntry->messageID.c_str());
+                dataMsg->setHopCount(cacheEntry->hopCount);
+                dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
+                dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
+                dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
+                dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
 
                 send(dataMsg, "lowerLayerOut");
 
-                if (logging) {EV_INFO << KRRSLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" << dataMsg->getSourceAddress() << ">!<"
-                    << dataMsg->getDestinationAddress() << ">!<" << dataMsg->getDataName() << ">!<" << dataMsg->getGoodnessValue() << ">!<"
-                    << dataMsg->getByteLength() << "\n";}
             }
 
             delete msg;
@@ -249,14 +302,22 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
             int found;
 
-            if (logging) {EV_INFO << KRRSLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-                << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                    << omnetDataMsg->getByteLength() << ">!<" << omnetDataMsg->getHopsTravelled() << "\n";}
+            // increment the travelled hop count
+            omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
+            omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
+
+            emit(dataBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+            emit(totalBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
+            emit(hopsTravelledSignal, (long) omnetDataMsg->getHopsTravelled());
+            emit(hopsTravelledCountSignal, 1);
 
             // if destination oriented data sent around, then cache message only if not destined to self
             // or if no destination in data, cache all messages
             bool cacheData = TRUE;
-            if (omnetDataMsg->getDestinationOriented() && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+            // if (omnetDataMsg->getDestinationOriented()
+            //     && strstr(getParentModule()->getFullName(), omnetDataMsg->getFinalDestinationNodeName()) != NULL) {
+            if (omnetDataMsg->getDestinationOriented() 
+                && strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL) {
                 cacheData = FALSE;
             }
 
@@ -296,31 +357,54 @@ void KRRSLayer::handleMessage(cMessage *msg)
                         }
                         currentCacheSize -= removingCacheEntry->realPacketSize;
                         cacheList.remove(removingCacheEntry);
+
+                        emit(cacheBytesRemovedSignal, removingCacheEntry->realPacketSize);
+                        emit(currentCacheSizeBytesSignal, currentCacheSize);
+                        emit(currentCacheSizeReportedCountSignal, (int) 1);
+
                         delete removingCacheEntry;
 
                     }
 
                     cacheEntry = new CacheEntry;
+
+                    cacheEntry->messageID = omnetDataMsg->getMessageID();
                     cacheEntry->dataName = omnetDataMsg->getDataName();
-                    cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
                     cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
                     cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
                     cacheEntry->msgType = omnetDataMsg->getMsgType();
                     cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
-
                     cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
+                    cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
+                    cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
+                    if (omnetDataMsg->getDestinationOriented()) {
+                        cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+                    }
+                    cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
 
-                    cacheEntry->finalDestinationNodeName = omnetDataMsg->getFinalDestinationNodeName();
+                    cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
+                    cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
 
                     cacheEntry->createdTime = simTime().dbl();
                     cacheEntry->updatedTime = simTime().dbl();
 
                     cacheList.push_back(cacheEntry);
 
-                    currentCacheSize += cacheEntry->realPacketSize;
+                    currentCacheSize += cacheEntry->realPayloadSize;
                 }
 
+                cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
+                cacheEntry->hopCount = omnetDataMsg->getHopCount();
                 cacheEntry->lastAccessedTime = simTime().dbl();
+
+                // log cache update or add
+                if (found) {
+                    emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+                } else {
+                    emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+                }
+                emit(currentCacheSizeBytesSignal, currentCacheSize);
+                emit(currentCacheSizeReportedCountSignal, (int) 1);
             }
 
             // if registered app exist, send data msg to app
@@ -329,7 +413,10 @@ void KRRSLayer::handleMessage(cMessage *msg)
             list<AppInfo*>::iterator iteratorRegisteredApps = registeredAppList.begin();
             while (iteratorRegisteredApps != registeredAppList.end()) {
                 appInfo = *iteratorRegisteredApps;
-                if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL) {
+                if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL
+                        && ((omnetDataMsg->getDestinationOriented()
+                                && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)
+                             || (!omnetDataMsg->getDestinationOriented()))) {
                     found = TRUE;
                     break;
                 }
@@ -337,10 +424,6 @@ void KRRSLayer::handleMessage(cMessage *msg)
             }
             if (found) {
                 send(msg, "upperLayerOut");
-
-                if (logging) {EV_INFO << KRRSLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<UO>!<DM>!<" << omnetDataMsg->getSourceAddress() << ">!<"
-                    << omnetDataMsg->getDestinationAddress() << ">!<" << omnetDataMsg->getDataName() << ">!<" << omnetDataMsg->getGoodnessValue() << ">!<"
-                    << omnetDataMsg->getByteLength() << "\n";}
 
             } else {
                 delete msg;
@@ -364,8 +447,9 @@ void KRRSLayer::handleMessage(cMessage *msg)
 void KRRSLayer::finish()
 {
     // remove age data trigger
-    cancelEvent(ageDataTimeoutEvent);
-    delete ageDataTimeoutEvent;
-    ageDataTimeoutEvent = NULL;
-
+    if (ageCache) {
+        cancelEvent(ageDataTimeoutEvent);
+        delete ageDataTimeoutEvent;
+        ageDataTimeoutEvent = NULL;
+    }
 }

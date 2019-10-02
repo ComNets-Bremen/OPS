@@ -453,7 +453,7 @@ bool KBasicUBM::computePreReactions(){
 event KBasicUBM::computeEventReaction(event rEvent){
 		
 	int keysMatch = 0;
-	float reactionVal;
+	float reactionVal = 0.0;
 	
 	for(int i=0; i<rEvent.properties.size(); i++){
 		for(int j=0; j<properties.size(); j++){
@@ -487,7 +487,7 @@ event KBasicUBM::computeEventReaction(event rEvent){
 
 void KBasicUBM::reactToEvent(event rEvent){
 
-	KDataMsg *eventMsg;
+	KDataMsg *eventMsg = NULL;
 	
 	if(rEvent.reaction == 3){
 		if(!rEvent.emergencyEvent && rEvent.startTime < rEvent.endTime && rEvent.endTime > simTime().dbl()){			

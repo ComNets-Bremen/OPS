@@ -28,7 +28,6 @@
 *.app
 
 # Auto generated data
-Makefile
 .tkenvrc
 simulations/Makefile
 simulations/ops-simu
@@ -60,5 +59,4 @@ events.txt
 locations.txt
 properties.txt
 
-.project
 

@@ -38,7 +38,7 @@ class KKeetchiLayer: public cSimpleModule
         double coolOffDuration;
         double learningConst;
         double backoffTimerIncrementFactor;
-        int logging;
+        int usedRNG;
 
         KLKeetchi *keetchiAPI;
         void processUpperLayerInDataMsg(KDataMsg *dataMsg);
@@ -50,10 +50,22 @@ class KKeetchiLayer: public cSimpleModule
         KLFeedbackMsg* createKeetchiAPIFeedbackMsgFromOMNETFeedbackMsg(KFeedbackMsg* omnetFeedbackMsg, int msgDirection, int fromWhere, int toWhere);
         KDataMsg* createOMNETDataMsgFromKeetchiAPIDataMsg(KLDataMsg* keetchiAPIDataMsg);
         KFeedbackMsg* createOMNETFeedbackMsgFromKeetchiAPIFeedbackMsg(KLFeedbackMsg* keetchiAPIFeedbackMsg);
+        void dumpCacheStats(void);
 
         cMessage *ageDataTimeoutEvent;
 
         string broadcastMACAddress;
+
+        // stats related variables
+        simsignal_t dataBytesReceivedSignal;
+        simsignal_t totalBytesReceivedSignal;
+        simsignal_t hopsTravelledSignal;
+        simsignal_t hopsTravelledCountSignal;
+        simsignal_t cacheBytesRemovedSignal;
+        simsignal_t cacheBytesAddedSignal;
+        simsignal_t cacheBytesUpdatedSignal;
+        simsignal_t currentCacheSizeBytesSignal;
+        simsignal_t currentCacheSizeReportedCountSignal;
 
 };
 #define KKEETCHILAYER_SIMMODULEINFO       " KKeetchiLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()

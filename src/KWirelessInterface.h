@@ -19,6 +19,8 @@
 
 #define TRUE                            1
 #define FALSE                           0
+#define POSITIVE(n)                     ((n) < 0 ? 0 - (n) : (n))
+#define MAX(a, b)                       (((a) > (b)) ? (a) :(b))
 
 #include "inet/mobility/contract/IMobility.h"
 
@@ -49,11 +51,9 @@ class KWirelessInterface: public cSimpleModule
     private:
         string ownMACAddress;
         double wirelessRange;
-        string expectedNodeTypes;
         double neighbourScanInterval;
         double bandwidthBitRate;
         int wirelessHeaderSize;
-        int logging;
 
         string broadcastMACAddress;
         KBaseNodeInfo *ownNodeInfo;
@@ -62,19 +62,29 @@ class KWirelessInterface: public cSimpleModule
         cMessage *sendPacketTimeoutEvent;
 
         list<KBaseNodeInfo*> currentNeighbourNodeInfoList;
+        list<KBaseNodeInfo*> previousNeighbourNodeInfoList;
         list<KBaseNodeInfo*> atTxNeighbourNodeInfoList;
         cMessage *currentPendingMsg;
 
         void setupSendingMsg(cMessage *msg);
         void sendPendingMsg();
         string getDestinationAddress(cMessage *msg);
+        void generateStats();
 
+        // stats related variables
+        simsignal_t neighSizeSignal;
+        simsignal_t neighSizeCountSignal;
+        simsignal_t contactDurationSignal;
+        simsignal_t contactDurationCountSignal;
 };
 
 #define KWIRELESSINTERFACE_SIMMODULEINFO       " KWirelessInterface>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define KWIRELESSINTERFACE_BIT_RATE_10Mbps     10000000
 #define KWIRELESSINTERFACE_NEIGH_EVENT_CODE    112
 #define KWIRELESSINTERFACE_PKTSEND_EVENT_CODE  114
-
+#define KWIRELESSINTERFACE_EUCLIDEAN_DISTANCE          // if defined, then uses Euclidean only,
+                                                       // else, uses Chebyshev first and then Euclidean
+#define KWIRELESSINTERFACE_COMPUTE_STATS       1       // if defined, computes stats for average contact durations
+                                                       // and average neighbour sizes
 
 #endif /* KWIRELESSINTERFACE_H_ */
