@@ -1,7 +1,7 @@
 # OPS
 
 <p align="left">
-  <img src="res/images/OPS-v2.png" width="400"/>
+  <img src="res/images/OPS-v2.png" width="200"/>
 </p>
 
 
