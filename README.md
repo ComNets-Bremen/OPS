@@ -1,4 +1,10 @@
 # OPS
+
+<p align="left">
+  <img src="res/images/OPS-v2.png" width="400"/>
+</p>
+
+
 The Opportunistic Protocol Simulator (OPS, pronounced as oops!!!) is a set of
 simulation models for OMNeT++ to simulate opportunistic networks. It has a
 modular architecture where different protocols relevant to opportunistic networks
