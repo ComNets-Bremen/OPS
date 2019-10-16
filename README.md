@@ -134,6 +134,7 @@ project folder `src/inet/mobility/contract`
 project folder `src/inet/mobility/single`
   - `ExtendedSWIMMobility.ned`
   - `ExtendedSWIMMobility.h`
+  - `ExtendedSWIMMobility.cc`
 
 5. Select the installed project in `Project Explorer` pane and set the active configuration to `release` using
 `Project->Properties->C/C++ Build->Manage Configurations...`
