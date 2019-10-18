@@ -169,7 +169,7 @@ public:
     /** Move away from emergency or move to an event **/
     // virtual void setNewTargetPosition(cMessage*) override;
     virtual void setNewTargetPosition(std::string dataName, int msgType, simtime_t validUntilTime,
-                                        std::string eventName);
+                                        std::string eventName) override;
 
 };
 
