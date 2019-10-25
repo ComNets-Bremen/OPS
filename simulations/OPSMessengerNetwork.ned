@@ -37,6 +37,10 @@ network OPSMessengerNetwork
         @statistic[appNonLikedDataDeliveryRatio](source=sum(appNonLikedDataCountReceivedForRatioComp)/sum(appNonLikedDataCountMaxReceivableForRatioComp);record=last,vector);
         @statistic[appTotalDataDeliveryRatio](source=sum(appTotalDataCountReceivedForRatioComp)/sum(appTotalDataCountMaxReceivableForRatioComp);record=last,vector);
 
+        @statistic[appLikedDataAvgHopCount](source=sum(appLikedDataHopsForAvgHopsComp)/sum(appLikedDataHopsCountForAvgHopsComp);record=last,vector);
+        @statistic[appNonLikedDataAvgHopCount](source=sum(appNonLikedDataHopsForAvgHopsComp)/sum(appNonLikedDataHopsCountForAvgHopsComp);record=last,vector);
+        @statistic[appTotalDataAvgHopCount](source=sum(appTotalDataHopsForAvgHopsComp)/sum(appTotalDataHopsCountForAvgHopsComp);record=last,vector);
+
         // statistics
         // from forwarding layer
         @statistic[fwdDataBytesReceived](source=sum(fwdDataBytesReceived);record=last,vector;title="Data Received";unit=byte);

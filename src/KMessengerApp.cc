@@ -91,6 +91,16 @@ void KMessengerApp::initialize(int stage)
         nonLikedDataCountMaxReceivableForRatioCompSignal = registerSignal("appNonLikedDataCountMaxReceivableForRatioComp");
         totalDataCountMaxReceivableForRatioCompSignal = registerSignal("appTotalDataCountMaxReceivableForRatioComp");
 
+
+        likedDataHopsForAvgHopsCompSignal = registerSignal("appLikedDataHopsForAvgHopsComp");
+        nonLikedDataHopsForAvgHopsCompSignal = registerSignal("appNonLikedDataHopsForAvgHopsComp");
+        totalDataHopsForAvgHopsCompSignal = registerSignal("appTotalDataHopsForAvgHopsComp");
+
+        likedDataHopsCountForAvgHopsCompSignal = registerSignal("appLikedDataHopsCountForAvgHopsComp");
+        nonLikedDataHopsCountForAvgHopsCompSignal = registerSignal("appNonLikedDataHopsCountForAvgHopsComp");
+        totalDataHopsCountForAvgHopsCompSignal = registerSignal("appTotalDataHopsCountForAvgHopsComp");
+
+
     } else {
         EV_FATAL << KMESSENGERAPP_SIMMODULEINFO << "Something is radically wrong\n";
     }
@@ -201,6 +211,14 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
             emit(likedDataCountReceivedForRatioCompSignal, (int) 1);
             emit(totalDataCountReceivedForRatioCompSignal, (int) 1);
+
+
+            emit(likedDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
+            emit(totalDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
+
+            emit(likedDataHopsCountForAvgHopsCompSignal, (int) 1);
+            emit(totalDataHopsCountForAvgHopsCompSignal, (int) 1);
+
         }
 
         //cout << KMESSENGERAPP_SIMMODULEINFO << " receiving: " << dataMsg->getMsgUniqueID() << " own addr " << ownMACAddress << " dest addr " << dataMsg->getFinalDestinationAddress() << " msg delay " << diff << "\n";

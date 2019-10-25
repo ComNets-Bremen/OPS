@@ -166,8 +166,11 @@ with different scenarios. To run a simulation, follow the procedure given below.
   <img src="res/images/simulator-window.png" width="700"/>
 </p>
 
-4. Start simulating the network by clicking on the simulation controls:
-![simulator controls](res/images/simulator-controls.png "Simulator Controls")
+4. Start simulating the network by clicking on the simulation controls shown below.
+
+<p align="center">
+  <img src="res/images/simulator-controls.png" width="200"/>
+</p>
 
 
 As indicated, there are many sample `.ini` files available in the `simulations` folder. Details of these

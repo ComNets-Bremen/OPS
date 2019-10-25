@@ -134,6 +134,15 @@ void KHeraldApp::initialize(int stage)
         nonLikedDataCountMaxReceivableForRatioCompSignal = registerSignal("appNonLikedDataCountMaxReceivableForRatioComp");
         totalDataCountMaxReceivableForRatioCompSignal = registerSignal("appTotalDataCountMaxReceivableForRatioComp");
 
+
+        likedDataHopsForAvgHopsCompSignal = registerSignal("appLikedDataHopsForAvgHopsComp");
+        nonLikedDataHopsForAvgHopsCompSignal = registerSignal("appNonLikedDataHopsForAvgHopsComp");
+        totalDataHopsForAvgHopsCompSignal = registerSignal("appTotalDataHopsForAvgHopsComp");
+
+        likedDataHopsCountForAvgHopsCompSignal = registerSignal("appLikedDataHopsCountForAvgHopsComp");
+        nonLikedDataHopsCountForAvgHopsCompSignal = registerSignal("appNonLikedDataHopsCountForAvgHopsComp");
+        totalDataHopsCountForAvgHopsCompSignal = registerSignal("appTotalDataHopsCountForAvgHopsComp");
+
     } else {
         EV_FATAL << KHERALDAPP_SIMMODULEINFO << "Something is radically wrong\n";
 
@@ -239,18 +248,29 @@ void KHeraldApp::handleMessage(cMessage *msg)
                 emit(likedDataReceivedDelaySignal, diff);
                 emit(likedDataCountReceivedForAvgDelayCompSignal, (int) 1);
                 emit(likedDataCountReceivedForRatioCompSignal, (int) 1);
+
+                emit(likedDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
+                emit(likedDataHopsCountForAvgHopsCompSignal, (int) 1);
+
             } else {
                 emit(nonLikedDataCountReceivedSignal, (int) 1);
                 emit(nonLikedDataBytesReceivedSignal, dataMsg->getRealPayloadSize());
                 emit(nonLikedDataReceivedDelaySignal, diff);
                 emit(nonLikedDataCountReceivedForAvgDelayCompSignal, (int) 1);
                 emit(nonLikedDataCountReceivedForRatioCompSignal, (int) 1);
+
+                emit(nonLikedDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
+                emit(nonLikedDataHopsCountForAvgHopsCompSignal, (int) 1);
             }
             emit(totalDataCountReceivedSignal, (int) 1);
             emit(totalDataBytesReceivedSignal, dataMsg->getRealPayloadSize());
             emit(totalDataReceivedDelaySignal, diff);
             emit(totalDataCountReceivedForAvgDelayCompSignal, (int) 1);
             emit(totalDataCountReceivedForRatioCompSignal, (int) 1);
+
+            emit(totalDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
+            emit(totalDataHopsCountForAvgHopsCompSignal, (int) 1);
+
         }
 
         delete msg;

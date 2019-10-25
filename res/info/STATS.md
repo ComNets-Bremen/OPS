@@ -40,6 +40,10 @@ The table below lists the statistics generated from the application layer.
 | appLikedDataDeliveryRatio          | Liked data delivery ratio               | Network, Node   |
 | appNonLikedDataDeliveryRatio       | Non-liked data delivery ratio           | Network, Node   |
 | appTotalDataDeliveryRatio          | Total data delivery ratio               | Network, Node   |
+| appLikedDataAvgHopCount            | Liked data average hop count            | Network, Node   |
+| appNonLikedDataAvgHopCount         | Non-liked data average hop count        | Network, Node   |
+| appTotalDataAvgHopCount            | Total data average hop count            | Network, Node   |
+
 
 
 

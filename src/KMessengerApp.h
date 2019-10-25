@@ -107,6 +107,17 @@ class KMessengerApp : public cSimpleModule
         simsignal_t likedDataCountMaxReceivableForRatioCompSignal;
         simsignal_t nonLikedDataCountMaxReceivableForRatioCompSignal;
         simsignal_t totalDataCountMaxReceivableForRatioCompSignal;
+
+
+
+        simsignal_t likedDataHopsForAvgHopsCompSignal;
+        simsignal_t nonLikedDataHopsForAvgHopsCompSignal;
+        simsignal_t totalDataHopsForAvgHopsCompSignal;
+
+        simsignal_t likedDataHopsCountForAvgHopsCompSignal;
+        simsignal_t nonLikedDataHopsCountForAvgHopsCompSignal;
+        simsignal_t totalDataHopsCountForAvgHopsCompSignal;
+
 };
 
 

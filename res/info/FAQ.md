@@ -18,7 +18,7 @@ When installing, building or simulating with OPS, there may be problems that are
 
 ## Must the given OMNeT++ and INET versions be used?
 
-- Description: There are a many OMNeT++ and INET versions available to download. The versions that are mentioned are not the latest or you require an older version of INET because of a certain feature available there.
+- Description: There are many OMNeT++ and INET versions available to download. The versions that are mentioned are not the latest or you require an older version of INET because of a certain feature available there.
 
 - Solution: We have developed, tested and run the OPS models using only the given versions of OMNeT++ and INET. You are on your own if you decide to use other versions. Having said that, we like to mention - you are encouraged to try out newer versions and tell us if there are problems. Even better - if you can find fixes for these problems and inform us, we will be very glad to publish them and acknowledge you.
 
