@@ -30,14 +30,18 @@ void KKeetchiLayer::initialize(int stage)
     } else if (stage == 1) {
 
         // create Keetchi API
-        const char *confVal = getEnvir()->getConfig()->getConfigValue("eventlog-file");
-        string logfilePath(confVal);
-        logfilePath = "simulations/" + logfilePath + "_KeetchiLib.txt";
+//        const char *confVal = getEnvir()->getConfig()->getConfigValue("eventlog-file");
+//        string logfilePath(confVal);
+//        logfilePath = "simulations/" + logfilePath + "_KeetchiLib.txt";
+        string logfilePath = "simulations/KeetchiLib.txt";
         EV_INFO << KKEETCHILAYER_SIMMODULEINFO << "logpath is " << logfilePath << "\n";
         keetchiAPI = new KLKeetchi(KLKEETCHI_CACHE_REPLACEMENT_POLICY_LRU, maximumCacheSize, 
                                         ownMACAddress, getParentModule()->getFullName(),
                                         neighbourhoodChangeSignificanceThreshold, coolOffDuration,
                                         learningConst, TRUE, backoffTimerIncrementFactor, logfilePath);
+       if (keetchiAPI == NULL) {
+           throw cRuntimeError("Keetchi instantiation failed - %s ", getParentModule()->getFullName());
+       }
 
     } else if (stage == 2) {
 
