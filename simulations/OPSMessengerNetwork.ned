@@ -55,6 +55,13 @@ network OPSMessengerNetwork
         @statistic[fwdCacheBytesUpdated](source=sum(fwdCacheBytesUpdated);record=last,vector;title="Cache Updates";unit=byte);
         @statistic[fwdCurrentCacheSizeBytesAvg](source=sum(fwdCurrentCacheSizeBytes)/sum(fwdCurrentCacheSizeReportedCount);record=last,vector;title="Average Cache Size";unit=byte);
 
+        @statistic[fwdDataBytesSent](source=sum(fwdDataBytesSent);record=last,vector;title="Data Sent";unit=byte);
+        @statistic[fwdSumVecBytesSent](source=sum(fwdSumVecBytesSent);record=last,vector;title="Summary Vectors Sent";unit=byte);
+        @statistic[fwdDataReqBytesSent](source=sum(fwdDataReqBytesSent);record=last,vector;title="Data Requests Sent";unit=byte);
+        @statistic[fwdDPTableRequestBytesSent](source=sum(fwdDPTableRequestBytesSent); record=last,vector; title="DP Table Requests Sent"; unit=byte);
+        @statistic[fwdDPTableDataBytesSent](source=sum(fwdDPTableDataBytesSent); record=last,vector; title="DP Table Data Sent"; unit=byte);
+        @statistic[fwdTotalBytesSent](source=sum(fwdTotalBytesSent);record=last,vector;title="Total Sent";unit=byte);
+
         // statistics
         // from link layer
         @statistic[linkAvgNeighbourSize](source=sum(linkNeighSize)/sum(linkNeighSizeCount);record=last,vector;title="Average Neighbour Size");

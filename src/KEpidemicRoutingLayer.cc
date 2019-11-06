@@ -46,6 +46,11 @@ void KEpidemicRoutingLayer::initialize(int stage)
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
+        dataBytesSentSignal = registerSignal("fwdDataBytesSent");
+        sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
+        dataReqBytesSentSignal = registerSignal("fwdDataReqBytesSent");
+        totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
+
     } else {
         EV_FATAL << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialization \n";
     }
@@ -347,6 +352,8 @@ void KEpidemicRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
             send(summaryVectorMsg, "lowerLayerOut");
 
+            emit(sumVecBytesSentSignal, (long) summaryVectorMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) summaryVectorMsg->getByteLength());
         }
 
         i++;
@@ -554,6 +561,10 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 
     send(dataRequestMsg, "lowerLayerOut");
 
+    emit(dataReqBytesSentSignal, (long) dataRequestMsg->getByteLength());
+    emit(totalBytesSentSignal, (long) dataRequestMsg->getByteLength());
+
+
     // cancel the random backoff timer (because neighbour started syncing)
     string nodeMACAddress = summaryVectorMsg->getSourceAddress();
     SyncedNeighbour *syncedNeighbour = getSyncingNeighbourInfo(nodeMACAddress);
@@ -625,6 +636,10 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
 
             send(dataMsg, "lowerLayerOut");
+
+            emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
+
         }
 
         i++;

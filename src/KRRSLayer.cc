@@ -49,6 +49,9 @@ void KRRSLayer::initialize(int stage)
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
+        dataBytesSentSignal = registerSignal("fwdDataBytesSent");
+        totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
+
     } else {
         EV_FATAL << KRRSLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
     }
@@ -292,6 +295,9 @@ void KRRSLayer::handleMessage(cMessage *msg)
                 dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
 
                 send(dataMsg, "lowerLayerOut");
+
+                emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
+                emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
 
             }
 

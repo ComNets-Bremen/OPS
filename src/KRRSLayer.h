@@ -95,6 +95,9 @@ class KRRSLayer: public cSimpleModule
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
 
+        simsignal_t dataBytesSentSignal;
+        simsignal_t totalBytesSentSignal;
+
 };
 #define KRRSLAYER_SIMMODULEINFO       " KRRSLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define KRRSLAYER_EVENTTYPE_AGEDATA   108

@@ -41,6 +41,9 @@ simple KRRSLayer like IForwardingLayer
         @signal[fwdCurrentCacheSizeBytes](type=long);
         @signal[fwdCurrentCacheSizeReportedCount](type=long);
 
+        @signal[fwdDataBytesSent](type=long);
+        @signal[fwdTotalBytesSent](type=long);
+
 	gates:
 	    
 	    // interface to the upper layer (which may be the application)
