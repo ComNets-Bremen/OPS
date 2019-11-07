@@ -62,6 +62,9 @@ void KKeetchiLayer::initialize(int stage)
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
+        dataBytesSentSignal = registerSignal("fwdDataBytesSent");
+        totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
+
     } else {
         EV_FATAL << KKEETCHILAYER_SIMMODULEINFO << "Something is radically wrong in initialization \n";
     }
@@ -192,6 +195,9 @@ void KKeetchiLayer::processUpperLayerInDataMsg(KDataMsg *dataMsg)
 
             send(omnetDataMsg, "lowerLayerOut");
 
+            emit(dataBytesSentSignal, (long) omnetDataMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) omnetDataMsg->getByteLength());
+
         }
         delete keetchiDataMsg;
 
@@ -257,6 +263,9 @@ void KKeetchiLayer::processUpperLayerInFeedbackMsg(KFeedbackMsg *feedbackMsg)
 
         } else { // KLDATAMSG_TO_LINK_LAYER
             send(omnetDataMsg, "lowerLayerOut");
+
+            emit(dataBytesSentSignal, (long) omnetDataMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) omnetDataMsg->getByteLength());
 
         }
         delete keetchiDataMsg;
@@ -336,6 +345,9 @@ void KKeetchiLayer::processLowerLayerInNeighbourListMsg(KNeighbourListMsg *neigh
             } else { // KLDATAMSG_TO_LINK_LAYER
                 send(omnetDataMsg, "lowerLayerOut");
 
+                emit(dataBytesSentSignal, (long) omnetDataMsg->getByteLength());
+                emit(totalBytesSentSignal, (long) omnetDataMsg->getByteLength());
+
             }
             delete keetchiDataMsg;
 
@@ -407,6 +419,9 @@ void KKeetchiLayer::processLowerLayerInDataMsg(KDataMsg *dataMsg)
         } else { // KLDATAMSG_TO_LINK_LAYER
             send(omnetDataMsg, "lowerLayerOut");
 
+            emit(dataBytesSentSignal, (long) omnetDataMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) omnetDataMsg->getByteLength());
+
         }
         delete keetchiDataMsg;
 
@@ -473,6 +488,9 @@ void KKeetchiLayer::processLowerLayerInFeedbackMsg(KFeedbackMsg *feedbackMsg)
 
         } else { // KLDATAMSG_TO_LINK_LAYER
             send(omnetDataMsg, "lowerLayerOut");
+
+            emit(dataBytesSentSignal, (long) omnetDataMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) omnetDataMsg->getByteLength());
 
         }
         delete keetchiDataMsg;

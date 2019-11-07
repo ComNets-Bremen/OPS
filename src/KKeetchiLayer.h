@@ -67,6 +67,9 @@ class KKeetchiLayer: public cSimpleModule
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
 
+        simsignal_t dataBytesSentSignal;
+        simsignal_t totalBytesSentSignal;
+
 };
 #define KKEETCHILAYER_SIMMODULEINFO       " KKeetchiLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 

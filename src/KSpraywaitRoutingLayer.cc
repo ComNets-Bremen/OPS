@@ -55,6 +55,11 @@ void KSpraywaitRoutingLayer::initialize(int stage)
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
 
+        dataBytesSentSignal = registerSignal("fwdDataBytesSent");
+        sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
+        dataReqBytesSentSignal = registerSignal("fwdDataReqBytesSent");
+        totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
+
 
     } else {
         EV_FATAL << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
@@ -380,6 +385,9 @@ void KSpraywaitRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
             send(summaryVectorMsg, "lowerLayerOut");
 
+            emit(sumVecBytesSentSignal, (long) summaryVectorMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) summaryVectorMsg->getByteLength());
+
         }
 
         i++;
@@ -613,6 +621,10 @@ void KSpraywaitRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 
     send(dataRequestMsg, "lowerLayerOut");
 
+    emit(dataReqBytesSentSignal, (long) dataRequestMsg->getByteLength());
+    emit(totalBytesSentSignal, (long) dataRequestMsg->getByteLength());
+
+
     // cancel the random backoff timer (because neighbour started syncing)
     string nodeMACAddress = summaryVectorMsg->getSourceAddress();
     SyncedNeighbour *syncedNeighbour = getSyncingNeighbourInfo(nodeMACAddress);
@@ -738,6 +750,10 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
                 send(dataMsg, "lowerLayerOut");
 
+                emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
+                emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
+
+
             } else {
 
                 //compare the source adress and destination address in cache if matches send to destination
@@ -746,7 +762,11 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
                 if((strstr(cacheEntry->finalDestinationAddress.c_str(),
                            dataRequestMsg->getInitialOriginatorAddress()) != NULL
                     && destOriented) || !destOriented) {
+
                     send(dataMsg, "lowerLayerOut");
+
+                    emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
+                    emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
 
                     //code to remove message from cache is added
                     CacheEntry *removingCacheEntry;

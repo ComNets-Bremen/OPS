@@ -44,9 +44,8 @@ void KProphetRoutingLayer::initialize(int stage)
         dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
         sumVecBytesReceivedSignal = registerSignal("fwdSumVecBytesReceived");
         dataReqBytesReceivedSignal = registerSignal("fwdDataReqBytesReceived");
-
-        dpTableRequestBytesReceived = registerSignal("fwdDPTableRequestBytesReceived");
-        dpTableDataBytesReceived = registerSignal("fwdDPTableDataBytesReceived");
+        dpTableRequestBytesReceivedSignal = registerSignal("fwdDPTableRequestBytesReceived");
+        dpTableDataBytesReceivedSignal = registerSignal("fwdDPTableDataBytesReceived");
 
         totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
         hopsTravelledSignal = registerSignal("fwdHopsTravelled");
@@ -57,6 +56,12 @@ void KProphetRoutingLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+
+        dataBytesSentSignal = registerSignal("fwdDataBytesSent");
+        sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
+        dataReqBytesSentSignal = registerSignal("fwdDataReqBytesSent");
+        dpTableRequestBytesSentSignal = registerSignal("fwdDPTableRequestBytesSent");
+        dpTableDataBytesSentSignal = registerSignal("fwdDPTableDataBytesSent");
 
     } else {
         EV_FATAL << KPROPHETROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
@@ -414,6 +419,10 @@ void KProphetRoutingLayer::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
 
         send(dptableRequestMsg, "lowerLayerOut");
 
+        emit(dpTableRequestBytesSentSignal, (long) dptableRequestMsg->getByteLength());
+        emit(totalBytesSentSignal, (long) dptableRequestMsg->getByteLength());
+
+
 //        if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DPR>!<"
 //         << dptableRequestMsg->getDestinationAddress()<< "\n";}
        }
@@ -479,7 +488,7 @@ void KProphetRoutingLayer::handleDPTableRequestFromLowerLayer(cMessage *msg)
     //if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LI>!<DPRM>!<" << dptableRequestMsg->getSourceAddress() << ">!<"
                  // << dptableRequestMsg->getByteLength() << "\n";}
 
-    emit(dpTableRequestBytesReceived, (long) dptableRequestMsg->getByteLength());
+    emit(dpTableRequestBytesReceivedSignal, (long) dptableRequestMsg->getByteLength());
     emit(totalBytesReceivedSignal, (long) dptableRequestMsg->getByteLength());
 
     int listSize = agingDP();
@@ -517,6 +526,11 @@ void KProphetRoutingLayer::handleDPTableRequestFromLowerLayer(cMessage *msg)
 //    if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DPTM>!<" << dptableRequestMsg->getSourceAddress() << ">!<"
 //                << dpList.size() << ">!<" << listSize << "\n";}
     send(dptableDataMsg, "lowerLayerOut");
+
+    emit(dpTableDataBytesSentSignal, (long) dptableDataMsg->getByteLength());
+    emit(totalBytesSentSignal, (long) dptableDataMsg->getByteLength());
+
+
     delete msg;
 
 }
@@ -526,7 +540,7 @@ void KProphetRoutingLayer::handleDPTableDataFromLowerLayer(cMessage *msg)
 {
     KDPtableDataMsg *dptableDataMsg  = dynamic_cast<KDPtableDataMsg*>(msg);
 
-    emit(dpTableDataBytesReceived, (long) dptableDataMsg->getByteLength());
+    emit(dpTableDataBytesReceivedSignal, (long) dptableDataMsg->getByteLength());
     emit(totalBytesReceivedSignal, (long) dptableDataMsg->getByteLength());
 
     int i= 0;
@@ -596,6 +610,10 @@ void KProphetRoutingLayer::sendDataMsg(vector<string> destinationNodes, string n
                 }
 
             send(dataMsg, "lowerLayerOut");
+
+            emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
+
 
 //            if (logging) {EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << ">!<" << ownMACAddress << ">!<LO>!<DM>!<" <<
 //                          dataMsg->getFinalDestinationAddress() << ">!<"<< dataMsg->getDestinationAddress() << ">!<"

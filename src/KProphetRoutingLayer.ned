@@ -78,6 +78,13 @@ simple KProphetRoutingLayer like IForwardingLayer
         @signal[fwdCurrentCacheSizeBytes](type=long);
         @signal[fwdCurrentCacheSizeReportedCount](type=long);
 
+        @signal[fwdDataBytesSent](type=long);
+        @signal[fwdSumVecBytesSent](type=long);
+        @signal[fwdDataReqBytesSent](type=long);
+        @signal[fwdDPTableRequestBytesReceived](type=long);
+        @signal[fwdDPTableDataBytesSent](type=long);
+
+
     gates:
 
         // interface to the upper layer (which may be the application)

@@ -130,6 +130,11 @@ class KSpraywaitRoutingLayer: public cSimpleModule
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
 
+        simsignal_t dataBytesSentSignal;
+        simsignal_t sumVecBytesSentSignal;
+        simsignal_t dataReqBytesSentSignal;
+        simsignal_t totalBytesSentSignal;
+
 };
 #define KSPRAYWAITROUTINGLAYER_SIMMODULEINFO          ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define KSPRAYWAITROUTINGLAYER_DEBUG                  ">!<DEBUG>!<" << ownMACAddress

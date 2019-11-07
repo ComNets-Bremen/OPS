@@ -53,17 +53,26 @@ The table below lists the statistics generated from the forwarding layer. Since 
 forwarding layer protocols operation differently, they may not produce all the statistics
 list below.
 
-| Statistic Name              |         Description          | Collected Level |
-| --------------              |         -----------          | --------------- |
-| fwdDataBytesReceived        | Data Received                | Network, Node   |
-| fwdSumVecBytesReceived      | Summary Vectors Received     | Network, Node   |
-| fwdDataReqBytesReceived     | Data Requests Received       | Network, Node   |
-| fwdTotalBytesReceived       | Total Received               | Network, Node   |
-| fwdAvgHopsTravelled         | Average Hops Travelled       | Network, Node   |
-| fwdCacheBytesRemoved        | Cache Removals               | Network, Node   |
-| fwdCacheBytesAdded          | Cache Additions              | Network, Node   |
-| fwdCacheBytesUpdated        | Cache Updates                | Network, Node   |
-| fwdCurrentCacheSizeBytesAvg | Average Cache Size           | Network, Node   |
+| Statistic Name                 |         Description          | Collected Level |
+| --------------                 |         -----------          | --------------- |
+| fwdDataBytesReceived           | Data Received                | Network, Node   |
+| fwdSumVecBytesReceived         | Summary Vectors Received     | Network, Node   |
+| fwdDataReqBytesReceived        | Data Requests Received       | Network, Node   |
+| fwdDPTableRequestBytesReceived | DP Table Requests Received   | Network, Node   |
+| fwdDPTableDataBytesReceived    | DP Table Data Received       | Network, Node   |
+| fwdTotalBytesReceived          | Total Received               | Network, Node   |
+| fwdAvgHopsTravelled            | Average Hops Travelled       | Network, Node   |
+| fwdCacheBytesRemoved           | Cache Removals               | Network, Node   |
+| fwdCacheBytesAdded             | Cache Additions              | Network, Node   |
+| fwdCacheBytesUpdated           | Cache Updates                | Network, Node   |
+| fwdCurrentCacheSizeBytesAvg    | Average Cache Size           | Network, Node   |
+| fwdDataBytesSent               | Data Sent                    | Network, Node   |
+| fwdSumVecBytesSent             | Summary Vectors Sent         | Network, Node   |
+| fwdDataReqBytesSent            | Data Requests Sent           | Network, Node   |
+| fwdDPTableRequestBytesSent     | DP Table Requests Sent       | Network, Node   |
+| fwdDPTableDataBytesSent        | DP Table Data Sent           | Network, Node   |
+| fwdTotalBytesSent              | Total Sent                   | Network, Node   |
+
 
 
 ## Statistics from the (WirelessInterface) Link Layer

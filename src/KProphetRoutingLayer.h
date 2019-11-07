@@ -157,8 +157,8 @@ class KProphetRoutingLayer: public cSimpleModule
         simsignal_t dataBytesReceivedSignal;
         simsignal_t sumVecBytesReceivedSignal;
         simsignal_t dataReqBytesReceivedSignal;
-        simsignal_t dpTableRequestBytesReceived;
-        simsignal_t dpTableDataBytesReceived;
+        simsignal_t dpTableRequestBytesReceivedSignal;
+        simsignal_t dpTableDataBytesReceivedSignal;
         simsignal_t totalBytesReceivedSignal;
         simsignal_t hopsTravelledSignal;
         simsignal_t hopsTravelledCountSignal;
@@ -167,6 +167,13 @@ class KProphetRoutingLayer: public cSimpleModule
         simsignal_t cacheBytesUpdatedSignal;
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
+
+        simsignal_t dataBytesSentSignal;
+        simsignal_t sumVecBytesSentSignal;
+        simsignal_t dataReqBytesSentSignal;
+        simsignal_t dpTableRequestBytesSentSignal;
+        simsignal_t dpTableDataBytesSentSignal;
+        simsignal_t totalBytesSentSignal;
 
 };
 #define KPROPHETROUTINGLAYER_SIMMODULEINFO         ">!<" << simTime() << ">!<" << getParentModule()->getFullName()
