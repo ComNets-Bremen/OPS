@@ -43,11 +43,14 @@ class KSpraywaitRoutingLayer: public cSimpleModule
         int maximumHopCount;
         double maximumRandomBackoffDuration;
         int usedRNG;
+        double cacheSizeReportingFrequency;
 
         int newcopies;
         int L;
 
         int currentCacheSize;
+
+        cMessage *cacheSizeReportingTimeoutEvent;
 
         struct AppInfo {
             int appID;
@@ -129,6 +132,7 @@ class KSpraywaitRoutingLayer: public cSimpleModule
         simsignal_t cacheBytesUpdatedSignal;
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
+        simsignal_t currentCacheSizeBytesSimpleSignal;
 
         simsignal_t dataBytesSentSignal;
         simsignal_t sumVecBytesSentSignal;
@@ -140,5 +144,7 @@ class KSpraywaitRoutingLayer: public cSimpleModule
 #define KSPRAYWAITROUTINGLAYER_DEBUG                  ">!<DEBUG>!<" << ownMACAddress
 
 #define KSPRAYWAITROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes
+#define KSPRAYWAITROUTINGLAYER_EVENTTYPE_AGEDATA     108
+#define KSPRAYWAITROUTINGLAYER_CACHESIZE_REP_EVENT   175
 
 #endif /* KEPIDEMICROUTINGLAYER_H_ */

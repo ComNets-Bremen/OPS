@@ -55,6 +55,8 @@ network OPSMessengerNetwork
         @statistic[fwdCacheBytesUpdated](source=sum(fwdCacheBytesUpdated);record=last,vector;title="Cache Updates";unit=byte);
         @statistic[fwdCurrentCacheSizeBytesAvg](source=sum(fwdCurrentCacheSizeBytes)/sum(fwdCurrentCacheSizeReportedCount);record=last,vector;title="Average Cache Size";unit=byte);
 
+        @statistic[fwdCurrentCacheSizeBytesSimple](source=mean(fwdCurrentCacheSizeBytesSimple);record=last,vector;title="Mean Cache Size";unit=byte);
+
         @statistic[fwdDataBytesSent](source=sum(fwdDataBytesSent);record=last,vector;title="Data Sent";unit=byte);
         @statistic[fwdSumVecBytesSent](source=sum(fwdSumVecBytesSent);record=last,vector;title="Summary Vectors Sent";unit=byte);
         @statistic[fwdDataReqBytesSent](source=sum(fwdDataReqBytesSent);record=last,vector;title="Data Requests Sent";unit=byte);

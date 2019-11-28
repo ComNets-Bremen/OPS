@@ -23,6 +23,7 @@ void KEpidemicRoutingLayer::initialize(int stage)
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         useTTL = par("useTTL");
         usedRNG = par("usedRNG");
+        cacheSizeReportingFrequency = par("cacheSizeReportingFrequency");
         numEventsHandled = 0;
 
         syncedNeighbourListIHasChanged = TRUE;
@@ -31,6 +32,11 @@ void KEpidemicRoutingLayer::initialize(int stage)
 
 
     } else if (stage == 2) {
+
+        // create and setup cache size reporting trigger
+        cacheSizeReportingTimeoutEvent = new cMessage("Cache Size Reporting Event");
+        cacheSizeReportingTimeoutEvent->setKind(KEPIDEMICROUTINGLAYER_CACHESIZE_REP_EVENT);
+        scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
 
         // setup statistics signals
         dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
@@ -45,6 +51,7 @@ void KEpidemicRoutingLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+        currentCacheSizeBytesSimpleSignal = registerSignal("fwdCurrentCacheSizeBytesSimple");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
@@ -74,8 +81,18 @@ void KEpidemicRoutingLayer::handleMessage(cMessage *msg)
 
     // self messages
     if (msg->isSelfMessage()) {
-        EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
-        delete msg;
+        if (msg->getKind() == KEPIDEMICROUTINGLAYER_CACHESIZE_REP_EVENT) {
+
+            // report cache size
+            emit(currentCacheSizeBytesSimpleSignal, currentCacheSize);
+
+            // setup next cache size reporting trigger
+            scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
+
+        } else {
+            EV_INFO << KEPIDEMICROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
+            delete msg;
+        }
 
     // messages from other layers
     } else {
@@ -797,4 +814,9 @@ void KEpidemicRoutingLayer::finish()
         syncedNeighbourList.remove(syncedNeighbour);
         delete syncedNeighbour;
     }
+
+    // remove triggers
+    cancelEvent(cacheSizeReportingTimeoutEvent);
+    delete cacheSizeReportingTimeoutEvent;
+
 }

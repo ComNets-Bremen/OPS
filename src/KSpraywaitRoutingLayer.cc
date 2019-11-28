@@ -21,6 +21,7 @@ void KSpraywaitRoutingLayer::initialize(int stage)
         maximumHopCount = par("maximumHopCount");
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         usedRNG = par("usedRNG");
+        cacheSizeReportingFrequency = par("cacheSizeReportingFrequency");
 
         syncedNeighbourListIHasChanged = TRUE;
 
@@ -38,8 +39,13 @@ void KSpraywaitRoutingLayer::initialize(int stage)
 
         // setup the trigger to age data
         ageDataTimeoutEvent = new cMessage("Age Data Timeout Event");
-        ageDataTimeoutEvent->setKind(108);
+        ageDataTimeoutEvent->setKind(KSPRAYWAITROUTINGLAYER_EVENTTYPE_AGEDATA);
         scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
+
+        // create and setup cache size reporting trigger
+        cacheSizeReportingTimeoutEvent = new cMessage("Cache Size Reporting Event");
+        cacheSizeReportingTimeoutEvent->setKind(KSPRAYWAITROUTINGLAYER_CACHESIZE_REP_EVENT);
+        scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
 
         // setup statistics signals
         dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
@@ -83,9 +89,17 @@ void KSpraywaitRoutingLayer::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
 
         // age data trigger fired
-        if (msg->getKind() == 108) {
+        if (msg->getKind() == KSPRAYWAITROUTINGLAYER_EVENTTYPE_AGEDATA) {
 
             handleDataAgingTrigger(msg);
+
+        } else if (msg->getKind() == KSPRAYWAITROUTINGLAYER_CACHESIZE_REP_EVENT) {
+
+                // report cache size
+                emit(currentCacheSizeBytesSimpleSignal, currentCacheSize);
+
+                // setup next cache size reporting trigger
+                scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
 
         } else {
             EV_INFO << KSPRAYWAITROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
@@ -917,9 +931,12 @@ KSummaryVectorMsg* KSpraywaitRoutingLayer::makeSummaryVectorMessage()
 void KSpraywaitRoutingLayer::finish()
 {
 
-    // remove age data trigger
+    // remove triggers
     cancelEvent(ageDataTimeoutEvent);
     delete ageDataTimeoutEvent;
+
+    cancelEvent(cacheSizeReportingTimeoutEvent);
+    delete cacheSizeReportingTimeoutEvent;
 
     // clear resgistered app list
     while (registeredAppList.size() > 0) {

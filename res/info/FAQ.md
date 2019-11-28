@@ -29,3 +29,25 @@ When installing, building or simulating with OPS, there may be problems that are
 
 - Solutions: If you are only interested in the scalar results, then specify `**.vector-recording = false` in the `.ini` file used to run the simulation. This will stop all vector results from being written. If you only want the vector results of a certain protocol layer, then enable recording for that layer, e.g., `**.app.vector-recording = true` and disable other layers globally with `**.vector-recording = false`.
 
+
+## Can simulations be run on the command-line without the graphical environment?
+
+- Description: When running simulation campaigns with multiple `.ini` files, it is easier to automate the runs with scripts that initiate simulations on the command-line as background processes.
+
+- Solutions: Yes, this can be done in MacOS or Linux environments in the following manner. 
+  - Open console/terminal
+  - Run the terminal multiplexer `screen` to create virtual terminals that execute processes in the background even after the console/terminal is closed
+```
+myhome$ screen
+```
+  - Run simulations in the virtual terminal
+```
+myhome$ cd OPS/simulations
+myhome$ ../src/OPS -r 0 -m -u Cmdenv \
+  -n .:../src:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../KeetchiLib \
+  --image-path=../../inet/images -l ../../inet/src/INET -l ../../KeetchiLib/KeetchiLib \
+  omnetpp-herald-epidemic.ini
+
+```
+
+

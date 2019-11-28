@@ -23,6 +23,7 @@ void KKeetchiLayer::initialize(int stage)
         learningConst = par("learningConst");
         backoffTimerIncrementFactor = par("backoffTimerIncrementFactor");
         usedRNG = par("usedRNG");
+        cacheSizeReportingFrequency = par("cacheSizeReportingFrequency");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
@@ -47,9 +48,14 @@ void KKeetchiLayer::initialize(int stage)
 
         // setup the trigger to age data
         ageDataTimeoutEvent = new cMessage("Age Data Timeout Event");
-        ageDataTimeoutEvent->setKind(108);
+        ageDataTimeoutEvent->setKind(KKEETCHILAYER_AGE_EVENT);
         scheduleAt(simTime() + agingInterval, ageDataTimeoutEvent);
-        
+
+        // create and setup cache size reporting trigger
+        cacheSizeReportingTimeoutEvent = new cMessage("Cache Size Reporting Event");
+        cacheSizeReportingTimeoutEvent->setKind(KKEETCHILAYER_CACHESIZE_REP_EVENT);
+        scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
+
         // setup statistics signals
         dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
         totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
@@ -61,6 +67,7 @@ void KKeetchiLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+        currentCacheSizeBytesSimpleSignal = registerSignal("fwdCurrentCacheSizeBytesSimple");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
@@ -88,12 +95,25 @@ void KKeetchiLayer::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
 
         // age data trigger fired
-        if (msg->getKind() == 108) {
+        if (msg->getKind() == KKEETCHILAYER_AGE_EVENT) {
 
             keetchiAPI->ageData(simTime().dbl());
 
             // setup next age data trigger
             scheduleAt(simTime() + agingInterval, msg);
+
+        } else if (msg->getKind() == KKEETCHILAYER_CACHESIZE_REP_EVENT) {
+
+            int currentCacheSize;
+
+            // get cache size from keetchi lib
+            keetchiAPI->getStatus(KLKEETCHI_CURRENT_CACHE_SIZE, NULL, &currentCacheSize);
+
+            // report cache size
+            emit(currentCacheSizeBytesSimpleSignal, (long) currentCacheSize);
+
+            // setup next cache size reporting trigger
+            scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
 
         } else {
             EV_INFO << KKEETCHILAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
@@ -153,9 +173,11 @@ void KKeetchiLayer::handleMessage(cMessage *msg)
 
 void KKeetchiLayer::finish()
 {
-    // remove age data trigger
+    // remove triggers
     cancelEvent(ageDataTimeoutEvent);
     delete ageDataTimeoutEvent;
+    cancelEvent(cacheSizeReportingTimeoutEvent);
+    delete cacheSizeReportingTimeoutEvent;
 	
 	delete keetchiAPI;
 }

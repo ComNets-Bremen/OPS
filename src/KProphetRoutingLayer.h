@@ -57,6 +57,7 @@ class KProphetRoutingLayer: public cSimpleModule
         double lastTimeAged;
         double standardTimeInterval;
         int usedRNG;
+        double cacheSizeReportingFrequency;
 
         struct AppInfo {
             int appID;
@@ -129,6 +130,7 @@ class KProphetRoutingLayer: public cSimpleModule
 
 
 //        cMessage *ageDataTimeoutEvent;
+        cMessage *cacheSizeReportingTimeoutEvent;
 
         void ageDataInCache();
         void handleAppRegistrationMsg(cMessage *msg);
@@ -167,6 +169,7 @@ class KProphetRoutingLayer: public cSimpleModule
         simsignal_t cacheBytesUpdatedSignal;
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
+        simsignal_t currentCacheSizeBytesSimpleSignal;
 
         simsignal_t dataBytesSentSignal;
         simsignal_t sumVecBytesSentSignal;
@@ -180,5 +183,6 @@ class KProphetRoutingLayer: public cSimpleModule
 #define KPROPHETROUTINGLAYER_DEBUG                 ">!<DEBUG>!<" << ownMACAddress
 
 #define KPROPHETROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes
+#define KPROPHETROUTINGLAYER_CACHESIZE_REP_EVENT   175
 
 #endif /* KPROPHETROUTINGLAYER_H_ */

@@ -22,6 +22,9 @@ using namespace omnetpp;
 
 using namespace std;
 
+#define KKEETCHILAYER_CACHESIZE_REP_EVENT       175
+#define KKEETCHILAYER_AGE_EVENT                 108
+
 class KKeetchiLayer: public cSimpleModule
 {
     protected:
@@ -39,6 +42,7 @@ class KKeetchiLayer: public cSimpleModule
         double learningConst;
         double backoffTimerIncrementFactor;
         int usedRNG;
+        double cacheSizeReportingFrequency;
 
         KLKeetchi *keetchiAPI;
         void processUpperLayerInDataMsg(KDataMsg *dataMsg);
@@ -53,6 +57,7 @@ class KKeetchiLayer: public cSimpleModule
         void dumpCacheStats(void);
 
         cMessage *ageDataTimeoutEvent;
+        cMessage *cacheSizeReportingTimeoutEvent;
 
         string broadcastMACAddress;
 
@@ -66,6 +71,7 @@ class KKeetchiLayer: public cSimpleModule
         simsignal_t cacheBytesUpdatedSignal;
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
+        simsignal_t currentCacheSizeBytesSimpleSignal;
 
         simsignal_t dataBytesSentSignal;
         simsignal_t totalBytesSentSignal;

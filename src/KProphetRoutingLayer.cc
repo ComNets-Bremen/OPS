@@ -23,6 +23,7 @@ void KProphetRoutingLayer::initialize(int stage)
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         useTTL = par("useTTL");
         usedRNG = par("usedRNG");
+        cacheSizeReportingFrequency = par("cacheSizeReportingFrequency");
         numEventsHandled = 0;
 
         syncedNeighbourListIHasChanged = TRUE;
@@ -40,6 +41,12 @@ void KProphetRoutingLayer::initialize(int stage)
 
     } else if (stage == 1) {
     } else if (stage == 2) {
+
+        // create and setup cache size reporting trigger
+        cacheSizeReportingTimeoutEvent = new cMessage("Cache Size Reporting Event");
+        cacheSizeReportingTimeoutEvent->setKind(KPROPHETROUTINGLAYER_CACHESIZE_REP_EVENT);
+        scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
+
         // setup statistics signals
         dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
         sumVecBytesReceivedSignal = registerSignal("fwdSumVecBytesReceived");
@@ -56,6 +63,7 @@ void KProphetRoutingLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+        currentCacheSizeBytesSimpleSignal = registerSignal("fwdCurrentCacheSizeBytesSimple");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
@@ -87,8 +95,19 @@ void KProphetRoutingLayer::handleMessage(cMessage *msg)
 
     // self messages
     if (msg->isSelfMessage()) {
-        EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
-        delete msg;
+        if (msg->getKind() == KPROPHETROUTINGLAYER_CACHESIZE_REP_EVENT) {
+
+            // report cache size
+            emit(currentCacheSizeBytesSimpleSignal, currentCacheSize);
+
+            // setup next cache size reporting trigger
+            scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
+
+        } else {
+
+            EV_INFO << KPROPHETROUTINGLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
+            delete msg;
+        }
 
     // messages from other layers
     } else {
@@ -1010,4 +1029,9 @@ void KProphetRoutingLayer::finish()
        dpListReceived.remove(deliveryPredictability);
        delete deliveryPredictability;
    }
+
+   // remove triggers
+   cancelEvent(cacheSizeReportingTimeoutEvent);
+   delete cacheSizeReportingTimeoutEvent;
 }
+

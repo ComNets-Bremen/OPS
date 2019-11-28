@@ -44,6 +44,9 @@ simple KKeetchiLayer like IForwardingLayer
         // OMNeT RNG which is used for generation of random numbers -- FOR FUTURE USED
         int usedRNG = default(0);
 
+	    // current cache size stat reporting frequency
+	    double cacheSizeReportingFrequency @unit(s) = default(100s);
+
         // icon used
         @display("i=block/transport");
 

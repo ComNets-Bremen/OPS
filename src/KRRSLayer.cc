@@ -21,6 +21,7 @@ void KRRSLayer::initialize(int stage)
         broadcastRRS = par("broadcastRRS");
         usedRNG = par("usedRNG");
         ageCache = par("ageCache");
+        cacheSizeReportingFrequency = par("cacheSizeReportingFrequency");
         currentCacheSize = 0;
 
         // set other parameters
@@ -37,6 +38,11 @@ void KRRSLayer::initialize(int stage)
             scheduleAt(simTime() + 1.0, ageDataTimeoutEvent);
         }
 
+        // create and setup cache size reporting trigger
+        cacheSizeReportingTimeoutEvent = new cMessage("Cache Size Reporting Event");
+        cacheSizeReportingTimeoutEvent->setKind(KRRSLAYER_CACHESIZE_REP_EVENT);
+        scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
+
         // setup statistics signals
         dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
         totalBytesReceivedSignal = registerSignal("fwdTotalBytesReceived");
@@ -48,6 +54,7 @@ void KRRSLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+        currentCacheSizeBytesSimpleSignal = registerSignal("fwdCurrentCacheSizeBytesSimple");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
@@ -107,6 +114,14 @@ void KRRSLayer::handleMessage(cMessage *msg)
 
             // setup next age data trigger
             scheduleAt(simTime() + 1.0, msg);
+
+        } else if (msg->getKind() == KRRSLAYER_CACHESIZE_REP_EVENT) {
+
+            // report cache size
+            emit(currentCacheSizeBytesSimpleSignal, currentCacheSize);
+
+            // setup next cache size reporting trigger
+            scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
 
         } else {
             EV_INFO << KRRSLAYER_SIMMODULEINFO << "Received unexpected self message" << "\n";
@@ -458,4 +473,8 @@ void KRRSLayer::finish()
         delete ageDataTimeoutEvent;
         ageDataTimeoutEvent = NULL;
     }
+
+    // remove triggers
+    cancelEvent(cacheSizeReportingTimeoutEvent);
+    delete cacheSizeReportingTimeoutEvent;
 }

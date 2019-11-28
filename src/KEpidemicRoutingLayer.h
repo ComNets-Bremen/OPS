@@ -41,10 +41,13 @@ private:
     double maximumRandomBackoffDuration;
     bool useTTL;
     int usedRNG;
+    double cacheSizeReportingFrequency;
 
     int numEventsHandled;
 
     int currentCacheSize;
+
+    cMessage *cacheSizeReportingTimeoutEvent;
 
     struct AppInfo {
         int appID;
@@ -125,6 +128,7 @@ private:
     simsignal_t cacheBytesUpdatedSignal;
     simsignal_t currentCacheSizeBytesSignal;
     simsignal_t currentCacheSizeReportedCountSignal;
+    simsignal_t currentCacheSizeBytesSimpleSignal;
 
     simsignal_t dataBytesSentSignal;
     simsignal_t sumVecBytesSentSignal;
@@ -136,5 +140,6 @@ private:
 #define KEPIDEMICROUTINGLAYER_SIMMODULEINFO         " KEpidemicRoutingLayer>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 
 #define KEPIDEMICROUTINGLAYER_MSG_ID_HASH_SIZE      4 // in bytes
+#define KEPIDEMICROUTINGLAYER_CACHESIZE_REP_EVENT   175
 
 #endif /* KEPIDEMICROUTINGLAYER_H_ */

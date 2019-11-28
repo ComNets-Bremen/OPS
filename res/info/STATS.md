@@ -66,6 +66,8 @@ list below.
 | fwdCacheBytesAdded             | Cache Additions              | Network, Node   |
 | fwdCacheBytesUpdated           | Cache Updates                | Network, Node   |
 | fwdCurrentCacheSizeBytesAvg    | Average Cache Size           | Network, Node   |
+| fwdCurrentCacheSizeBytesSimple | Cache Size (Node level)      | Network, Node   |
+|                                | Mean Cache Size (Network level) |              |
 | fwdDataBytesSent               | Data Sent                    | Network, Node   |
 | fwdSumVecBytesSent             | Summary Vectors Sent         | Network, Node   |
 | fwdDataReqBytesSent            | Data Requests Sent           | Network, Node   |

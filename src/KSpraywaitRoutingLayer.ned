@@ -34,6 +34,9 @@ simple KSpraywaitRoutingLayer like IForwardingLayer
         // OMNeT RNG which is used for generation of random numbers
         int usedRNG = default(0);
 
+	    // current cache size stat reporting frequency
+	    double cacheSizeReportingFrequency @unit(s) = default(100s);
+
         // icon used
         @display("i=block/transport");
 
@@ -49,6 +52,7 @@ simple KSpraywaitRoutingLayer like IForwardingLayer
         @signal[fwdCacheBytesUpdated](type=long);
         @signal[fwdCurrentCacheSizeBytes](type=long);
         @signal[fwdCurrentCacheSizeReportedCount](type=long);
+        @signal[fwdCurrentCacheSizeBytesSimple](type=long);
 
         @signal[fwdDataBytesSent](type=long);
         @signal[fwdSumVecBytesSent](type=long);
