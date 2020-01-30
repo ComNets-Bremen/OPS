@@ -71,7 +71,7 @@ simple KHeraldApp
         @signal[appLikedDataCountMaxReceivableForRatioComp](type=long);
         @signal[appNonLikedDataCountMaxReceivableForRatioComp](type=long);
         @signal[appTotalDataCountMaxReceivableForRatioComp](type=long);
-        
+
         @signal[appLikedDataHopsForAvgHopsComp](type=long);
         @signal[appNonLikedDataHopsForAvgHopsComp](type=long);
         @signal[appTotalDataHopsForAvgHopsComp](type=long);
@@ -79,6 +79,14 @@ simple KHeraldApp
         @signal[appLikedDataHopsCountForAvgHopsComp](type=long);
         @signal[appNonLikedDataHopsCountForAvgHopsComp](type=long);
         @signal[appTotalDataHopsCountForAvgHopsComp](type=long);
+
+        // signals for special stats
+        @signal[appLikedDataReceivedDelay2](type=simtime_t);
+        @signal[appNonLikedDataReceivedDelay2](type=simtime_t);
+        @signal[appTotalDataReceivedDelay2](type=simtime_t);
+
+        @signal[appTotalDataBytesReceived2](type=long);
+        @signal[appTotalDataCountReceived2](type=long);
 
     gates:
 

@@ -91,7 +91,6 @@ void KMessengerApp::initialize(int stage)
         nonLikedDataCountMaxReceivableForRatioCompSignal = registerSignal("appNonLikedDataCountMaxReceivableForRatioComp");
         totalDataCountMaxReceivableForRatioCompSignal = registerSignal("appTotalDataCountMaxReceivableForRatioComp");
 
-
         likedDataHopsForAvgHopsCompSignal = registerSignal("appLikedDataHopsForAvgHopsComp");
         nonLikedDataHopsForAvgHopsCompSignal = registerSignal("appNonLikedDataHopsForAvgHopsComp");
         totalDataHopsForAvgHopsCompSignal = registerSignal("appTotalDataHopsForAvgHopsComp");
@@ -100,11 +99,16 @@ void KMessengerApp::initialize(int stage)
         nonLikedDataHopsCountForAvgHopsCompSignal = registerSignal("appNonLikedDataHopsCountForAvgHopsComp");
         totalDataHopsCountForAvgHopsCompSignal = registerSignal("appTotalDataHopsCountForAvgHopsComp");
 
+        likedDataReceivedDelaySignal2 = registerSignal("appLikedDataReceivedDelay2");
+        nonLikedDataReceivedDelaySignal2 = registerSignal("appNonLikedDataReceivedDelay2");
+        totalDataReceivedDelaySignal2 = registerSignal("appTotalDataReceivedDelay2");
+
+        totalDataBytesReceivedSignal2 = registerSignal("appTotalDataBytesReceived2");
+        totalDataCountReceivedSignal2 = registerSignal("appTotalDataCountReceived2");
 
     } else {
         EV_FATAL << KMESSENGERAPP_SIMMODULEINFO << "Something is radically wrong\n";
     }
-
 }
 
 int KMessengerApp::numInitStages() const
@@ -190,7 +194,7 @@ void KMessengerApp::handleMessage(cMessage *msg)
         timesMessagesReceived[i]++;
 
         // compute stats
-        simtime_t diff = 0;
+        simtime_t diff = 0.0;
         if (timesMessagesReceived[i] > 1) {
             emit(duplicateDataCountReceivedSignal, (int) 1);
             emit(totalDataCountReceivedSignal, (int) 1);
@@ -212,12 +216,17 @@ void KMessengerApp::handleMessage(cMessage *msg)
             emit(likedDataCountReceivedForRatioCompSignal, (int) 1);
             emit(totalDataCountReceivedForRatioCompSignal, (int) 1);
 
-
             emit(likedDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
             emit(totalDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
 
             emit(likedDataHopsCountForAvgHopsCompSignal, (int) 1);
             emit(totalDataHopsCountForAvgHopsCompSignal, (int) 1);
+
+            emit(likedDataReceivedDelaySignal2, diff);
+            emit(totalDataReceivedDelaySignal2, diff);
+
+            emit(totalDataCountReceivedSignal2, (int) 1);
+            emit(totalDataBytesReceivedSignal2, dataMsg->getRealPayloadSize());
 
         }
 

@@ -60,6 +60,7 @@ void KSpraywaitRoutingLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+        currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
@@ -96,7 +97,7 @@ void KSpraywaitRoutingLayer::handleMessage(cMessage *msg)
         } else if (msg->getKind() == KSPRAYWAITROUTINGLAYER_CACHESIZE_REP_EVENT) {
 
                 // report cache size
-                emit(currentCacheSizeBytesSimpleSignal, currentCacheSize);
+                emit(currentCacheSizeBytesPeriodicSignal, currentCacheSize);
 
                 // setup next cache size reporting trigger
                 scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);

@@ -63,7 +63,7 @@ void KProphetRoutingLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
-        currentCacheSizeBytesSimpleSignal = registerSignal("fwdCurrentCacheSizeBytesSimple");
+        currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
@@ -98,7 +98,7 @@ void KProphetRoutingLayer::handleMessage(cMessage *msg)
         if (msg->getKind() == KPROPHETROUTINGLAYER_CACHESIZE_REP_EVENT) {
 
             // report cache size
-            emit(currentCacheSizeBytesSimpleSignal, currentCacheSize);
+            emit(currentCacheSizeBytesPeriodicSignal, currentCacheSize);
 
             // setup next cache size reporting trigger
             scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);

@@ -71,6 +71,14 @@ module KMessengerNode
         @statistic[appNonLikedDataAvgHopCount](source=sum(appNonLikedDataHopsForAvgHopsComp)/sum(appNonLikedDataHopsCountForAvgHopsComp);record=last,vector);
         @statistic[appTotalDataAvgHopCount](source=sum(appTotalDataHopsForAvgHopsComp)/sum(appTotalDataHopsCountForAvgHopsComp);record=last,vector);
 
+        // special app layer stats
+        @statistic[appLikedDataReceivedDelay2](source=appLikedDataReceivedDelay2;record=mean,vector);
+        @statistic[appNonLikedDataReceivedDelay2](source=appNonLikedDataReceivedDelay2;record=mean,vector);
+        @statistic[appTotalDataReceivedDelay2](source=appTotalDataReceivedDelay2;record=mean,vector);
+
+        @statistic[appTotalDataBytesReceived2](source=sum(appTotalDataBytesReceived2);record=last,vector);
+        @statistic[appTotalDataCountReceived2](source=sum(appTotalDataCountReceived2);record=last,vector);
+
         // statistics
         // from forwarding layer
         @statistic[fwdDataBytesReceived](source=sum(fwdDataBytesReceived);record=last,vector;title="Data Received";unit=byte);
@@ -85,7 +93,7 @@ module KMessengerNode
         @statistic[fwdCacheBytesUpdated](source=sum(fwdCacheBytesUpdated);record=last,vector;title="Cache Updates";unit=byte);
         @statistic[fwdCurrentCacheSizeBytesAvg](source=sum(fwdCurrentCacheSizeBytes)/sum(fwdCurrentCacheSizeReportedCount);record=last,vector;title="Average Cache Size";unit=byte);
 
-        @statistic[fwdCurrentCacheSizeBytesSimple](source=fwdCurrentCacheSizeBytesSimple;record=last,mean,vector;title="Cache Size";unit=byte);
+        @statistic[fwdCurrentCacheSizeBytesPeriodic](source=fwdCurrentCacheSizeBytesPeriodic;record=last,mean,vector;title="Cache Size";unit=byte);
 
         @statistic[fwdDataBytesSent](source=sum(fwdDataBytesSent);record=last,vector;title="Data Sent";unit=byte);
         @statistic[fwdSumVecBytesSent](source=sum(fwdSumVecBytesSent);record=last,vector;title="Summary Vectors Sent";unit=byte);
@@ -98,6 +106,9 @@ module KMessengerNode
         // from link layer
         @statistic[linkAvgNeighbourSize](source=sum(linkNeighSize)/sum(linkNeighSizeCount);record=last,vector;title="Average Neighbour Size");
         @statistic[linkAvgContactDuration](source=sum(linkContactDuration)/sum(linkContactDurationCount);record=last,vector;title="Average Contact Duration";unit=s);
+        @statistic[linkContactCount](source=sum(linkContactCount);record=last,vector;title="Contact Count");
+
+        @statistic[linkSimpleNeighbourSize](source=linkSimpleNeighSize;record=mean,vector;title="Simple Neighbour Size");
 
     gates:
         input radioIn @directIn;

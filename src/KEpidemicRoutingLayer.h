@@ -128,7 +128,7 @@ private:
     simsignal_t cacheBytesUpdatedSignal;
     simsignal_t currentCacheSizeBytesSignal;
     simsignal_t currentCacheSizeReportedCountSignal;
-    simsignal_t currentCacheSizeBytesSimpleSignal;
+    simsignal_t currentCacheSizeBytesPeriodicSignal;
 
     simsignal_t dataBytesSentSignal;
     simsignal_t sumVecBytesSentSignal;

@@ -35,6 +35,7 @@ class KBaseNodeInfo;
 #define KMESSENGERAPP_START_ITEM_ID         22000
 #define KMESSENGERAPP_REGISTRATION_EVENT	92
 #define KMESSENGERAPP_DATASEND_EVENT		93
+#define KMESSENGERAP_PER_STAT_EVENT         94
 
 
 class KMessengerApp : public cSimpleModule
@@ -117,6 +118,14 @@ class KMessengerApp : public cSimpleModule
         simsignal_t likedDataHopsCountForAvgHopsCompSignal;
         simsignal_t nonLikedDataHopsCountForAvgHopsCompSignal;
         simsignal_t totalDataHopsCountForAvgHopsCompSignal;
+
+        // special signals
+        simsignal_t likedDataReceivedDelaySignal2;
+        simsignal_t nonLikedDataReceivedDelaySignal2;
+        simsignal_t totalDataReceivedDelaySignal2;
+
+        simsignal_t totalDataBytesReceivedSignal2;
+        simsignal_t totalDataCountReceivedSignal2;
 
 };
 

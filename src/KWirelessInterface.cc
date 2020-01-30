@@ -84,7 +84,9 @@ void KWirelessInterface::initialize(int stage)
         neighSizeCountSignal = registerSignal("linkNeighSizeCount");
         contactDurationSignal = registerSignal("linkContactDuration");
         contactDurationCountSignal = registerSignal("linkContactDurationCount");
+        contactCountSignal = registerSignal("linkContactCount");
 
+        simpleNeighSizeSignal = registerSignal("linkSimpleNeighSize");
 
     } else {
         EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << "Something is radically wrong\n";
@@ -359,6 +361,8 @@ void KWirelessInterface::generateStats()
     emit(neighSizeSignal, currentNeighbourNodeInfoList.size());
     emit(neighSizeCountSignal, 1);
 
+    emit(simpleNeighSizeSignal, currentNeighbourNodeInfoList.size());
+
     // check and remove left neighbourhood
     list<KBaseNodeInfo*>::iterator itPrevNeighNodeInfo = previousNeighbourNodeInfoList.begin();
     while (itPrevNeighNodeInfo != previousNeighbourNodeInfoList.end()) {
@@ -380,6 +384,7 @@ void KWirelessInterface::generateStats()
             simtime_t duration = simTime() - prevNodeInfo->neighbourStartTime;
             emit(contactDurationSignal, duration);
             emit(contactDurationCountSignal, 1);
+            emit(contactCountSignal, 1);
             prevNodeInfo->neighbourStartTime = -1.0;
         }
 

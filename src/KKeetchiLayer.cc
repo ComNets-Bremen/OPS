@@ -67,7 +67,7 @@ void KKeetchiLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
-        currentCacheSizeBytesSimpleSignal = registerSignal("fwdCurrentCacheSizeBytesSimple");
+        currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
@@ -110,7 +110,7 @@ void KKeetchiLayer::handleMessage(cMessage *msg)
             keetchiAPI->getStatus(KLKEETCHI_CURRENT_CACHE_SIZE, NULL, &currentCacheSize);
 
             // report cache size
-            emit(currentCacheSizeBytesSimpleSignal, (long) currentCacheSize);
+            emit(currentCacheSizeBytesPeriodicSignal, (long) currentCacheSize);
 
             // setup next cache size reporting trigger
             scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);

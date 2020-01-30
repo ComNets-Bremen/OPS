@@ -76,6 +76,9 @@ class KWirelessInterface: public cSimpleModule
         simsignal_t neighSizeCountSignal;
         simsignal_t contactDurationSignal;
         simsignal_t contactDurationCountSignal;
+        simsignal_t contactCountSignal;
+
+        simsignal_t simpleNeighSizeSignal;
 };
 
 #define KWIRELESSINTERFACE_SIMMODULEINFO       " KWirelessInterface>!<" << simTime() << ">!<" << getParentModule()->getFullName()
@@ -84,7 +87,7 @@ class KWirelessInterface: public cSimpleModule
 #define KWIRELESSINTERFACE_PKTSEND_EVENT_CODE  114
 #define KWIRELESSINTERFACE_EUCLIDEAN_DISTANCE          // if defined, then uses Euclidean only,
                                                        // else, uses Chebyshev first and then Euclidean
-//#define KWIRELESSINTERFACE_COMPUTE_STATS       1       // if defined, computes stats for average contact durations
+#define KWIRELESSINTERFACE_COMPUTE_STATS       1       // if defined, computes stats for average contact durations
                                                        // and average neighbour sizes
 
 #endif /* KWIRELESSINTERFACE_H_ */

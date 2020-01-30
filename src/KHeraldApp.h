@@ -35,6 +35,7 @@ class KBaseNodeInfo;
 #define KHERALDAPP_START_ITEM_ID        22000
 #define KHERALDAPP_REGISTRATION_EVENT	92
 #define KHERALDAPP_DATASEND_EVENT		93
+#define KHERALDAPP_PER_STAT_EVENT       94
 
 class KHeraldApp : public cSimpleModule
 {
@@ -113,6 +114,14 @@ class KHeraldApp : public cSimpleModule
         simsignal_t likedDataHopsCountForAvgHopsCompSignal;
         simsignal_t nonLikedDataHopsCountForAvgHopsCompSignal;
         simsignal_t totalDataHopsCountForAvgHopsCompSignal;
+
+        // special signals
+        simsignal_t likedDataReceivedDelaySignal2;
+        simsignal_t nonLikedDataReceivedDelaySignal2;
+        simsignal_t totalDataReceivedDelaySignal2;
+
+        simsignal_t totalDataBytesReceivedSignal2;
+        simsignal_t totalDataCountReceivedSignal2;
 
 };
 

@@ -43,7 +43,7 @@ simple KRRSLayer like IForwardingLayer
         @signal[fwdCacheBytesUpdated](type=long);
         @signal[fwdCurrentCacheSizeBytes](type=long);
         @signal[fwdCurrentCacheSizeReportedCount](type=long);
-        @signal[fwdCurrentCacheSizeBytesSimple](type=long);
+        @signal[fwdCurrentCacheSizeBytesPeriodic](type=long);
 
         @signal[fwdDataBytesSent](type=long);
         @signal[fwdTotalBytesSent](type=long);

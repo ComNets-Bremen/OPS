@@ -31,7 +31,10 @@ simple KWirelessInterface
         @signal[linkNeighSizeCount](type=long);
         @signal[linkContactDuration](type=simtime_t);
         @signal[linkContactDurationCount](type=long);
+        @signal[linkContactCount](type=long);
 
+        @signal[linkSimpleNeighSize](type=long);
+        
     gates:
         // interface to the upper layer (which may be the link adaptation layer)
         input upperLayerIn;

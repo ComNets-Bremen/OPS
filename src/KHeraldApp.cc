@@ -143,6 +143,13 @@ void KHeraldApp::initialize(int stage)
         nonLikedDataHopsCountForAvgHopsCompSignal = registerSignal("appNonLikedDataHopsCountForAvgHopsComp");
         totalDataHopsCountForAvgHopsCompSignal = registerSignal("appTotalDataHopsCountForAvgHopsComp");
 
+        likedDataReceivedDelaySignal2 = registerSignal("appLikedDataReceivedDelay2");
+        nonLikedDataReceivedDelaySignal2 = registerSignal("appNonLikedDataReceivedDelay2");
+        totalDataReceivedDelaySignal2 = registerSignal("appTotalDataReceivedDelay2");
+
+        totalDataBytesReceivedSignal2 = registerSignal("appTotalDataBytesReceived2");
+        totalDataCountReceivedSignal2 = registerSignal("appTotalDataCountReceived2");
+
     } else {
         EV_FATAL << KHERALDAPP_SIMMODULEINFO << "Something is radically wrong\n";
 
@@ -222,7 +229,6 @@ void KHeraldApp::handleMessage(cMessage *msg)
 	        sendDirect(statMsg, heraldNodeInfoList[i]->nodeHeraldAppModule, "statIn");
 	    }
 
-
     } else if (dynamic_cast<KDataMsg*>(msg) != NULL) {
 
         // message received from outside so, process received data message
@@ -252,6 +258,8 @@ void KHeraldApp::handleMessage(cMessage *msg)
                 emit(likedDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
                 emit(likedDataHopsCountForAvgHopsCompSignal, (int) 1);
 
+                emit(likedDataReceivedDelaySignal2, diff);
+
             } else {
                 emit(nonLikedDataCountReceivedSignal, (int) 1);
                 emit(nonLikedDataBytesReceivedSignal, dataMsg->getRealPayloadSize());
@@ -261,6 +269,9 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
                 emit(nonLikedDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
                 emit(nonLikedDataHopsCountForAvgHopsCompSignal, (int) 1);
+
+                emit(nonLikedDataReceivedDelaySignal2, diff);
+
             }
             emit(totalDataCountReceivedSignal, (int) 1);
             emit(totalDataBytesReceivedSignal, dataMsg->getRealPayloadSize());
@@ -270,6 +281,12 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
             emit(totalDataHopsForAvgHopsCompSignal, dataMsg->getHopsTravelled());
             emit(totalDataHopsCountForAvgHopsCompSignal, (int) 1);
+
+            emit(totalDataReceivedDelaySignal2, diff);
+
+            emit(totalDataCountReceivedSignal2, (int) 1);
+            emit(totalDataBytesReceivedSignal2, dataMsg->getRealPayloadSize());
+
 
         }
 

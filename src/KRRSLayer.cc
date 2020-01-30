@@ -54,7 +54,7 @@ void KRRSLayer::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
-        currentCacheSizeBytesSimpleSignal = registerSignal("fwdCurrentCacheSizeBytesSimple");
+        currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
@@ -118,7 +118,7 @@ void KRRSLayer::handleMessage(cMessage *msg)
         } else if (msg->getKind() == KRRSLAYER_CACHESIZE_REP_EVENT) {
 
             // report cache size
-            emit(currentCacheSizeBytesSimpleSignal, currentCacheSize);
+            emit(currentCacheSizeBytesPeriodicSignal, currentCacheSize);
 
             // setup next cache size reporting trigger
             scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);

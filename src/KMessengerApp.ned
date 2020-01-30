@@ -34,6 +34,9 @@ simple KMessengerApp
         // TTL of messages
         double ttl = default(999999);
 
+        // percentage of nodes from notificationCount to assign as being popularity
+        double popularityAssignmentPercentage = default(25.0); // 25.0 = 25%
+
         // icon used
         @display("i=block/app");
 
@@ -82,6 +85,13 @@ simple KMessengerApp
         @signal[appNonLikedDataHopsCountForAvgHopsComp](type=long);
         @signal[appTotalDataHopsCountForAvgHopsComp](type=long);
 
+        // signals for special stats
+        @signal[appLikedDataReceivedDelay2](type=simtime_t);
+        @signal[appNonLikedDataReceivedDelay2](type=simtime_t);
+        @signal[appTotalDataReceivedDelay2](type=simtime_t);
+
+        @signal[appTotalDataBytesReceived2](type=long);
+        @signal[appTotalDataCountReceived2](type=long);
 
     gates:
 
