@@ -358,10 +358,10 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
 void KWirelessInterface::generateStats()
 {
 
-    emit(neighSizeSignal, currentNeighbourNodeInfoList.size());
+    emit(neighSizeSignal, (long) currentNeighbourNodeInfoList.size());
     emit(neighSizeCountSignal, 1);
 
-    emit(simpleNeighSizeSignal, currentNeighbourNodeInfoList.size());
+    emit(simpleNeighSizeSignal, (long) currentNeighbourNodeInfoList.size());
 
     // check and remove left neighbourhood
     list<KBaseNodeInfo*>::iterator itPrevNeighNodeInfo = previousNeighbourNodeInfoList.begin();
