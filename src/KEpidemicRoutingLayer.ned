@@ -51,6 +51,8 @@ simple KEpidemicRoutingLayer like IForwardingLayer
         @signal[fwdCurrentCacheSizeBytes](type=long);
         @signal[fwdCurrentCacheSizeReportedCount](type=long);
         @signal[fwdCurrentCacheSizeBytesPeriodic](type=long);
+        
+        @signal[fwdCurrentCacheSizeBytes2](type=long);
 
         @signal[fwdDataBytesSent](type=long);
         @signal[fwdSumVecBytesSent](type=long);

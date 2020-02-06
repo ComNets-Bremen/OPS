@@ -8,7 +8,7 @@ network OPSHeraldNetwork
 
         // number of nodes in the network
         int numNodes = default(20);
-
+        
         // statistics
         // from application layer
         @statistic[appLikedDataBytesReceived](source=sum(appLikedDataBytesReceived); record=last,vector);
@@ -64,6 +64,7 @@ network OPSHeraldNetwork
         @statistic[fwdCurrentCacheSizeBytesAvg](source=sum(fwdCurrentCacheSizeBytes)/sum(fwdCurrentCacheSizeReportedCount); record=last,vector; title="Average Cache Size"; unit=byte);
 
         @statistic[fwdCurrentCacheSizeBytesPeriodicAvg](source=periodicAverageForAllNodes(fwdCurrentCacheSizeBytesPeriodic);record=mean,vector;title="Periodic Average Cache Size";unit=byte);
+        @statistic[fwdCurrentCacheSizeBytesAvg2](source=mean(fwdCurrentCacheSizeBytes2);record=last,mean,vector;title="Average Cache Size";unit=byte);
 
         @statistic[fwdDataBytesSent](source=sum(fwdDataBytesSent);record=last,vector;title="Data Sent";unit=byte);
         @statistic[fwdSumVecBytesSent](source=sum(fwdSumVecBytesSent);record=last,vector;title="Summary Vectors Sent";unit=byte);

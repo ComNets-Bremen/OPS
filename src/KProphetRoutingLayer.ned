@@ -82,6 +82,8 @@ simple KProphetRoutingLayer like IForwardingLayer
         @signal[fwdCurrentCacheSizeReportedCount](type=long);
         @signal[fwdCurrentCacheSizeBytesPeriodic](type=long);
 
+        @signal[fwdCurrentCacheSizeBytes2](type=long);
+
         @signal[fwdDataBytesSent](type=long);
         @signal[fwdSumVecBytesSent](type=long);
         @signal[fwdDataReqBytesSent](type=long);

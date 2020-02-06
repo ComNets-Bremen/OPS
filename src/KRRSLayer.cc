@@ -56,6 +56,8 @@ void KRRSLayer::initialize(int stage)
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
         currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
+        currentCacheSizeBytesSignal2 = registerSignal("fwdCurrentCacheSizeBytes2");
+
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
 
@@ -107,6 +109,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
                     emit(cacheBytesRemovedSignal, cacheEntry->realPacketSize);
                     emit(currentCacheSizeBytesSignal, currentCacheSize);
                     emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+                    emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
                     delete cacheEntry;
                 }
@@ -201,6 +205,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
                     emit(currentCacheSizeBytesSignal, currentCacheSize);
                     emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+                    emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
                     delete removingCacheEntry;
 
                 }
@@ -244,6 +250,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
             }
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+            emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
             delete msg;
 
@@ -383,6 +391,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
                         emit(currentCacheSizeBytesSignal, currentCacheSize);
                         emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+                        emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
                         delete removingCacheEntry;
 
                     }
@@ -426,6 +436,8 @@ void KRRSLayer::handleMessage(cMessage *msg)
                 }
                 emit(currentCacheSizeBytesSignal, currentCacheSize);
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+                emit(currentCacheSizeBytesSignal2, currentCacheSize);
             }
 
             // if registered app exist, send data msg to app

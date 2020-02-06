@@ -69,6 +69,8 @@ void KKeetchiLayer::initialize(int stage)
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
         currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
+        currentCacheSizeBytesSignal2 = registerSignal("fwdCurrentCacheSizeBytes2");
+
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
 
@@ -674,6 +676,8 @@ void KKeetchiLayer::dumpCacheStats(void)
         emit(cacheBytesRemovedSignal, value1);
         emit(currentCacheSizeBytesSignal, value2);
         emit(currentCacheSizeReportedCountSignal, 1);        
+
+        emit(currentCacheSizeBytesSignal2, value2);
     }
 
     keetchiAPI->getStatus(KLKEETCHI_CACHE_BYTES_ADDED, NULL, &value1);
@@ -682,6 +686,8 @@ void KKeetchiLayer::dumpCacheStats(void)
         emit(cacheBytesAddedSignal, value1);
         emit(currentCacheSizeBytesSignal, value2);
         emit(currentCacheSizeReportedCountSignal, 1);        
+
+        emit(currentCacheSizeBytesSignal2, value2);
     }
 
     keetchiAPI->getStatus(KLKEETCHI_CACHE_BYTES_UPDATED, NULL, &value1);
@@ -690,6 +696,8 @@ void KKeetchiLayer::dumpCacheStats(void)
         emit(cacheBytesUpdatedSignal, value1);
         emit(currentCacheSizeBytesSignal, value2);
         emit(currentCacheSizeReportedCountSignal, 1);        
+
+        emit(currentCacheSizeBytesSignal2, value2);
     }
     
 }

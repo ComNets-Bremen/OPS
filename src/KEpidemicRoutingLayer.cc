@@ -53,6 +53,8 @@ void KEpidemicRoutingLayer::initialize(int stage)
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
         currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
+        currentCacheSizeBytesSignal2 = registerSignal("fwdCurrentCacheSizeBytes2");
+
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
         dataReqBytesSentSignal = registerSignal("fwdDataReqBytesSent");
@@ -165,6 +167,8 @@ void KEpidemicRoutingLayer::ageDataInCache()
             emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+            emit(currentCacheSizeBytesSignal2, currentCacheSize);
             
             cacheList.remove(cacheEntry);
             delete cacheEntry;
@@ -242,6 +246,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+            emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
             cacheList.remove(removingCacheEntry);
             delete removingCacheEntry;
 
@@ -286,6 +292,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
     }
     emit(currentCacheSizeBytesSignal, currentCacheSize);
     emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+    emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
     delete msg;
 }
@@ -447,6 +455,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
                 emit(currentCacheSizeBytesSignal, currentCacheSize);
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+                emit(currentCacheSizeBytesSignal2, currentCacheSize);
                 
                 cacheList.remove(removingCacheEntry);
 
@@ -492,6 +502,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         }
         emit(currentCacheSizeBytesSignal, currentCacheSize);
         emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+        emit(currentCacheSizeBytesSignal2, currentCacheSize);
     }
 
     // if registered app exist, send data msg to app

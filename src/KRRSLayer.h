@@ -98,6 +98,8 @@ class KRRSLayer: public cSimpleModule
         simsignal_t currentCacheSizeReportedCountSignal;
         simsignal_t currentCacheSizeBytesPeriodicSignal;
 
+        simsignal_t currentCacheSizeBytesSignal2;
+
         simsignal_t dataBytesSentSignal;
         simsignal_t totalBytesSentSignal;
 

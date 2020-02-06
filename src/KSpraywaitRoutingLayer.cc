@@ -62,6 +62,8 @@ void KSpraywaitRoutingLayer::initialize(int stage)
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
         currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
 
+        currentCacheSizeBytesSignal2 = registerSignal("fwdCurrentCacheSizeBytes2");
+
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
         dataReqBytesSentSignal = registerSignal("fwdDataReqBytesSent");
@@ -193,6 +195,8 @@ void KSpraywaitRoutingLayer::handleDataAgingTrigger(cMessage *msg)
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+            emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
             cacheList.remove(cacheEntry);
             delete cacheEntry;
 
@@ -273,6 +277,8 @@ void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+            emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
             delete removingCacheEntry;
 
         }
@@ -317,6 +323,8 @@ void KSpraywaitRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
     }
     emit(currentCacheSizeBytesSignal, currentCacheSize);
     emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+    emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
     delete msg;
 }
@@ -488,6 +496,8 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 emit(currentCacheSizeBytesSignal, currentCacheSize);
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+                emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
                 cacheList.remove(removingCacheEntry);
 
 
@@ -535,6 +545,7 @@ void KSpraywaitRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         emit(currentCacheSizeBytesSignal, currentCacheSize);
         emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+        emit(currentCacheSizeBytesSignal2, currentCacheSize);
     }
 
     // if registered app exist, send data msg to app
@@ -744,6 +755,7 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
                     emit(currentCacheSizeBytesSignal, currentCacheSize);
                     emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+                    emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
                     cacheList.remove(removingCacheEntry);
                     delete removingCacheEntry;
@@ -793,6 +805,7 @@ void KSpraywaitRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
                     emit(currentCacheSizeBytesSignal, currentCacheSize);
                     emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+                    emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
                     cacheList.remove(removingCacheEntry);
                     delete removingCacheEntry;
