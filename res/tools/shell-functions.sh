@@ -14,7 +14,7 @@
 settingsFilename="$HOME/.opsSettings"
 
 # Default settings
-defaultSettingsFilename="settings.default"
+defaultSettingsFilename="./res/settings.default"
 
 # Loads the file from the above defined files.
 loadSettings() {
