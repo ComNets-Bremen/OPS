@@ -446,7 +446,11 @@ void KWirelessInterface::finish()
         delete nextMsg;
     }
     if (currentPendingMsg != NULL) {
-        delete currentPendingMsg;
+
+        // TODO: delete is commented out as it gives
+        // a OMNeT error saying "use deleteModule()
+        // instead of C++ delete
+        // delete currentPendingMsg;
         currentPendingMsg = NULL;
     }
 }

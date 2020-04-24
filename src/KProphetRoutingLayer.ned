@@ -12,7 +12,6 @@ simple KProphetRoutingLayer like IForwardingLayer
 {
      parameters:
 
-
         // unique address of the node
         string ownMACAddress;
 
@@ -87,7 +86,7 @@ simple KProphetRoutingLayer like IForwardingLayer
         @signal[fwdDataBytesSent](type=long);
         @signal[fwdSumVecBytesSent](type=long);
         @signal[fwdDataReqBytesSent](type=long);
-        @signal[fwdDPTableRequestBytesReceived](type=long);
+        @signal[fwdDPTableRequestBytesSent](type=long);
         @signal[fwdDPTableDataBytesSent](type=long);
 
 
