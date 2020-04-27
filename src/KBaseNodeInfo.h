@@ -19,6 +19,7 @@ using namespace omnetpp;
 using namespace std;
 
 class KWirelessInterface;
+class KOptimumDelayRoutingLayer;
 
 class KBaseNodeInfo
 {

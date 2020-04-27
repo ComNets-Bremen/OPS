@@ -225,29 +225,36 @@ description of these models is given in the [MODELINFO File](./res/info/MODELINF
 
 
 
-## Important Model Parameters
+## Model Parameters
 
-The following description provides some of the most important parameters of the different models 
-in OPS. All these parameters are configurable using the `.ini`. **Not all parameters 
-are listed here**. Please check the respective model's `.ned` file to see all the parameters.
+All parameters are configurable using the `.ini` file used to run simulations. Some of these parameters
+have default values but all can be reconfigured in the `.ini` file. Here are some examples.
 
-### Parameters in `OPSMessengerNetwork.ned` and `OPSUBMNetwork`
+### Network-level Parameters (e.g., in `OPSMessengerNetwork.ned`)
 
 1. `numNodes` - The total number of nodes in the network
-2. Network level statistics
+2. `num-rngs` - Number of random number generators
 
+### Application Layer Parameters (e.g., in 'KHeraldApp.ned`)
 
-### Parameters in `KEpidemicRoutingLayer.ned`
+1. `dataGenerationInterval` - How often are data messages injected into the network
+2. `dataSizeInBytes` - Payload size of a data message
+
+### Forwarding Layer Parameters (e.g., in `KEpidemicRoutingLayer.ned`)
 
 1. `maximumCacheSize` - The size of the cache maintained by each node in bytes
 2. `maximumHopCount` - The maximum hops that a data packet is allowed to travel (be forwarded) before being discarded
 
 
-### Parameters in `KWirelessLayer.ned`
+### Link Layer Parameters (e.g., in `KWirelessLayer.ned`)
 
 1. `wirelessRange` - The wireless range of each node's wireless interface
 2. `bandwidthBitRate` - Communication bit rate of the wireless interface
 
+
+Please check the respective model's `.ned` file to see all the parameters. Details about models are 
+found in [MODELINFO File](./res/info/MODELINFO.md). A list of sample `.ini` files provided is found in
+[SAMPLEINI File](./res/info/SAMPLEINI.md). 
 
 
 
@@ -277,7 +284,10 @@ problems. Check the [FAQ file](./res/info/FAQ.md) for these questions and answer
 
 ## Questions or Comments
 
-Firstly, if you have any questions, please check the [FAQ file](./res/info/FAQ.md) and if you cannot find answers there, then write to us. Secondly, if you have any comments or suggestions, we will be very glad to hear them. In both cases, please write to anyone of us listed blow using ops@comnets.uni-bremen.de.
+Firstly, if you have any questions, please check the [FAQ file](./res/info/FAQ.md) 
+and if you cannot find answers there, then write to us. Secondly, if you have any 
+comments or suggestions, we will be very glad to hear them. In both cases, please 
+write to anyone of us listed blow using ops@comnets.uni-bremen.de.
 
   - Asanga Udugama
   - Jens Dede
@@ -288,12 +298,14 @@ Firstly, if you have any questions, please check the [FAQ file](./res/info/FAQ.m
 
 ## Model Contributors
 
-There are many individuals who have used and extended OPS, either by extending existing models or by introducing new 
-models. This section lists the individuals who have done such contributions.
+There are many individuals who have used and extended OPS, either by extending 
+existing models or by introducing new models. This section lists the individuals 
+who have done such contributions.
 
   - Anas bin Muslim
   - Jibin P. John
   - Karima Khandaker 
   - Kirishanth Chethuraja
+  - Zeynep Vatandas 
 
 

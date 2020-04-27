@@ -37,17 +37,13 @@ When installing, building or simulating with OPS, there may be problems that are
 - Solutions: Yes, this can be done in MacOS or Linux environments in the following manner. 
   - Open console/terminal
   - Run the terminal multiplexer `screen` to create virtual terminals that execute processes in the background even after the console/terminal is closed
-```
-myhome$ screen
-```
   - Run simulations in the virtual terminal
-```
-myhome$ cd OPS/simulations
-myhome$ ../src/OPS -r 0 -m -u Cmdenv \
-  -n .:../src:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../KeetchiLib \
-  --image-path=../../inet/images -l ../../inet/src/INET -l ../../KeetchiLib/KeetchiLib \
-  omnetpp-herald-epidemic.ini
-
-```
+    ```bash
+    myhome$ cd OPS/simulations
+    myhome$ ../src/OPS -r 0 -m -u Cmdenv \
+    -n .:../src:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../KeetchiLib \
+    --image-path=../../inet/images -l ../../inet/src/INET -l ../../KeetchiLib/KeetchiLib \
+    omnetpp-herald-epidemic.ini
+    ```
 
 
