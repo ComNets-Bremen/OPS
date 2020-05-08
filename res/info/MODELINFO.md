@@ -112,8 +112,8 @@ listed below.
 ## Messenger Node Model (KMessengerNode)
 
 The `KMessengerNode` consist of protocol layers to simulate destination oriented opportunistic 
-networks where every data item in the network is destined to another node. The node 
-architecture is as shown in the picture below.
+networks where every data item in the network is destined to another node or to a single node. 
+The node architecture is as shown in the picture below.
 
 <p align="center">
   <img src="../images/messenger-node-model.png" width="300"/>
@@ -124,7 +124,7 @@ listed below.
 
 
 1. Application Layer with simple applications - Applications generate data destined to other nodes
-or receive data destined to itself. Current models are,
+(or a single node) and receives data destined to itself. Current models are,
 
    - `KMessengerApp` - Injects and receives destination oriented data
 

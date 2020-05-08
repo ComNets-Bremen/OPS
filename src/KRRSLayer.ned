@@ -4,7 +4,10 @@
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de)
 // @date   : 25-aug-2016
 //
-//
+// New user parameters to control how often data is sent
+// 
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @date   : 02-may-2020
 
 package ops;
 
@@ -30,6 +33,14 @@ simple KRRSLayer like IForwardingLayer
 	    // current cache size stat reporting frequency
 	    double cacheSizeReportingFrequency @unit(s) = default(100s);
 
+        // is data sending frequency sync'ed with neighbour list reporting frequency?
+        bool  sendOnNeighReportingFrequency = default(true);
+        
+        // if sendOnNeighReportingFrequency is false, then how many seconds after
+        // data is sent, BUT this value has to be greater than and in multiples
+        // of the neigh reporting frequency of the WirelessInterface module
+        double sendFrequencyWhenNotOnNeighFrequency @unit(s) = default(1s);
+        
         // icon used
       	@display("i=block/transport");
 

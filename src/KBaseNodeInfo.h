@@ -40,6 +40,8 @@ class KBaseNodeInfo
         // used for neighbour contact durations
         simtime_t neighbourStartTime;
 
+        // the unique node name assigned by OMNeT - e.g., host[23]
+        string nodeName;
 };
 
 #endif /* KBASENODEINFO_H_ */

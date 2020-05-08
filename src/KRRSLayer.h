@@ -4,6 +4,10 @@
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de)
 // @date   : 25-aug-2015
 //
+// New user parameters to control how often data is sent
+//
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @date   : 02-may-2020
 //
 
 #ifndef KRRSLAYER_H_
@@ -40,8 +44,11 @@ class KRRSLayer: public cSimpleModule
         int usedRNG;
         bool ageCache;
         double cacheSizeReportingFrequency;
+        bool  sendOnNeighReportingFrequency;
+        double sendFrequencyWhenNotOnNeighFrequency;
 
         int currentCacheSize;
+        simtime_t nextDataSendTime;
 
         struct AppInfo {
             int appID;

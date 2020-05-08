@@ -29,18 +29,48 @@ void KMessengerApp::initialize(int stage)
 		notificationCount = totalSimulationTime/dataGenerationInterval;
 		totalNumNodes = getParentModule()->getParentModule()->par("numNodes");
 
+        singleDestination = par("singleDestination");
+        singleDestinationNodeName = par("singleDestinationNodeName").stringValue();
+
         // add own address to global list to use for random destination selections
         ownNodeInfo = new KBaseNodeInfo();
         ownNodeInfo->nodeAddress = ownMACAddress;
         ownNodeInfo->nodeMessengerAppModule = this;
+        ownNodeInfo->nodeName = getParentModule()->getFullName();
+
         messengerNodeInfoList.push_back(ownNodeInfo);
 
         for (int i = 0; i < notificationCount; i++) {
             timesMessagesReceived.push_back(0);
         }
 
+
     } else if (stage == 1) {
 
+        // find the destination node, if single destination is selected
+        if (singleDestination && strstr(ownNodeInfo->nodeName.c_str(), singleDestinationNodeName.c_str()) != NULL) {
+            ownNodeIsDestination = TRUE;
+            destinationNodeInfo = NULL;
+
+        } else if (singleDestination) {
+            ownNodeIsDestination = FALSE;
+            bool found = FALSE;
+            for(int i = 0; i < messengerNodeInfoList.size(); i++) {
+                if (strstr(messengerNodeInfoList[i]->nodeName.c_str(), singleDestinationNodeName.c_str()) != NULL) {
+                    destinationNodeInfo = messengerNodeInfoList[i];
+                    found = TRUE;
+                    break;
+                }
+            }
+            if (!found) {
+                EV_FATAL << KMESSENGERAPP_SIMMODULEINFO << "The node " << singleDestinationNodeName
+                        << " given in singleDestinationNodeName does not exist\n";
+                endSimulation();
+            }
+        } else {
+            destinationNodeInfo = NULL;
+
+        }
 
     } else if (stage == 2) {
 
@@ -49,12 +79,17 @@ void KMessengerApp::initialize(int stage)
         appRegistrationEvent->setKind(KMESSENGERAPP_REGISTRATION_EVENT);
         scheduleAt(simTime(), appRegistrationEvent);
 
-        // this is a round-robin scheduling of traffic: in a row, everybody gets a chance to send the next packet.
-    	dataTimeoutEvent = new cMessage("Data Timeout Event");
-        dataTimeoutEvent->setKind(KMESSENGERAPP_DATASEND_EVENT);
-        nextGenerationIndex = nodeIndex;
-        // add 0.1 secs to the first sending to avoid the simulation to send one more message than expected.
-        scheduleAt(simTime() + (dataGenerationInterval * nextGenerationIndex) + 0.1, dataTimeoutEvent);
+        // set scheduler to send data but only if single destination is false or
+        // if single destination is true and this node is the selected destination
+        if (!singleDestination || (singleDestination && !ownNodeIsDestination)) {
+
+            // this is a round-robin scheduling of traffic: in a row, everybody gets a chance to send the next packet.
+            dataTimeoutEvent = new cMessage("Data Timeout Event");
+            dataTimeoutEvent->setKind(KMESSENGERAPP_DATASEND_EVENT);
+            nextGenerationIndex = nodeIndex;
+            // add 0.1 secs to the first sending to avoid the simulation to send one more message than expected.
+            scheduleAt(simTime() + (dataGenerationInterval * nextGenerationIndex) + 0.1, dataTimeoutEvent);
+        }
 
         // registering statistic signals
         likedDataBytesReceivedSignal = registerSignal("appLikedDataBytesReceived");
@@ -130,14 +165,19 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
     } else if (msg->isSelfMessage() && msg->getKind() == KMESSENGERAPP_DATASEND_EVENT) {
 
-        // find random destination to send
-        bool found = FALSE;
-        KBaseNodeInfo* selectedNodeInfo = messengerNodeInfoList[0];
-        while (!found) {
-            int destIndex = intuniform(0, (messengerNodeInfoList.size() - 1), usedRNG);
-            selectedNodeInfo = messengerNodeInfoList[destIndex];
-            if (selectedNodeInfo->nodeAddress != ownMACAddress) {
-                found = TRUE;
+        // if messages possible to be sent to multiple destinations, then
+        // find a random destination
+        if (!singleDestination) {
+
+            // find random destination to send
+            bool found = FALSE;
+            destinationNodeInfo = messengerNodeInfoList[0];
+            while (!found) {
+                int destIndex = intuniform(0, (messengerNodeInfoList.size() - 1), usedRNG);
+                destinationNodeInfo = messengerNodeInfoList[destIndex];
+                if (destinationNodeInfo->nodeAddress != ownMACAddress) {
+                    found = TRUE;
+                }
             }
         }
 
@@ -167,7 +207,7 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
         dataMsg->setInitialOriginatorAddress(ownMACAddress.c_str());
         dataMsg->setDestinationOriented(true);
-        dataMsg->setFinalDestinationAddress(selectedNodeInfo->nodeAddress.c_str());
+        dataMsg->setFinalDestinationAddress(destinationNodeInfo->nodeAddress.c_str());
 
         send(dataMsg, "lowerLayerOut");
 
@@ -180,7 +220,7 @@ void KMessengerApp::handleMessage(cMessage *msg)
         statMsg->setLikedData(true);
         statMsg->setDataCountReceivable(1);
         statMsg->setDataBytesReceivable(dataSizeInBytes);
-        sendDirect(statMsg, selectedNodeInfo->nodeMessengerAppModule, "statIn");
+        sendDirect(statMsg, destinationNodeInfo->nodeMessengerAppModule, "statIn");
 
         //cout << KMESSENGERAPP_SIMMODULEINFO << " sending: " << (nextGenerationIndex - totalNumNodes) << " own addr " << ownMACAddress << " dest addr " << selectedNodeInfo->nodeAddress << "\n";
 
@@ -264,8 +304,10 @@ void KMessengerApp::finish()
 {
     delete appRegistrationEvent;
 
-    cancelEvent(dataTimeoutEvent);
-    delete dataTimeoutEvent;
+    if (!singleDestination || (singleDestination && !ownNodeIsDestination)) {
+        cancelEvent(dataTimeoutEvent);
+        delete dataTimeoutEvent;
+    }
 
     if (messengerNodeInfoList.size() > 0) {
         for (int i = 0; i < messengerNodeInfoList.size(); i++) {

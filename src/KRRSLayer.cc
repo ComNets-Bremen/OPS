@@ -4,6 +4,10 @@
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de)
 // @date   : 25-aug-2015
 //
+// New user parameters to control how often data is sent
+//
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @date   : 02-may-2020
 //
 
 #include "KRRSLayer.h"
@@ -22,11 +26,17 @@ void KRRSLayer::initialize(int stage)
         usedRNG = par("usedRNG");
         ageCache = par("ageCache");
         cacheSizeReportingFrequency = par("cacheSizeReportingFrequency");
-        currentCacheSize = 0;
+        sendOnNeighReportingFrequency = par("sendOnNeighReportingFrequency");
+        sendFrequencyWhenNotOnNeighFrequency = par("sendFrequencyWhenNotOnNeighFrequency");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
 
+        //init other variables
+        currentCacheSize = 0;
+        if (!sendOnNeighReportingFrequency) {
+            nextDataSendTime = simTime() + sendFrequencyWhenNotOnNeighFrequency;
+        }
     } else if (stage == 1) {
 
     } else if (stage == 2) {
@@ -265,63 +275,69 @@ void KRRSLayer::handleMessage(cMessage *msg)
         // neighbour list message arrived from the lower layer (link layer)
         } else if (strstr(gateName, "lowerLayerIn") != NULL && (neighListMsg = dynamic_cast<KNeighbourListMsg*>(msg)) != NULL) {
 
+            // if there are nodes in the neighbourhood and entries in the cache
+            // send a randomly selected cached data out
             if (neighListMsg->getNeighbourNameListArraySize() > 0 && cacheList.size() > 0) {
 
-                // if there are nodes in the neighbourhood and entries in the cache
-                // send a randomly selected cached data out
+                // but before that check what kind of data send frequency is selected
+                // and whether its time to send
+                if (sendOnNeighReportingFrequency || simTime() > nextDataSendTime) {
 
-                int cacheIndex = 0;
-                if (cacheList.size() > 1) {
-                    cacheIndex = intuniform(0, (cacheList.size() - 1), usedRNG);
+                    int cacheIndex = 0;
+                    if (cacheList.size() > 1) {
+                        cacheIndex = intuniform(0, (cacheList.size() - 1), usedRNG);
+                    }
+
+                    list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
+                    advance(iteratorCache, cacheIndex);
+                    CacheEntry *cacheEntry = *iteratorCache;
+
+                    KDataMsg *dataMsg = new KDataMsg();
+
+                    dataMsg->setSourceAddress(ownMACAddress.c_str());
+
+                    if (broadcastRRS) {
+                        dataMsg->setDestinationAddress(broadcastMACAddress.c_str());
+                    } else {
+                        int neighbourIndex = intuniform(0, (neighListMsg->getNeighbourNameListArraySize() - 1), usedRNG);
+                        dataMsg->setDestinationAddress(neighListMsg->getNeighbourNameList(neighbourIndex));
+                    }
+
+                    dataMsg->setDataName(cacheEntry->dataName.c_str());
+                    dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
+
+                    dataMsg->setRealPayloadSize(cacheEntry->realPayloadSize);
+                    dataMsg->setDummyPayloadContent(cacheEntry->dummyPayloadContent.c_str());
+                    int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6 + 1;
+
+                    dataMsg->setRealPacketSize(realPacketSize);
+                    dataMsg->setByteLength(realPacketSize);
+
+                    dataMsg->setMsgType(cacheEntry->msgType);
+                    dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
+
+                    // dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
+                    dataMsg->setInitialOriginatorAddress(cacheEntry->initialOriginatorAddress.c_str());
+                    dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
+                    if (cacheEntry->destinationOriented) {
+                        dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
+                    }
+                    dataMsg->setMessageID(cacheEntry->messageID.c_str());
+                    dataMsg->setHopCount(cacheEntry->hopCount);
+                    dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
+                    dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
+                    dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
+                    dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
+
+                    send(dataMsg, "lowerLayerOut");
+
+                    emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
+                    emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
+
+                    if (!sendOnNeighReportingFrequency) {
+                        nextDataSendTime = simTime() + sendFrequencyWhenNotOnNeighFrequency;
+                    }
                 }
-
-                list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
-                advance(iteratorCache, cacheIndex);
-                CacheEntry *cacheEntry = *iteratorCache;
-
-                KDataMsg *dataMsg = new KDataMsg();
-
-                dataMsg->setSourceAddress(ownMACAddress.c_str());
-
-                if (broadcastRRS) {
-                    dataMsg->setDestinationAddress(broadcastMACAddress.c_str());
-                } else {
-                    int neighbourIndex = intuniform(0, (neighListMsg->getNeighbourNameListArraySize() - 1), usedRNG);
-                    dataMsg->setDestinationAddress(neighListMsg->getNeighbourNameList(neighbourIndex));
-                }
-
-                dataMsg->setDataName(cacheEntry->dataName.c_str());
-                dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
-
-                dataMsg->setRealPayloadSize(cacheEntry->realPayloadSize);
-                dataMsg->setDummyPayloadContent(cacheEntry->dummyPayloadContent.c_str());
-                int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6 + 1;
-
-
-                dataMsg->setRealPacketSize(realPacketSize);
-                dataMsg->setByteLength(realPacketSize);
-
-                dataMsg->setMsgType(cacheEntry->msgType);
-                dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
-                
-                // dataMsg->setFinalDestinationNodeName(cacheEntry->finalDestinationNodeName.c_str());
-                dataMsg->setInitialOriginatorAddress(cacheEntry->initialOriginatorAddress.c_str());
-                dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
-                if (cacheEntry->destinationOriented) {
-                    dataMsg->setFinalDestinationAddress(cacheEntry->finalDestinationAddress.c_str());
-                }
-                dataMsg->setMessageID(cacheEntry->messageID.c_str());
-                dataMsg->setHopCount(cacheEntry->hopCount);
-                dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
-                dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
-                dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
-                dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
-
-                send(dataMsg, "lowerLayerOut");
-
-                emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
-                emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
-
             }
 
             delete msg;

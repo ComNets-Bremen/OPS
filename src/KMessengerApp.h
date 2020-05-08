@@ -63,12 +63,18 @@ class KMessengerApp : public cSimpleModule
 
         int usedRNG;
 
+        bool singleDestination;
+        string singleDestinationNodeName;
+
         cMessage *appRegistrationEvent;
         cMessage *dataTimeoutEvent;
 
         int dataSizeInBytes;
 
         KBaseNodeInfo* ownNodeInfo;
+        bool ownNodeIsDestination;
+        KBaseNodeInfo* destinationNodeInfo;
+
         
         // variables to generate signals
 

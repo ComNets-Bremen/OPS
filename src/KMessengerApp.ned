@@ -28,14 +28,17 @@ simple KMessengerApp
         // data size
         int dataSizeInBytes = default(10000);
 
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
-        
         // TTL of messages
         double ttl = default(999999);
 
         // percentage of nodes from notificationCount to assign as being popularity
         double popularityAssignmentPercentage = default(25.0); // 25.0 = 25%
+
+        // are messages destined to a single destination?
+        bool singleDestination = default(false);
+        
+        // if singleDestination is true, then the node name of the destination, e.g., host[23]
+        string singleDestinationNodeName = default("host[0]");
 
         // icon used
         @display("i=block/app");

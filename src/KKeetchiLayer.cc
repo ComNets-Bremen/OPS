@@ -590,6 +590,8 @@ KLDataMsg* KKeetchiLayer::createKeetchiAPIDataMsgFromOMNETDataMsg(KDataMsg* omne
 
     keetchiAPIDataMsg->setSimDataPayloadSize(omnetDataMsg->getRealPayloadSize());
 
+    keetchiAPIDataMsg->setMsgUniqueID(omnetDataMsg->getMsgUniqueID());
+
     return keetchiAPIDataMsg;
 }
 
@@ -638,8 +640,8 @@ KDataMsg* KKeetchiLayer::createOMNETDataMsgFromKeetchiAPIDataMsg(KLDataMsg* keet
     omnetDataMsg->setRealPacketSize(realPacketSize);
 
     omnetDataMsg->setByteLength(realPacketSize);
-    
-    
+
+    omnetDataMsg->setMsgUniqueID(keetchiAPIDataMsg->getMsgUniqueID());
 
     return omnetDataMsg;
 }
