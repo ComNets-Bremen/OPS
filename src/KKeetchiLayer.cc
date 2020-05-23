@@ -438,7 +438,14 @@ void KKeetchiLayer::processLowerLayerInDataMsg(KDataMsg *dataMsg)
         omnetDataMsg = createOMNETDataMsgFromKeetchiAPIDataMsg(keetchiDataMsg);
 
         if (keetchiDataMsg->getToWhere() == KLDATAMSG_TO_APP_LAYER) {
-            send(omnetDataMsg, "upperLayerOut");
+
+            if (!omnetDataMsg->getDestinationOriented()
+                || (omnetDataMsg->getDestinationOriented()
+                    && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)) {
+                send(omnetDataMsg, "upperLayerOut");
+            } else {
+                delete omnetDataMsg;
+            }
 
         } else { // KLDATAMSG_TO_LINK_LAYER
             send(omnetDataMsg, "lowerLayerOut");
@@ -591,6 +598,10 @@ KLDataMsg* KKeetchiLayer::createKeetchiAPIDataMsgFromOMNETDataMsg(KDataMsg* omne
     keetchiAPIDataMsg->setSimDataPayloadSize(omnetDataMsg->getRealPayloadSize());
 
     keetchiAPIDataMsg->setMsgUniqueID(omnetDataMsg->getMsgUniqueID());
+    keetchiAPIDataMsg->setInitialInjectionTime(omnetDataMsg->getInitialInjectionTime().dbl());
+    keetchiAPIDataMsg->setDestinationOriented(omnetDataMsg->getDestinationOriented());
+    keetchiAPIDataMsg->setInitialOriginatorAddress(omnetDataMsg->getInitialOriginatorAddress());
+    keetchiAPIDataMsg->setFinalDestinationAddress(omnetDataMsg->getFinalDestinationAddress());
 
     return keetchiAPIDataMsg;
 }
@@ -642,6 +653,10 @@ KDataMsg* KKeetchiLayer::createOMNETDataMsgFromKeetchiAPIDataMsg(KLDataMsg* keet
     omnetDataMsg->setByteLength(realPacketSize);
 
     omnetDataMsg->setMsgUniqueID(keetchiAPIDataMsg->getMsgUniqueID());
+    omnetDataMsg->setInitialInjectionTime(keetchiAPIDataMsg->getInitialInjectionTime());
+    omnetDataMsg->setDestinationOriented(keetchiAPIDataMsg->getDestinationOriented());
+    omnetDataMsg->setInitialOriginatorAddress(keetchiAPIDataMsg->getInitialOriginatorAddress().c_str());
+    omnetDataMsg->setFinalDestinationAddress(keetchiAPIDataMsg->getFinalDestinationAddress().c_str());
 
     return omnetDataMsg;
 }
