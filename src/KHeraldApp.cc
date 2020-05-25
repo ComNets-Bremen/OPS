@@ -331,5 +331,12 @@ void KHeraldApp::finish()
     if (popularityList.size() > 0)
     	popularityList.clear();
     timesMessagesReceived.clear();
-}
 
+    if (heraldNodeInfoList.size() > 0) {
+        for (int i = 0; i < heraldNodeInfoList.size(); i++) {
+            KBaseNodeInfo* nodeInfo = heraldNodeInfoList[i];
+            delete nodeInfo;
+        }
+        heraldNodeInfoList.clear();
+    }
+}
