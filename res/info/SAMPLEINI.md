@@ -1,6 +1,6 @@
 # Details of the Sample .ini File
 
-The `simulations` folder contains a sample `.ini` file with the name [`ops-omnetpp.ini`](../../simulations/ops-omnetpp.ini) that
+The `simulations` folder contains a sample `.ini` file with the name [`ops-omnetpp.ini`](../../simulations/omnetpp-ops.ini) that
 contains a number of configurations (`Config` tags) to run OPS simulatioons with different
 parameter configurations. The following table provides the details (brief) of each configuration.
 

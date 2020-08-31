@@ -1,7 +1,7 @@
 # Node and Network Architecture
 
 The OPS node and network architecture consisit of a network model, a node model and a number of protocol 
-layer models that can be combined to build nodes to simulate opportunistic networking. A description 
+layer models that can be combined to build nodes to simulate opportunistic networks. A description 
 of these models is given below.
 
 ## OPS Network Model (OPSNetwork)
@@ -27,7 +27,7 @@ different protocol layer implementations. The picture below shows the architectu
 the `KOPSModel` model.
 
 <p align="center">
-  <img src="../images/ops-node.png" width="300"/>
+  <img src="../images/ops-node-model.png" width="300"/>
 </p>
 
 When evaluating the performance of opportunistic networks, the following aspects must
@@ -41,9 +41,9 @@ be considered before configuring a node.
 
 4. What **link layer model** (Link Layer) used to make direct communications between nodes?
 
-5. What **mobility model is used to simulated movements of users?
+5. What **mobility model** (Mobility) is used to simulated movements of users?
 
-
+Configuring a node is done using the `.ini` file. A sample is given [here](../../simulations/omnetpp-ops.ini) 
 
 ### Application Layer
 

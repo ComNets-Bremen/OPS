@@ -45,7 +45,7 @@ module KOPSNode
         string mobilityType = default("StationaryMobility");
 
         // icon
-        @display("i=device/palm2;bgb=250,340");
+        @display("i=device/palm2;bgb=271.78,317.5");
 
         // statistics
         // from application layer
@@ -126,36 +126,36 @@ module KOPSNode
 
         // user behavior model
         ubm: <userBahaviourModel> like IUBM if ubmEnabled {
-            @display("p=200.65999,29.633333");
+            @display("p=200.65999,29.633333;t=User\nBehaviour\nModel,r");
         }
 
         // application layer
         app: <applicationLayer> like IOPSApplicationLayer if !forwardingOnly {
             nodeIndex = nodeID;
-            @display("p=120,30");
+            @display("p=120,30;t=Application\nLayer,l");
         }
 
         // Forwarding layer
         forwarding: <forwardingLayer> like IOPSForwardingLayer {
             nodeIndex = nodeID;
-            @display("p=120,112");
+            @display("p=120,112;t=Forwarding\nLayer,r");
         }
 
         // link adaptation layer
         linkAdapt: <adaptationLayer> like IOPSAdaptationLayer {
             nodeIndex = nodeID;
-            @display("p=120,189");
+            @display("p=120,189;t=Link\nAdaptation\nLayer,r");
         }
 
         // wifi adhoc interface
         link: <linkLayer> like IOPSLinkLayer {
             nodeIndex = nodeID;
-            @display("p=120,269");
+            @display("p=120,269;t=Link\nLayer,r");
         }
 
         // mobility
         mobility: <mobilityType> like IMobility {
-            @display("p=186.26666,268.39334");
+            @display("p=186.26666,268.39334;t=Mobility,r");
         }
 
     connections allowunconnected:

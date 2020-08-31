@@ -164,7 +164,7 @@ the procedure given below.
 3. Select `Run->Run As->OMNeT++ Simulation`. After clicking through other popups, the following window should appear. Select the sample configuration using the pull-down. 
 
 <p align="center">
-  <img src="res/images/ops-config-select.png" width="200"/>
+  <img src="res/images/ops-config-select.png" width="300"/>
 </p>
 
 4. Based on the selected configuration, the following window should appear.
@@ -176,7 +176,7 @@ the procedure given below.
 5. Start simulating the network by clicking on the simulation controls shown below.
 
 <p align="center">
-  <img src="res/images/simulator-controls.png" width="200"/>
+  <img src="res/images/simulator-controls.png" width="300"/>
 </p>
 
 
@@ -261,8 +261,8 @@ have default values but all can be reconfigured in the `.ini` file. Here are som
 
 
 Please check the respective model's `.ned` file to see all the parameters. Details about models are 
-found in [MODELINFO File](./res/info/MODELINFO.md). A list of sample `.ini` files provided is found in
-[SAMPLEINI File](./res/info/SAMPLEINI.md). 
+found in [MODELINFO File](./res/info/MODELINFO.md). Details of the sample `.ini` file with multiple 
+sample configurations is provided in [SAMPLEINI File](./res/info/SAMPLEINI.md). 
 
 
 
