@@ -8,7 +8,7 @@
 
 package ops;
 
-simple KHeraldApp
+simple KHeraldApp like IOPSApplicationLayer
 {
      parameters:
 
@@ -97,4 +97,7 @@ simple KHeraldApp
         // interface for statistics
         input statIn @directIn;
 
+        // interface to the upper layer (never used, but included because of IOPSApplicationLayer interface)
+        input upperLayerIn;
+        output upperLayerOut;
 }

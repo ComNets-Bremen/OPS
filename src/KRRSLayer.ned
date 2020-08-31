@@ -11,10 +11,13 @@
 
 package ops;
 
-simple KRRSLayer like IForwardingLayer
+simple KRRSLayer like IOPSForwardingLayer
 {
      parameters:
-         
+
+        // node index
+        int nodeIndex;
+
 		// unique address of the node         
 		string ownMACAddress;
         

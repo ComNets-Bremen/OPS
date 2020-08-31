@@ -72,6 +72,7 @@ void KProphetRoutingLayer::initialize(int stage)
         dataReqBytesSentSignal = registerSignal("fwdDataReqBytesSent");
         dpTableRequestBytesSentSignal = registerSignal("fwdDPTableRequestBytesSent");
         dpTableDataBytesSentSignal = registerSignal("fwdDPTableDataBytesSent");
+        totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
 
     } else {
         EV_FATAL << KPROPHETROUTINGLAYER_SIMMODULEINFO << "Something is radically wrong in initialisation \n";

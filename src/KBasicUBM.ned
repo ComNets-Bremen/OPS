@@ -18,6 +18,9 @@ package ops;
 simple KBasicUBM like IUBM
 {
      parameters:
+         
+        // node index
+        int nodeIndex;
      
         int avoidLocationTimer @unit(s) = default(5s);
         //string isResponder = default("no");				// TO BE IMPLEMENTED/USED LATER

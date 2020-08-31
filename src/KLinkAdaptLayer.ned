@@ -9,9 +9,12 @@
 
 package ops;
 
-simple KLinkAdaptLayer
+simple KLinkAdaptLayer like IOPSAdaptationLayer
 {
     parameters:
+
+        // node index
+        int nodeIndex;
 
         // own address
         string ownMACAddress;

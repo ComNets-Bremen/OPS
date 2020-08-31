@@ -30,9 +30,9 @@ installed and configured.
 
 These prerequisites **MUST** be installed before proceeding to install OPS.
 
-### OMNeT++ (Version 5.4.1)
+### OMNeT++ (Version 5.6.2)
 
-OPS requires OMNeT++. Install OMNeT++ version 5.4.1 using the following resources.
+OPS requires OMNeT++. Install OMNeT++ version 5.6.2 using the following resources.
 
 - [OMNeT++ Installation Guide](https://omnetpp.org/documentation/)
 - [OMNeT++ Installation Binaries](https://omnetpp.org/download/)
@@ -62,7 +62,7 @@ install INET
 
 4. Select the installed project in `Project Explorer` pane and build INET using `Project->Build Project`
 
-**Note:** The build project should result in an error free build.
+**Note:** `Project->Build Project` should result in an error free build.
 
 
 ### KeetchiLib
@@ -86,7 +86,7 @@ and install KeetchiLib
 
 4. Select the installed project in `Project Explorer` pane and build KeetchiLib using `Project->Build Project`
 
-**Note:** The build project should result in an error free build.
+**Note:** `Project->Build Project` should result in an error free build.
 
 
 ###  SWIM Mobility Model
@@ -130,7 +130,7 @@ project folder `src/inet/mobility/contract`
   - `IReactiveMobility.ned`
   - `IReactiveMobility.h`
 
-4. Copy the following 2 files, located in `res/inet-models/ExtendedSWIMMobility` into the INET 
+4. Copy the following 3 files, located in `res/inet-models/ExtendedSWIMMobility` into the INET 
 project folder `src/inet/mobility/single`
   - `ExtendedSWIMMobility.ned`
   - `ExtendedSWIMMobility.h`
@@ -147,34 +147,41 @@ project folder `src/inet/mobility/single`
 
 9. Select the OPS project again in `Project Explorer` pane and build using `Project->Build Project`
 
-**Note:** The build project should result in an error free build.
+**Note:** `Project->Build Project` should result in an error free build.
 
 
 
 ## Running Simulations
 
-To run simulations, an OMNeT++ `.ini` file has to be created. A number of sample `.ini` files are given
-with different scenarios. To run a simulation, follow the procedure given below.
+To run simulations, an OMNeT++ `.ini` file has to be created. A sample `.ini` file with a number of 
+different scenarios (configurations) is provided in `simulations` folder. To run a simulation, follow 
+the procedure given below.
 
 1. Run the OMNeT++ IDE
 
-2. Select a sample `.ini` file from the folder `simulations/` (e.g., `omnetpp-messenger-epidemic.ini`)
+2. Select the sample `ops-omnetpp.ini` file from the folder `simulations/`
 
-3. Select `Run->Run As->OMNeT++ Simulation`. After clicking through other popups, the following window should appear.
+3. Select `Run->Run As->OMNeT++ Simulation`. After clicking through other popups, the following window should appear. Select the sample configuration using the pull-down. 
 
 <p align="center">
-  <img src="res/images/simulator-window.png" width="700"/>
+  <img src="res/images/ops-config-select.png" width="200"/>
 </p>
 
-4. Start simulating the network by clicking on the simulation controls shown below.
+4. Based on the selected configuration, the following window should appear.
+
+<p align="center">
+  <img src="res/images/ops-simulator-window.png" width="700"/>
+</p>
+
+5. Start simulating the network by clicking on the simulation controls shown below.
 
 <p align="center">
   <img src="res/images/simulator-controls.png" width="200"/>
 </p>
 
 
-As indicated, there are many sample `.ini` files available in the `simulations` folder. Details of these
-files are given in the [SAMPLEINI File](./res/info/SAMPLEINI.md).
+As indicated, there are many sample configurations in `ops-omnetpp.ini` file. Details of these
+configurations are given in the [SAMPLEINI File](./res/info/SAMPLEINI.md).
 
 
 ## Creating Graphs of Results
@@ -220,8 +227,9 @@ parameters as required. To know about all the model parameters, check the `.ned`
 
 ## Node and Network Architectures
 
-OPS has **three node models** and **three network models** to simulate opportunistic networks. A 
-description of these models is given in the [MODELINFO File](./res/info/MODELINFO.md).
+OPS has a **network model**, a **node model** and a number of **protocol layer models** to simulate 
+opportunistic networks. A description of all the models is given in the 
+[MODELINFO File](./res/info/MODELINFO.md).
 
 
 

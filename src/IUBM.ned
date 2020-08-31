@@ -10,8 +10,13 @@ package ops;
 
 moduleinterface IUBM
 {
+    parameters:
+    
+        // node index
+        int nodeIndex;
+        
         // icon used
-      	 @display("i=block/app");
+      	@display("i=block/app");
       	 
 	gates:
 	    

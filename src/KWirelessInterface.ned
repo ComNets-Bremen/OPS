@@ -9,9 +9,12 @@
 
 package ops;
 
-simple KWirelessInterface
+simple KWirelessInterface like IOPSLinkLayer
 {
     parameters:
+        // node index
+        int nodeIndex;
+
         string ownMACAddress;
         string interfaceTypeName = default("wireless");
         double wirelessRange @unit(m) = default(30m);

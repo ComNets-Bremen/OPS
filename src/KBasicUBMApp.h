@@ -28,7 +28,7 @@ using namespace std;
 
 #define KBASICUBMAPP_SIMMODULEINFO  " KBasicUBMApp>!<" << simTime() << ">!<" << this->getParentModule()->getFullName()
 
-class KBasicUBMApp : public cSimpleModule, public IUBMApp
+class KBasicUBMApp : public cSimpleModule
 {
     protected:
         virtual void initialize(int stage);

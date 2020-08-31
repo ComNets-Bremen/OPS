@@ -8,9 +8,12 @@
 
 package ops;
 
-simple KSpraywaitRoutingLayer like IForwardingLayer
+simple KSpraywaitRoutingLayer like IOPSForwardingLayer
 {
     parameters:
+
+        // node index
+        int nodeIndex;
 
         // unique address of the node
         string ownMACAddress;

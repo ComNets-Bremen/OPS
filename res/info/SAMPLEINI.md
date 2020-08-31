@@ -1,23 +1,22 @@
-# Details of Sample .ini Files
+# Details of the Sample .ini File
 
-There are many sample OMNeT++ `.ini` files provided in the `simulations` folder. These files
-are configured with different protocol layer models. They can be used to run simulations as
-they are or can be modified to suit other scenarios. The following table provides some
-basic information about each `.ini` file.
+The `simulations` folder contains a sample `.ini` file with the name [`ops-omnetpp.ini`](../../simulations/ops-omnetpp.ini) that
+contains a number of configurations (`Config` tags) to run OPS simulatioons with different
+parameter configurations. The following table provides the details (brief) of each configuration.
 
-
-|                               `.ini` file name                                                             |               Key Configuration Details                                                                       |
-|                                ---------------                                                             |               -------------------------                                                                       |
-| [omnetpp-herald-epidemic.ini](../../simulations/omnetpp-herald-epidemic.ini)                               | Destination-less node model, Herald App, Epidemic forwarding, SWIM mobility                                   |
-| [omnetpp-herald-keetchi.ini](../../simulations/omnetpp-herald-keetchi.ini)                                 | Destination-less node model, Herald App, Keetchi forwarding, SWIM mobility                                    |
-| [omnetpp-herald-optdelay.ini](../../simulations/omnetpp-herald-optdelay.ini)                               | Destination-less node model, Herald App, Optimum-delay forwarding, SWIM mobility                              |
-| [omnetpp-herald-rrs.ini](../../simulations/omnetpp-herald-rrs.ini)                                         | Destination-less node model, Herald App, RRS forwarding, SWIM mobility                                        |
-| [omnetpp-messenger-epidemic.ini](../../simulations/omnetpp-messenger-epidemic.ini)                         | Destination oriented node model, Messenger App, Epidemic forwarding, SWIM mobility                            |
-| [omnetpp-messenger-epidemic-single-dest.ini](../../simulations/omnetpp-messenger-epidemic-single-dest.ini) | Destination oriented node model, Messenger App (single destination), Epidemic forwarding, SWIM mobility       |
-| [omnetpp-messenger-keetchi.ini](../../simulations/omnetpp-messenger-keetchi.ini)                           | Destination oriented node model, Messenger App, Keetchi forwarding, SWIM mobility                             |
-| [omnetpp-messenger-optdelay.ini](../../simulations/omnetpp-messenger-optdelay.ini)                         | Destination oriented node model, Messenger App, Optimum-delay forwarding, SWIM mobility                       |
-| [omnetpp-messenger-prophet.ini](../../simulations/omnetpp-messenger-prophet.ini)                           | Destination oriented node model, Messenger App, PROPHET forwarding, SWIM mobility                             |
-| [omnetpp-messenger-rrs.ini](../../simulations/omnetpp-messenger-rrs.ini)                                   | Destination oriented node model, Messenger App, RRS forwarding, SWIM mobility                                 |
-| [omnetpp-messenger-spraywait.ini](../../simulations/omnetpp-messenger-spraywait.ini)                       | Destination oriented node model, Messenger App, Spray & Wait forwarding, SWIM mobility                        |
-| [omnetpp-ubm-epidemic.ini](../../simulations/omnetpp-ubm-epidemic.ini)                                     | Destination-less node model, UBM App, Epidemic forwarding, ExtendedSWIM mobility                              |
-| [omnetpp-ubm-keetchi.ini](../../simulations/omnetpp-ubm-keetchi.ini)                                       | Destination-less node model, UBM App, Keetchi forwarding, ExtendedSWIM mobility                               |
+|                `Config` tag                    |               Key Configuration Details                                                                 |
+|                ------------                    |               -------------------------                                                                 |
+| `[General]`                                    | Parameters required by all simulations (e.g., simulation time)                                          |
+| `[Config Herald-Epidemic-SWIM]`                | Destination-less node model, Herald App, Epidemic forwarding, SWIM mobility                             |
+| `[Config Herald-Keetchi-SWIM]`                 | Destination-less node model, Herald App, Keetchi forwarding, SWIM mobility                              |
+| `[Config Herald-Optimum-Delay-SWIM]`           | Destination-less node model, Herald App, Optimum-delay forwarding, SWIM mobility                        |
+| `[Config Herald-RRS-SWIM]`                     | Destination-less node model, Herald App, RRS forwarding, SWIM mobility                                  |
+| `[Config Messenger-Epidemic-SWIM]`             | Destination oriented node model, Messenger App, Epidemic forwarding, SWIM mobility                      |
+| `[Config Messenger-Epidemic-Single-Dest-SWIM]` | Destination oriented node model, Messenger App (single destination), Epidemic forwarding, SWIM mobility |
+| `[Config Messenger-Keetchi-SWIM]`              | Destination oriented node model, Messenger App, Keetchi forwarding, SWIM mobility                       |
+| `[Config Messenger-Optimum-Delay-SWIM]`        | Destination oriented node model, Messenger App, Optimum-delay forwarding, SWIM mobility                 |
+| `[Config Messenger-PRoPHET-SWIM]`              | Destination oriented node model, Messenger App, PROPHET forwarding, SWIM mobility                       |
+| `[Config Messenger-RRS-SWIM]`                  | Destination oriented node model, Messenger App, RRS forwarding, SWIM mobility                           |
+| `[Config Messenger-Spray-n-Wait-SWIM]`         | Destination oriented node model, Messenger App, Spray & Wait forwarding, SWIM mobility                  |
+| `[Config UBM-Epidemic-ExtendedSWIM]`           | Destination-less node model, UBM App, Epidemic forwarding, ExtendedSWIM mobility                        |
+| `[Config UBM-Keetchi-ExtendedSWIM]`            | Destination-less node model, UBM App, Keetchi forwarding, ExtendedSWIM mobility                         |

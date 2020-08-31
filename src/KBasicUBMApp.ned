@@ -12,12 +12,15 @@
 
 package ops;
 
-simple KBasicUBMApp like IUBMApp
+simple KBasicUBMApp like IOPSApplicationLayer
 {
     parameters:
         
         // node index
         int nodeIndex;
+
+        // unique address of the node
+        string ownMACAddress;
 
 		// prefix assigned to the app
     	string appPrefix = default("/basicubm-");

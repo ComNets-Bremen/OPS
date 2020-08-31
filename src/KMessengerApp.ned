@@ -9,7 +9,7 @@
 
 package ops;
 
-simple KMessengerApp
+simple KMessengerApp like IOPSApplicationLayer
 {
      parameters:
 
@@ -104,5 +104,9 @@ simple KMessengerApp
         
         // interface for statistics
         input statIn @directIn;
+
+        // interface to the upper layer (never used, but included because of IOPSApplicationLayer interface)
+        input upperLayerIn;
+        output upperLayerOut;
 
 }

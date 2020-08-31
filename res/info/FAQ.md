@@ -39,8 +39,8 @@ When installing, building or simulating with OPS, there may be problems that are
   - Run the terminal multiplexer `screen` to create virtual terminals that execute processes in the background even after the console/terminal is closed
   - Run simulations in the virtual terminal
     ```bash
-    jimbo$ cd OPS/simulations
-    jimbo$ ../src/OPS -r 0 -m -u Cmdenv \
+    adu@astraea$ cd OPS/simulations
+    adu@astraea$ ../src/OPS -r 0 -m -u Cmdenv -c "UBM-Epidemic-ExtendedSWIM" \
     -n .:../src:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../KeetchiLib \
     --image-path=../../inet/images -l ../../inet/src/INET -l ../../KeetchiLib/KeetchiLib \
     omnetpp-herald-epidemic.ini

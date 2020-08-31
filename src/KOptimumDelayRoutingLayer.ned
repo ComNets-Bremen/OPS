@@ -11,9 +11,12 @@
 
 package ops;
 
-simple KOptimumDelayRoutingLayer like IForwardingLayer
+simple KOptimumDelayRoutingLayer like IOPSForwardingLayer
 {
     parameters:
+
+        // node index
+        int nodeIndex;
 
         // unique address of the node
         string ownMACAddress;

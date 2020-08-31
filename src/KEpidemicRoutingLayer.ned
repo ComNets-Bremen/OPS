@@ -7,9 +7,11 @@
 //
 package ops;
 
-simple KEpidemicRoutingLayer like IForwardingLayer
+simple KEpidemicRoutingLayer like IOPSForwardingLayer
 {
     parameters:
+        // node index
+        int nodeIndex;
 
         // unique address of the node
         string ownMACAddress;
