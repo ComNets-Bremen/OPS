@@ -3,20 +3,21 @@
 // @author: Asanga Udugama (adu@comnets.uni-bremen.de)
 //
 
-#include "KWirelessInterface.h"
+#include "KWirelessInterfaceWithAngle.h"
 
 #include "KBaseNodeInfo.h"
 
 
-Define_Module(KWirelessInterface);
+Define_Module(KWirelessInterfaceWithAngle);
 
-void KWirelessInterface::initialize(int stage)
+void KWirelessInterfaceWithAngle::initialize(int stage)
 {
     if (stage == 0) {
 
         // get parameters
         ownMACAddress = par("ownMACAddress").stringValue();
         wirelessRange = par("wirelessRange");
+        calculateSpeedInterval = par("calculateSpeedInterval");
         neighbourScanInterval = par("neighbourScanInterval");
         bandwidthBitRate = par("bandwidthBitRate");
         wirelessHeaderSize = par("wirelessHeaderSize");
@@ -29,9 +30,13 @@ void KWirelessInterface::initialize(int stage)
         // get own module info
         ownNodeInfo = new KBaseNodeInfo();
         ownNodeInfo->nodeModule = getParentModule();
+        std::cout << "Nodemodule: " << ownNodeInfo->nodeModule << "\n";
         cModule *unknownModule = getParentModule()->getSubmodule("mobility");
         ownNodeInfo->nodeMobilityModule = check_and_cast<inet::IMobility*>(unknownModule);
         //ownNodeInfo->nodeWirelessIfcModule = this;
+        ownNodeInfo->firstTimePosition = true;
+        ownNodeInfo->nodeSpeed = 0.0;
+        ownNodeInfo->nodeAngle = 0.0;
 
     } else if (stage == 2) {
 
@@ -56,7 +61,7 @@ void KWirelessInterface::initialize(int stage)
                 if (dynamic_cast<inet::IMobility*>(*it) != NULL) {
                     unknownMobilityModule = *it;
                 }
-                if (dynamic_cast<KWirelessInterface*>(*it) != NULL) {
+                if (dynamic_cast<KWirelessInterfaceWithAngle*>(*it) != NULL) {
                     unknownWirelessIfcModule = *it;
                 }
             }
@@ -65,19 +70,27 @@ void KWirelessInterface::initialize(int stage)
                 KBaseNodeInfo *nodeInfo = new KBaseNodeInfo();
                 nodeInfo->nodeModule = unknownModule;
                 nodeInfo->nodeMobilityModule = dynamic_cast<inet::IMobility*>(unknownMobilityModule);
-                //nodeInfo->nodeWirelessIfcModule = dynamic_cast<KWirelessInterface*>(unknownWirelessIfcModule);
+                //nodeInfo->nodeWirelessIfcModule = dynamic_cast<KWirelessInterfaceWithAngle*>(unknownWirelessIfcModule);
+                nodeInfo->firstTimePosition = true;
+                nodeInfo->nodeAngle = 0.0;
+                nodeInfo->nodeSpeed = 0.0;
                 allNodeInfoList.push_back(nodeInfo);
             }
         }
 
+        // setup first event to calculate speed and angle and place to neighbourhood node list
+        speedCheckTimer = new cMessage("Compute SpeedAngle Event");
+        speedCheckTimer->setKind(KWIRELESSINTERFACEWITHANGLE_SPEEDCHECK_EVENT_CODE);
+        scheduleAt(simTime() + calculateSpeedInterval, speedCheckTimer);
+
         // setup first event to build neighbourhood node list and send to forwarding layer
         cMessage *sendNeighEvent = new cMessage("Send Neighbourhood Event");
-        sendNeighEvent->setKind(KWIRELESSINTERFACE_NEIGH_EVENT_CODE);
+        sendNeighEvent->setKind(KWIRELESSINTERFACEWITHANGLE_NEIGH_EVENT_CODE);
         scheduleAt(simTime() + neighbourScanInterval, sendNeighEvent);
 
         // setup pkt send event message
         sendPacketTimeoutEvent = new cMessage("Send Packet Timeout Event");
-        sendPacketTimeoutEvent->setKind(KWIRELESSINTERFACE_PKTSEND_EVENT_CODE);
+        sendPacketTimeoutEvent->setKind(KWIRELESSINTERFACEWITHANGLE_PKTSEND_EVENT_CODE);
 
         // setup statistics signals
         neighSizeSignal = registerSignal("linkNeighSize");
@@ -88,21 +101,24 @@ void KWirelessInterface::initialize(int stage)
 
         simpleNeighSizeSignal = registerSignal("linkSimpleNeighSize");
 
+
+
+
     } else {
-        EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << "Something is radically wrong\n";
+        EV_FATAL <<  KWIRELESSINTERFACEWITHANGLE_SIMMODULEINFO << "Something is radically wrong\n";
     }
 }
 
-int KWirelessInterface::numInitStages() const
+int KWirelessInterfaceWithAngle::numInitStages() const
 {
     return 3;
 }
 
-void KWirelessInterface::handleMessage(cMessage *msg)
+void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
 {
 
     // find and send neighbour list to upper layer
-    if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACE_NEIGH_EVENT_CODE) {
+    if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACEWITHANGLE_NEIGH_EVENT_CODE) {
 
         // init current neighbor list
         while (currentNeighbourNodeInfoList.size() > 0) {
@@ -120,7 +136,7 @@ void KWirelessInterface::handleMessage(cMessage *msg)
             KBaseNodeInfo *nodeInfo = *iteratorAllNodeInfo;
             inet::Coord neighCoord = nodeInfo->nodeMobilityModule->getCurrentPosition();
 
-#ifdef KWIRELESSINTERFACE_EUCLIDEAN_DISTANCE
+#ifdef KWIRELESSINTERFACEWITHANGLE_EUCLIDEAN_DISTANCE
             // check using euclidean distances
             double l = ((neighCoord.x - ownCoord.x) * (neighCoord.x - ownCoord.x))
                 + ((neighCoord.y - ownCoord.y) * (neighCoord.y - ownCoord.y));
@@ -145,7 +161,7 @@ void KWirelessInterface::handleMessage(cMessage *msg)
         }
 
         // compute and emit stats
-#ifdef KWIRELESSINTERFACE_COMPUTE_STATS
+#ifdef KWIRELESSINTERFACEWITHANGLE_COMPUTE_STATS
         generateStats();
 #endif
         // if there are neighbours, send message
@@ -157,6 +173,8 @@ void KWirelessInterface::handleMessage(cMessage *msg)
             KNeighbourListMsg *neighListMsg = new KNeighbourListMsg("Neighbour List Msg");
             neighListMsg->setNeighbourNameListArraySize(currentNeighbourNodeInfoList.size());
             neighListMsg->setNeighbourNameCount(currentNeighbourNodeInfoList.size());
+            neighListMsg->setNeighbourSpeedListArraySize(currentNeighbourNodeInfoList.size());
+            neighListMsg->setNeighbourAngleListArraySize(currentNeighbourNodeInfoList.size());
 
             list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
             while (iteratorCurrentNeighbourNodeInfo != currentNeighbourNodeInfoList.end()) {
@@ -164,10 +182,17 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
                 string nodeAddress = nodeInfo->nodeModule->par("ownAddress").stringValue();
                 neighListMsg->setNeighbourNameList(neighCount, nodeAddress.c_str());
+                neighListMsg->setNeighbourSpeedList(neighCount, nodeInfo->nodeSpeed);
+                neighListMsg->setNeighbourAngleList(neighCount, nodeInfo->nodeAngle);
+                //edited Vishnu
+
 
                 neighCount++;
                 iteratorCurrentNeighbourNodeInfo++;
             }
+
+            neighListMsg->setMySpeed(ownNodeInfo->nodeSpeed);
+            neighListMsg->setMyAngle(ownNodeInfo->nodeAngle);
 
             // send msg to upper layer
             send(neighListMsg, "upperLayerOut");
@@ -176,13 +201,123 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
         // setup next event to build neighbourhood node list and send to forwarding layer
         cMessage *sendNeighEvent = new cMessage("Send Neighbourhood Event");
-        sendNeighEvent->setKind(KWIRELESSINTERFACE_NEIGH_EVENT_CODE);
+        sendNeighEvent->setKind(KWIRELESSINTERFACEWITHANGLE_NEIGH_EVENT_CODE);
         scheduleAt(simTime() + neighbourScanInterval, sendNeighEvent);
 
         delete msg;
 
+
+//########################## vishnu mobility vectors edited Feb 12, 2020
+
+        // Calculate speed and angle based on timer - update one's mobility vectors and find mobility vectors of neighbors
+    } else if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACEWITHANGLE_SPEEDCHECK_EVENT_CODE) {
+
+        if (ownNodeInfo->firstTimePosition) {
+            ownNodeInfo->firstTimePosition = false;
+            ownNodeInfo->lastPosition = ownNodeInfo->nodeMobilityModule->getCurrentPosition();
+        }
+        else {
+
+            inet::Coord myOwnCoord = ownNodeInfo->nodeMobilityModule->getCurrentPosition();
+            //calculate speed
+            double distance = ((myOwnCoord.x - ownNodeInfo->lastPosition.x) * 
+                (myOwnCoord.x - ownNodeInfo->lastPosition.x) 
+                    + (myOwnCoord.y - ownNodeInfo->lastPosition.y) *
+                        (myOwnCoord.y - ownNodeInfo->lastPosition.y));
+            double speed = sqrt(distance/calculateSpeedInterval);
+            double angle = 0.0;
+
+            if (speed <= 0.0) {
+                angle = 0.0;
+            }
+            else {
+                double positionX = myOwnCoord.x - ownNodeInfo->lastPosition.x;
+                double positionY = myOwnCoord.y - ownNodeInfo->lastPosition.y;
+                double posRatio = positionY/positionX;
+                double angleRadians = atan (positionY/positionX);
+                angle = angleRadians * (180/3.14);
+
+                // calculate angle
+                if (positionX < 0 && positionY > 0) {
+                    // Quadrant: II
+                    angle = angle + 180;
+                }
+                else if (positionX < 0 && positionY < 0) {
+                    //Quadrant : III
+                    angle = angle + 180;
+                }
+                else if (positionX > 0 && positionY < 0) {
+                    //Quadrant: IV
+                    angle = angle + 360;
+                }
+            }
+            ownNodeInfo->nodeSpeed = speed;
+            ownNodeInfo->nodeAngle = angle;
+            ownNodeInfo->lastPosition = myOwnCoord;
+        }
+
+        // calculate mobility vectors of all nodes
+        list<KBaseNodeInfo*>::iterator iteratorAllNodeInfo = allNodeInfoList.begin();
+        while (iteratorAllNodeInfo != allNodeInfoList.end()) {
+            KBaseNodeInfo *nodeInfo = *iteratorAllNodeInfo;
+            inet::Coord neighCoord = nodeInfo->nodeMobilityModule->getCurrentPosition();
+
+            if (nodeInfo->firstTimePosition) {
+                nodeInfo->firstTimePosition = false;
+                nodeInfo->lastPosition = nodeInfo->nodeMobilityModule->getCurrentPosition();
+            }
+
+            else {
+                //calculate speed
+                double distance = ((neighCoord.x - nodeInfo->lastPosition.x) 
+                    * (neighCoord.x - nodeInfo->lastPosition.x) + (neighCoord.y - nodeInfo->lastPosition.y) *
+                            (neighCoord.y - nodeInfo->lastPosition.y));
+                double speed = sqrt(distance/calculateSpeedInterval);
+                double angle = 0;
+
+                if (speed <= 0){
+                    angle = 0;
+                }
+
+                else {
+                    double positionX = neighCoord.x - nodeInfo->lastPosition.x;
+                    double positionY = neighCoord.y - nodeInfo->lastPosition.y;
+                    double posRatio = positionY/positionX;
+                    double angleRadians = atan (positionY/positionX);
+                    angle = angleRadians * (180/3.14);
+
+                    // calculate angle
+                    if (positionX < 0 && positionY > 0) {
+                        // Quadrant: II
+                        angle = angle + 180;
+                    }
+                    else if (positionX < 0 && positionY < 0) {
+                        //Quadrant : III
+                        angle = angle + 180;
+                    }
+                    else if (positionX > 0 && positionY < 0){
+                        //Quadrant: IV
+                        angle = angle + 360;
+                    }
+                }
+                nodeInfo->nodeSpeed = speed;
+                nodeInfo->nodeAngle = angle;
+            }
+            nodeInfo->lastPosition = neighCoord;
+            iteratorAllNodeInfo++;
+        }
+
+        // setup first event to calculate speed and angle and place to neighbourhood node list
+        speedCheckTimer = new cMessage("Compute SpeedAngle Event");
+        speedCheckTimer->setKind(KWIRELESSINTERFACEWITHANGLE_SPEEDCHECK_EVENT_CODE);
+        scheduleAt(simTime() + calculateSpeedInterval, speedCheckTimer);
+
+        delete msg;
+
+//######################### - vishnu mobility vectors edited
+
     // trigger to send pending packet and setup new send
-    } else if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACE_PKTSEND_EVENT_CODE) {
+    } else if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACEWITHANGLE_PKTSEND_EVENT_CODE) {
 
         // send the pending packet out
         sendPendingMsg();
@@ -204,7 +339,7 @@ void KWirelessInterface::handleMessage(cMessage *msg)
         cGate *gate;
         char gateName[32];
 
-       // get message arrival gate name
+        // get message arrival gate name
         gate = msg->getArrivalGate();
         strcpy(gateName, gate->getName());
 
@@ -216,25 +351,24 @@ void KWirelessInterface::handleMessage(cMessage *msg)
 
                 packetQueue.push(msg);
 
-            // no queued msgs
+                // no queued msgs
             } else {
 
                 // so setup for next message sending and start timer
                 setupSendingMsg(msg);
 
-              }
+            }
 
         // from lowerLayerIn
         } else {
 
             // send msg to upper layer
             send(msg, "upperLayerOut");
-
         }
     }
 }
 
-void KWirelessInterface::setupSendingMsg(cMessage *msg)
+void KWirelessInterfaceWithAngle::setupSendingMsg(cMessage *msg)
 {
     string destinationAddress = getDestinationAddress(msg);
     bool isBroadcastMsg = FALSE;
@@ -270,7 +404,7 @@ void KWirelessInterface::setupSendingMsg(cMessage *msg)
 
 }
 
-void KWirelessInterface::sendPendingMsg()
+void KWirelessInterfaceWithAngle::sendPendingMsg()
 {
     // check if nodes to deliver are still in neighbourhood, if so send the packet
     list<KBaseNodeInfo*>::iterator iteratorAtTxNeighbourNodeInfo = atTxNeighbourNodeInfoList.begin();
@@ -314,7 +448,7 @@ void KWirelessInterface::sendPendingMsg()
 
 }
 
-string KWirelessInterface::getDestinationAddress(cMessage *msg)
+string KWirelessInterfaceWithAngle::getDestinationAddress(cMessage *msg)
 {
     KDataMsg *dataMsg = dynamic_cast<KDataMsg*>(msg);
     if (dataMsg) {
@@ -347,7 +481,7 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
     }
 
 
-    EV_FATAL <<  KWIRELESSINTERFACE_SIMMODULEINFO << ">!<Unknown message type. Check \"string KWirelessInterface::getDestinationAddress(cMessage *msg)\"\n";
+    EV_FATAL <<  KWIRELESSINTERFACEWITHANGLE_SIMMODULEINFO << ">!<Unknown message type. Check \"string KWirelessInterfaceWithAngle::getDestinationAddress(cMessage *msg)\"\n";
 
     throw cRuntimeError("Unknown message type in KWirelessnterface");
 
@@ -355,7 +489,7 @@ string KWirelessInterface::getDestinationAddress(cMessage *msg)
 }
 
 
-void KWirelessInterface::generateStats()
+void KWirelessInterfaceWithAngle::generateStats()
 {
 
     emit(neighSizeSignal, (long) currentNeighbourNodeInfoList.size());
@@ -431,7 +565,7 @@ void KWirelessInterface::generateStats()
     }
 }
 
-void KWirelessInterface::finish()
+void KWirelessInterfaceWithAngle::finish()
 {
     // remove send msg timeout
     if (sendPacketTimeoutEvent->isScheduled()) {
@@ -454,4 +588,3 @@ void KWirelessInterface::finish()
         currentPendingMsg = NULL;
     }
 }
-

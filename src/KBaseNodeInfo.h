@@ -25,11 +25,15 @@ class KBaseNodeInfo
 {
     public:
         string nodeAddress;
+        double nodeSpeed;
+        double nodeAngle;
 
         // mobility related info
         cModule *nodeModule;
 		inet::IMobility *nodeMobilityModule;
-		KWirelessInterface *nodeWirelessIfcModule;
+        inet::Coord lastPosition;
+        bool firstTimePosition;
+		//KWirelessInterface *nodeWirelessIfcModule;
 
 		// messenger app related info
         KMessengerApp *nodeMessengerAppModule;

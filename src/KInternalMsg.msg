@@ -15,6 +15,10 @@ packet KRegisterAppMsg {
 // Message to provide the current neighbour list
 packet KNeighbourListMsg {
     string neighbourNameList[];
+    double neighbourSpeedList[];
+    double neighbourAngleList[];
     int neighbourNameCount;
+    double mySpeed;
+    double myAngle;
 }
 
