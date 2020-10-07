@@ -1,0 +1,8 @@
+# stats to extract
+# check for stats in OPSNetwork.ned and OPSNode.ned
+# stat name, scalar type, short name, long name, unit, data type
+appTotalDataDeliveryRatio,    last, DR,  Delivery Ratio, ratio, float
+appTotalDataReceivedAvgDelay, last, DD,  Delivery Delay, sec,   float
+fwdTotalBytesReceived,        last, RB,  Received Bytes, bytes, int
+fwdAvgHopsTravelled,          last, AHC, Avg Hop Count,  hops,  float
+fwdCacheBytesRemoved,         last, CR,  Cache Removals, bytes, int

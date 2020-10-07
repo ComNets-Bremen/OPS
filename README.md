@@ -187,8 +187,12 @@ configurations are given in the [SAMPLEINI File](./res/info/SAMPLEINI.md).
 ## Creating Graphs of Results
 
 Based on the standard configuration, the raw results (vector and scalar) collected after a simulation run 
-are located in the `simulation/results` folder. Below is a brief (high-level) procedure to create your charts
-using the OMNeT++ IDE. 
+are located in the `simulation/results` folder. There are 2 ways of creating charts and tables of results. 
+Using the OMNeT++ IDE or using external tools/scripts. Here are examples of the 2 ways.
+
+### Using the OMNeT++ IDE
+
+Below is a brief (high-level) procedure to create your charts using the OMNeT++ IDE. 
 
 1. Run the OMNeT++ IDE
 
@@ -208,6 +212,19 @@ An example results chart generated using 2 simulations (Epidemic and RRS) is sho
   <img src="res/images/delv-ratio-epi-rrs.png" width="700"/>
 </p>
 
+
+
+### Using Python and Matplotlib
+
+Another way is to create tables and graphs using the [Python](https://www.python.org) scripting 
+laguage and the [Matplotlib](https://matplotlib.org) library of Python. Have a look and adapt 
+the following files (in `res/python-results` folder) to plot graphs and dump a table of the results.
+
+  1. [`plot-sca-results.py`](./res/python-results/plot-sca-results.py) - Plot a bar chart for each of the selected scalar results
+  2. [`show-sca-results.py`](./res/python-results/show-sca-results.py) - Show a single table of all the selected scalar results
+  3. [`plot-vec-results.py`](./res/python-results/plot-vec-results.py) - Plot a line chart of the selected vector results
+  4. [`datalist.csv`](./res/python-results/datalist.csv) - List of all the paths to the `.vec` and `.sca` files of simulations (given as a parameter to `1.`, `2.` and `3.`)
+  5. [`statlist.csv`](./res/python-results/statlist.csv) - List of the results to plot by the above scripts (given as a parameter to `1.`, `2.` and `3.`)
 
 
 
