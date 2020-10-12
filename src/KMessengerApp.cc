@@ -302,7 +302,7 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
 void KMessengerApp::finish()
 {
-    delete appRegistrationEvent;
+    cancelAndDelete(appRegistrationEvent);
 
     if (!singleDestination || (singleDestination && !ownNodeIsDestination)) {
         cancelEvent(dataTimeoutEvent);

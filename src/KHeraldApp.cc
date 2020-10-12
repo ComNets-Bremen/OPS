@@ -322,7 +322,7 @@ void KHeraldApp::handleMessage(cMessage *msg)
 
 void KHeraldApp::finish()
 {
-    delete appRegistrationEvent;
+    cancelAndDelete(appRegistrationEvent);
 
     cancelEvent(dataTimeoutEvent);
     delete dataTimeoutEvent;
