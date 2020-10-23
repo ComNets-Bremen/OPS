@@ -308,23 +308,50 @@ void KMobilitySameDirection::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
             return;
         }
 
+
+        
         // send summary vector messages (if appropriate) to all nodes to sync in a loop
         int i = 0;
+        vector<int> priorityList;
+        
         //i  = rand() % (neighListMsg->getNeighbourNameListArraySize() + 1);
         while (i < neighListMsg->getNeighbourNameListArraySize()) {
             double tempSpeed = neighListMsg->getMySpeed() - neighListMsg->getNeighbourSpeedList(i);
             if (tempSpeed < 0.0){
                 tempSpeed = fabs(tempSpeed);
             }
-            //if (tempSpeed < 3.00){
-                double tempAngle = neighListMsg->getMyAngle() - neighListMsg->getNeighbourAngleList(i);
-                if (tempAngle < 0.0){
-                                tempAngle = fabs(tempAngle);
-                }
-                if (tempAngle >=0.00 && tempAngle <=50.00){
 
+            double tempAngle = neighListMsg->getMyAngle() - neighListMsg->getNeighbourAngleList(i);
+            if (tempAngle < 0.0){
+                tempAngle = fabs(tempAngle);
+            }
+            if (tempAngle >=155.00 && tempAngle <=205.00){
+                priorityList.push_back(PRIORITY_Q1);
+            } else if (tempAngle >120.00 && tempAngle <=180.00){
+                priorityList.push_back(PRIORITY_Q2);
+            }else if (tempAngle >50.00 && tempAngle <=120.00){
+                priorityList.push_back(PRIORITY_Q3);
+            }else {
+                priorityList.push_back(PRIORITY_Q4);
+            }
+            i++;
+        }
 
-                    string nodeMACAddress = neighListMsg->getNeighbourNameList(i);
+        vector<int> priorityCodeList = {PRIORITY_Q1,
+                                        PRIORITY_Q2,
+                                        PRIORITY_Q3,
+                                        PRIORITY_Q4};
+        //cout << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "prority list  " << priorityCodeList.size() << " priority node list " << priorityList.size() << " node list " << neighListMsg->getNeighbourNameListArraySize() << "\n";
+        for (int x = 0; x < (priorityCodeList.size()-3); x++) {
+
+            //cout << "x is: " << x ;
+            // send summary vector messages (if appropriate) to all nodes to sync in a loop
+            // check priority 1
+            int j = 0;
+            while (j < neighListMsg->getNeighbourNameListArraySize()) {
+                if (priorityList[j] == priorityCodeList[x]) {
+
+                    string nodeMACAddress = neighListMsg->getNeighbourNameList(j);
 
                     // get syncing info of neighbor
                     SyncedNeighbour *syncedNeighbour = getSyncingNeighbourInfo(nodeMACAddress);
@@ -369,6 +396,7 @@ void KMobilitySameDirection::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
                     // from previous questions - if syncing required
                     if (syncWithNeighbour) {
 
+                        //cout << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "neigh Mac" << nodeMACAddress << "\n";
                         // set the cooloff period
                         syncedNeighbour->syncCoolOffEndTime = simTime().dbl() + antiEntropyInterval;
 
@@ -388,9 +416,8 @@ void KMobilitySameDirection::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
 
                     }
                 }
-            //}
-            //i  = rand() % (neighListMsg->getNeighbourNameListArraySize() + 1);
-            i++;
+                j++;
+            }
         }
 
         // setup sync neighbour list for the next time
@@ -402,7 +429,7 @@ void KMobilitySameDirection::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
 
         // delete the received neighbor list msg
         delete msg;
-        }
+}
 
 
 void KMobilitySameDirection::handleDataMsgFromLowerLayer(cMessage *msg)

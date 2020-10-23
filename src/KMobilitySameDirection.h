@@ -153,4 +153,10 @@ class KMobilitySameDirection: public cSimpleModule
 
 #define KMOBILITYSAMEDIRECTION_MSG_ID_HASH_SIZE      4 // in bytes
 
+#define PRIORITY_Q1                         1
+#define PRIORITY_Q2                         2
+#define PRIORITY_Q3                         9
+#define PRIORITY_Q4                         99
+
+
 #endif /* KMOBILITYSAMEDIRECTION_H_ */

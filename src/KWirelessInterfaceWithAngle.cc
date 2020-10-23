@@ -101,6 +101,14 @@ void KWirelessInterfaceWithAngle::initialize(int stage)
 
         simpleNeighSizeSignal = registerSignal("linkSimpleNeighSize");
 
+        packetsSentSignal = registerSignal("linkPacketsSent");
+        packetsSentBytesSignal = registerSignal("linkPacketsSentBytes");
+        packetsDeliveredSignal = registerSignal("linkPacketsDelivered");
+        packetsDeliveredBytesSignal = registerSignal("linkPacketsDeliveredBytes");
+        packetsDroppedSignal = registerSignal("linkPacketsDropped");
+        packetsDroppedBytesSignal = registerSignal("linkPacketsDroppedBytes");
+        packetsReceivedSignal = registerSignal("linkPacketsReceived");
+        packetsReceivedBytesSignal = registerSignal("linkPacketsReceivedBytes");
 
 
 
@@ -162,7 +170,7 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
 
         // compute and emit stats
 #ifdef KWIRELESSINTERFACEWITHANGLE_COMPUTE_STATS
-        generateStats();
+        generateNeighStats();
 #endif
         // if there are neighbours, send message
         if (currentNeighbourNodeInfoList.size() > 0) {
@@ -362,6 +370,11 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
         // from lowerLayerIn
         } else {
 
+            // update receive packet stats
+            emit(packetsReceivedSignal, 1);
+            cPacket *pkt = dynamic_cast<cPacket*>(msg);
+            emit(packetsReceivedBytesSignal, (long) pkt->getByteLength());
+
             // send msg to upper layer
             send(msg, "upperLayerOut");
         }
@@ -402,6 +415,10 @@ void KWirelessInterfaceWithAngle::setupSendingMsg(cMessage *msg)
     // setup timer to trigger at tx duration
     scheduleAt(simTime() + txDuration, sendPacketTimeoutEvent);
 
+    // update sent packets stats
+    emit(packetsSentSignal, 1);
+    emit(packetsSentBytesSignal, (long) currentPendingPkt->getByteLength());
+
 }
 
 void KWirelessInterfaceWithAngle::sendPendingMsg()
@@ -412,6 +429,7 @@ void KWirelessInterfaceWithAngle::sendPendingMsg()
         KBaseNodeInfo *atTxNeighbourNodeInfo = *iteratorAtTxNeighbourNodeInfo;
         string atTxNeighbourNodeAddress = atTxNeighbourNodeInfo->nodeModule->par("ownAddress").stringValue();
 
+        bool nodeStillInNeighbourhood = false;
         list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
         while (iteratorCurrentNeighbourNodeInfo != currentNeighbourNodeInfoList.end()) {
             KBaseNodeInfo *currentNeighbourNodeInfo = *iteratorCurrentNeighbourNodeInfo;
@@ -420,16 +438,31 @@ void KWirelessInterfaceWithAngle::sendPendingMsg()
             // check if node is still in neighbourhood
             if (atTxNeighbourNodeAddress == currentNeighbourNodeAddress) {
 
+                nodeStillInNeighbourhood = true;
+
                 // make duplicate of packet
                 cPacket *outPktCopy =  dynamic_cast<cPacket*>(currentPendingMsg->dup());
 
                 // send to node
                 sendDirect(outPktCopy, currentNeighbourNodeInfo->nodeModule, "radioIn");
 
+                // update delivered packets stats
+                emit(packetsDeliveredSignal, 1);
+                cPacket *currentPendingPkt = dynamic_cast<cPacket*>(currentPendingMsg);
+                emit(packetsDeliveredBytesSignal, (long) currentPendingPkt->getByteLength());
+
                 break;
             }
 
             iteratorCurrentNeighbourNodeInfo++;
+        }
+
+        // update dropped packets stats
+        if (!nodeStillInNeighbourhood) {
+            emit(packetsDroppedSignal, 1);
+            cPacket *currentPendingPkt = dynamic_cast<cPacket*>(currentPendingMsg);
+            emit(packetsDroppedBytesSignal, (long) currentPendingPkt->getByteLength());
+
         }
 
         iteratorAtTxNeighbourNodeInfo++;
@@ -489,7 +522,7 @@ string KWirelessInterfaceWithAngle::getDestinationAddress(cMessage *msg)
 }
 
 
-void KWirelessInterfaceWithAngle::generateStats()
+void KWirelessInterfaceWithAngle::generateNeighStats()
 {
 
     emit(neighSizeSignal, (long) currentNeighbourNodeInfoList.size());

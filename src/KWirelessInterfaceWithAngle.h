@@ -72,7 +72,7 @@ class KWirelessInterfaceWithAngle: public cSimpleModule
         void setupSendingMsg(cMessage *msg);
         void sendPendingMsg();
         string getDestinationAddress(cMessage *msg);
-        void generateStats();
+        void generateNeighStats();
 
         // stats related variables
         simsignal_t neighSizeSignal;
@@ -82,6 +82,16 @@ class KWirelessInterfaceWithAngle: public cSimpleModule
         simsignal_t contactCountSignal;
 
         simsignal_t simpleNeighSizeSignal;
+
+        simsignal_t packetsSentSignal;
+        simsignal_t packetsSentBytesSignal;
+        simsignal_t packetsDeliveredSignal;
+        simsignal_t packetsDeliveredBytesSignal;
+        simsignal_t packetsDroppedSignal;
+        simsignal_t packetsDroppedBytesSignal;
+        simsignal_t packetsReceivedSignal;
+        simsignal_t packetsReceivedBytesSignal;
+
 };
 
 #define KWIRELESSINTERFACEWITHANGLE_SIMMODULEINFO            " KWirelessInterfaceWithAngle>!<" << simTime() << ">!<" << getParentModule()->getFullName()

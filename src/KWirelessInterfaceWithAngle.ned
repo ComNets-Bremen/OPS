@@ -39,6 +39,16 @@ simple KWirelessInterfaceWithAngle like IOPSLinkLayer
 
         @signal[linkSimpleNeighSize](type=long);
 
+        @signal[linkPacketsSent](type=long);
+        @signal[linkPacketsSentBytes](type=long);
+        @signal[linkPacketsDelivered](type=long);
+        @signal[linkPacketsDeliveredBytes](type=long);
+        @signal[linkPacketsDropped](type=long);
+        @signal[linkPacketsDroppedBytes](type=long);
+        @signal[linkPacketsReceived](type=long);
+        @signal[linkPacketsReceivedBytes](type=long);
+
+
     gates:
         // interface to the upper layer (which may be the link adaptation layer)
         input upperLayerIn;

@@ -89,5 +89,11 @@ The table below lists the statistics generated from the link layer.
 | linkAvgContactDuration      | Average Contact Duration                         | Network, Node   |
 | linkContactCount            | Total Contact Count                              | Network, Node   |
 | linkSimpleNeighSize         | Simple Neighbour Size (without averaging)        | Network, Node   |
-
-
+| linkPacketsSent             | Packets Sent Count                               | Network, Node   |
+| linkPacketsSentBytes        | Total Sent Bytes                                 | Network, Node   |
+| linkPacketsDelivered        | Packets Delivered Count                          | Network, Node   |
+| linkPacketsDeliveredBytes   | Total Delivered Bytes                            | Network, Node   |
+| linkPacketsDropped          | Packets Dropped Count                            | Network, Node   |
+| linkPacketsDroppedBytes     | Total Dropped Bytes                              | Network, Node   |
+| linkPacketsReceived         | Packets Received Count                           | Network, Node   |
+| linkPacketsReceivedBytes    | Total Received Bytes                             | Network, Node   |

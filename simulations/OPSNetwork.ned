@@ -85,6 +85,15 @@ network OPSNetwork
 
         @statistic[linkSimpleNeighbourSize](source=linkSimpleNeighSize; record=mean,vector; title="Simple Neighbour Size");
 
+        @statistic[linkPacketsSent](source=sum(linkPacketsSent); record=last,vector; title="Packets Sent Count");
+        @statistic[linkPacketsSentBytes](source=sum(linkPacketsSentBytes); record=last,vector; title="Total Sent Bytes"; unit=byte);
+        @statistic[linkPacketsDelivered](source=sum(linkPacketsDelivered); record=last,vector; title="Packets Delivered Count");
+        @statistic[linkPacketsDeliveredBytes](source=sum(linkPacketsDeliveredBytes); record=last,vector; title="Total Delivered Bytes"; unit=byte);
+        @statistic[linkPacketsDropped](source=sum(linkPacketsDropped); record=last,vector; title="Packets Dropped Count");
+        @statistic[linkPacketsDroppedBytes](source=sum(linkPacketsDroppedBytes); record=last,vector; title="Total Dropped Bytes"; unit=byte);
+        @statistic[linkPacketsReceived](source=sum(linkPacketsReceived); record=last,vector; title="Packets Received Count");
+        @statistic[linkPacketsReceivedBytes](source=sum(linkPacketsReceivedBytes); record=last,vector; title="Total Received Bytes"; unit=byte);
+
 
         @display("bgb=190,171");
 
