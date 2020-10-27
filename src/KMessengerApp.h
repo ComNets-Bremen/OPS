@@ -63,8 +63,8 @@ class KMessengerApp : public cSimpleModule
 
         int usedRNG;
 
-        bool singleDestination;
-        string singleDestinationNodeName;
+        bool specificDestination;
+        string specificDestinationNodeName;
 
         cMessage *appRegistrationEvent;
         cMessage *dataTimeoutEvent;

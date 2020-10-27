@@ -45,6 +45,7 @@ class KMobilitySameDirection: public cSimpleModule
         double maximumRandomBackoffDuration;
         bool useTTL;
         int usedRNG;
+        const char  *selectedPriorityList;
 
         int numEventsHandled;
         int currentCacheSize;
@@ -61,6 +62,8 @@ class KMobilitySameDirection: public cSimpleModule
         bool firstTime = true;
 
         string broadcastMACAddress;
+
+        vector<int> selectedPriorityCodeList;
 
         struct AppInfo {
             int appID;
@@ -153,10 +156,14 @@ class KMobilitySameDirection: public cSimpleModule
 
 #define KMOBILITYSAMEDIRECTION_MSG_ID_HASH_SIZE      4 // in bytes
 
-#define PRIORITY_Q1                         1
-#define PRIORITY_Q2                         2
-#define PRIORITY_Q3                         9
-#define PRIORITY_Q4                         99
 
+#define PRIORITY_SAME_DIRECTION             1
+#define PRIORITY_OPPOSITE_DIRECTION         2
+#define PRIORITY_ADJACENT_LEFT_TOP          3
+#define PRIORITY_ADJACENT_LEFT_BOTTOM       4
+#define PRIORITY_ADJACENT_RIGHT_TOP         5
+#define PRIORITY_ADJACENT_RIGHT_BOTTOM      6
+#define PRIORITY_OTHER                      99
+#define PRIORITY_STATIONARY                 100
 
 #endif /* KMOBILITYSAMEDIRECTION_H_ */

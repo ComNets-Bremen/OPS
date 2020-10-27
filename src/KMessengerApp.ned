@@ -34,11 +34,11 @@ simple KMessengerApp like IOPSApplicationLayer
         // percentage of nodes from notificationCount to assign as being popularity
         double popularityAssignmentPercentage = default(25.0); // 25.0 = 25%
 
-        // are messages destined to a single destination?
-        bool singleDestination = default(false);
+        // are messages destined to a single specific destination?
+        bool specificDestination = default(false);
         
-        // if singleDestination is true, then the node name of the destination, e.g., host[23]
-        string singleDestinationNodeName = default("host[0]");
+        // if singleSpecificDestination is true, then the node name of the specific destination, e.g., host[23]
+        string specificDestinationNodeName = default("host[0]");
 
         // icon used
         @display("i=block/app");

@@ -25,11 +25,42 @@ void KMobilitySameDirection::initialize(int stage)
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         useTTL = par("useTTL");
         usedRNG = par("usedRNG");
+        selectedPriorityList = par("selectedPriorityList").stringValue();
         numEventsHandled = 0;
 
         syncedNeighbourListIHasChanged = TRUE;
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
 
+        // parse the neighbour selection priority list
+        cStringTokenizer tokenizer(selectedPriorityList);
+        while (tokenizer.hasMoreTokens()) {
+            const char *token = tokenizer.nextToken();
+
+            if (strcmp(token, "PRIORITY_SAME_DIRECTION") == 0) {
+                selectedPriorityCodeList.push_back(PRIORITY_SAME_DIRECTION);
+
+            } else if (strcmp(token, "PRIORITY_OPPOSITE_DIRECTION") == 0) {
+                selectedPriorityCodeList.push_back(PRIORITY_OPPOSITE_DIRECTION);
+
+            } else if (strcmp(token, "PRIORITY_ADJACENT_LEFT_TOP") == 0) {
+                selectedPriorityCodeList.push_back(PRIORITY_ADJACENT_LEFT_TOP);
+
+            } else if (strcmp(token, "PRIORITY_ADJACENT_LEFT_BOTTOM") == 0) {
+                selectedPriorityCodeList.push_back(PRIORITY_ADJACENT_LEFT_BOTTOM);
+
+            } else if (strcmp(token, "PRIORITY_ADJACENT_RIGHT_TOP") == 0) {
+                selectedPriorityCodeList.push_back(PRIORITY_ADJACENT_RIGHT_TOP);
+
+            } else if (strcmp(token, "PRIORITY_ADJACENT_RIGHT_BOTTOM") == 0) {
+                selectedPriorityCodeList.push_back(PRIORITY_ADJACENT_RIGHT_BOTTOM);
+
+            } else if (strcmp(token, "PRIORITY_STATIONARY") == 0) {
+                selectedPriorityCodeList.push_back(PRIORITY_STATIONARY);
+
+            } else {
+                throw cRuntimeError("Invalid selectedPriorityList");
+            }
+        }
 
     } else if (stage == 1) {
     //std::cout << "stage 1 " << "\n" ;
@@ -309,47 +340,56 @@ void KMobilitySameDirection::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
         }
 
 
-        
         // send summary vector messages (if appropriate) to all nodes to sync in a loop
         int i = 0;
         vector<int> priorityList;
         
         //i  = rand() % (neighListMsg->getNeighbourNameListArraySize() + 1);
         while (i < neighListMsg->getNeighbourNameListArraySize()) {
-            double tempSpeed = neighListMsg->getMySpeed() - neighListMsg->getNeighbourSpeedList(i);
-            if (tempSpeed < 0.0){
-                tempSpeed = fabs(tempSpeed);
+            double speedDifference = neighListMsg->getMySpeed() - neighListMsg->getNeighbourSpeedList(i);
+            if (speedDifference < 0.0){
+                speedDifference = fabs(speedDifference);
             }
 
-            double tempAngle = neighListMsg->getMyAngle() - neighListMsg->getNeighbourAngleList(i);
-            if (tempAngle < 0.0){
-                tempAngle = fabs(tempAngle);
+            double angleDifference = neighListMsg->getMyAngle() - neighListMsg->getNeighbourAngleList(i);
+            if (angleDifference < 0.0){
+                angleDifference = fabs(angleDifference);
             }
-            if (tempAngle >=155.00 && tempAngle <=205.00){
-                priorityList.push_back(PRIORITY_Q1);
-            } else if (tempAngle >120.00 && tempAngle <=180.00){
-                priorityList.push_back(PRIORITY_Q2);
-            }else if (tempAngle >50.00 && tempAngle <=120.00){
-                priorityList.push_back(PRIORITY_Q3);
-            }else {
-                priorityList.push_back(PRIORITY_Q4);
+
+            if (neighListMsg->getMyAngle() == 0.0 && neighListMsg->getNeighbourAngleList(i) == 0.0) {
+                priorityList.push_back(PRIORITY_STATIONARY);
+
+            } else if (angleDifference > 0.0 && angleDifference <= 45.0) {
+                priorityList.push_back(PRIORITY_SAME_DIRECTION);
+
+            } else if (angleDifference > 45.0 && angleDifference <= 112.5) {
+                priorityList.push_back(PRIORITY_ADJACENT_RIGHT_TOP);
+
+            } else if (angleDifference > 112.5 && angleDifference <= 180.0) {
+                priorityList.push_back(PRIORITY_ADJACENT_RIGHT_BOTTOM);
+
+            } else if (angleDifference > 180.0 && angleDifference <= 225.0) {
+                priorityList.push_back(PRIORITY_OPPOSITE_DIRECTION);
+
+            } else if (angleDifference > 225.0 && angleDifference <= 292.5) {
+                priorityList.push_back(PRIORITY_ADJACENT_LEFT_BOTTOM);
+
+            } else if (angleDifference > 292.5 && angleDifference <= 360.0) {
+                priorityList.push_back(PRIORITY_ADJACENT_LEFT_TOP);
+
+            } else {
+                priorityList.push_back(PRIORITY_OTHER);
             }
+
             i++;
         }
 
-        vector<int> priorityCodeList = {PRIORITY_Q1,
-                                        PRIORITY_Q2,
-                                        PRIORITY_Q3,
-                                        PRIORITY_Q4};
-        //cout << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "prority list  " << priorityCodeList.size() << " priority node list " << priorityList.size() << " node list " << neighListMsg->getNeighbourNameListArraySize() << "\n";
-        for (int x = 0; x < (priorityCodeList.size()-3); x++) {
+        for (int x = 0; x < selectedPriorityCodeList.size(); x++) {
 
-            //cout << "x is: " << x ;
-            // send summary vector messages (if appropriate) to all nodes to sync in a loop
-            // check priority 1
             int j = 0;
             while (j < neighListMsg->getNeighbourNameListArraySize()) {
-                if (priorityList[j] == priorityCodeList[x]) {
+
+                if (priorityList[j] == selectedPriorityCodeList[x]) {
 
                     string nodeMACAddress = neighListMsg->getNeighbourNameList(j);
 

@@ -1,5 +1,5 @@
 //
-// The model implementation for the Herald application.
+// The model implementation for the Messenger application.
 //
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de), Anna Förster (afoerster@uni-bremen.de)
 // @date   : 15-aug-2016, updated 6-febr-2018
@@ -29,8 +29,8 @@ void KMessengerApp::initialize(int stage)
 		notificationCount = totalSimulationTime/dataGenerationInterval;
 		totalNumNodes = getParentModule()->getParentModule()->par("numNodes");
 
-        singleDestination = par("singleDestination");
-        singleDestinationNodeName = par("singleDestinationNodeName").stringValue();
+		specificDestination = par("specificDestination");
+		specificDestinationNodeName = par("specificDestinationNodeName").stringValue();
 
         // add own address to global list to use for random destination selections
         ownNodeInfo = new KBaseNodeInfo();
@@ -47,24 +47,24 @@ void KMessengerApp::initialize(int stage)
 
     } else if (stage == 1) {
 
-        // find the destination node, if single destination is selected
-        if (singleDestination && strstr(ownNodeInfo->nodeName.c_str(), singleDestinationNodeName.c_str()) != NULL) {
+        // find the destination node, if specific destination is selected
+        if (specificDestination && strstr(ownNodeInfo->nodeName.c_str(), specificDestinationNodeName.c_str()) != NULL) {
             ownNodeIsDestination = TRUE;
             destinationNodeInfo = NULL;
 
-        } else if (singleDestination) {
+        } else if (specificDestination) {
             ownNodeIsDestination = FALSE;
             bool found = FALSE;
             for(int i = 0; i < messengerNodeInfoList.size(); i++) {
-                if (strstr(messengerNodeInfoList[i]->nodeName.c_str(), singleDestinationNodeName.c_str()) != NULL) {
+                if (strstr(messengerNodeInfoList[i]->nodeName.c_str(), specificDestinationNodeName.c_str()) != NULL) {
                     destinationNodeInfo = messengerNodeInfoList[i];
                     found = TRUE;
                     break;
                 }
             }
             if (!found) {
-                EV_FATAL << KMESSENGERAPP_SIMMODULEINFO << "The node " << singleDestinationNodeName
-                        << " given in singleDestinationNodeName does not exist\n";
+                EV_FATAL << KMESSENGERAPP_SIMMODULEINFO << "The node " << specificDestinationNodeName
+                        << " given in specificDestinationNodeName does not exist\n";
                 endSimulation();
             }
         } else {
@@ -79,9 +79,9 @@ void KMessengerApp::initialize(int stage)
         appRegistrationEvent->setKind(KMESSENGERAPP_REGISTRATION_EVENT);
         scheduleAt(simTime(), appRegistrationEvent);
 
-        // set scheduler to send data but only if single destination is false or
-        // if single destination is true and this node is the selected destination
-        if (!singleDestination || (singleDestination && !ownNodeIsDestination)) {
+        // set scheduler to send data but only if specific destination is false or
+        // if specific destination is true and this node is the selected destination
+        if (!specificDestination || (specificDestination && !ownNodeIsDestination)) {
 
             // this is a round-robin scheduling of traffic: in a row, everybody gets a chance to send the next packet.
             dataTimeoutEvent = new cMessage("Data Timeout Event");
@@ -167,7 +167,7 @@ void KMessengerApp::handleMessage(cMessage *msg)
 
         // if messages possible to be sent to multiple destinations, then
         // find a random destination
-        if (!singleDestination) {
+        if (!specificDestination) {
 
             // find random destination to send
             bool found = FALSE;
@@ -304,7 +304,7 @@ void KMessengerApp::finish()
 {
     delete appRegistrationEvent;
 
-    if (!singleDestination || (singleDestination && !ownNodeIsDestination)) {
+    if (!specificDestination || (specificDestination && !ownNodeIsDestination)) {
         cancelEvent(dataTimeoutEvent);
         delete dataTimeoutEvent;
     }

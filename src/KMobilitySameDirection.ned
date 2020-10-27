@@ -38,6 +38,9 @@ simple KMobilitySameDirection like IOPSForwardingLayer
 
         // OMNeT RNG which is used for generation of random numbers
         int usedRNG = default(0);
+        
+        // user selected priority list (for neighbour selection) - order is important
+        string selectedPriorityList = default("PRIORITY_SAME_DIRECTION PRIORITY_OPPOSITE_DIRECTION");
 
         // icon used
         @display("i=block/transport");
