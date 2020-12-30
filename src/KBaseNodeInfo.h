@@ -8,18 +8,15 @@
 #include <string>
 
 
-#include "KWirelessInterface.h"
 #include "KMessengerApp.h"
 #include "KHeraldApp.h"
+#include "KHeraldAppForDifferentiatedTraffic.h"
 
 #if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
 #endif
 
 using namespace std;
-
-class KWirelessInterface;
-class KOptimumDelayRoutingLayer;
 
 class KBaseNodeInfo
 {
@@ -40,6 +37,7 @@ class KBaseNodeInfo
 
         // herald app related info
         KHeraldApp *nodeHeraldAppModule;
+        KHeraldAppForDifferentiatedTraffic *nodeHeraldAppForDifferentiatedTrafficModule;
 
         // used for neighbour contact durations
         simtime_t neighbourStartTime;

@@ -45,10 +45,13 @@ class KMobilitySameDirection: public cSimpleModule
         double maximumRandomBackoffDuration;
         bool useTTL;
         int usedRNG;
+        double cacheSizeReportingFrequency;
         const char  *selectedPriorityList;
 
         int numEventsHandled;
         int currentCacheSize;
+
+        cMessage *cacheSizeReportingTimeoutEvent;
 
         int higherThreshold = 4;
         int lowerThreshold = 2;
@@ -60,8 +63,6 @@ class KMobilitySameDirection: public cSimpleModule
 
         int currentForwarder = 2; // 1 = RRS, 2 = Epidemic
         bool firstTime = true;
-
-        string broadcastMACAddress;
 
         vector<int> selectedPriorityCodeList;
 
@@ -129,9 +130,9 @@ class KMobilitySameDirection: public cSimpleModule
         void setSyncingNeighbourInfoForNextRound();
         void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
         KSummaryVectorMsg* makeSummaryVectorMessage();
+        bool isAngleBetween(double angle, double lowerBoundary, double upperBoundary);
 
         // stats related variables
-
         simsignal_t dataBytesReceivedSignal;
         simsignal_t sumVecBytesReceivedSignal;
         simsignal_t dataReqBytesReceivedSignal;
@@ -145,6 +146,9 @@ class KMobilitySameDirection: public cSimpleModule
         simsignal_t cacheBytesUpdatedSignal;
         simsignal_t currentCacheSizeBytesSignal;
         simsignal_t currentCacheSizeReportedCountSignal;
+        simsignal_t currentCacheSizeBytesPeriodicSignal;
+
+        simsignal_t currentCacheSizeBytesSignal2;
 
         simsignal_t dataBytesSentSignal;
         simsignal_t sumVecBytesSentSignal;
@@ -152,10 +156,11 @@ class KMobilitySameDirection: public cSimpleModule
         simsignal_t totalBytesSentSignal;
 
 };
+
 #define KMOBILITYSAMEDIRECTION_SIMMODULEINFO         " KMobilitySameDirection>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 
 #define KMOBILITYSAMEDIRECTION_MSG_ID_HASH_SIZE      4 // in bytes
-
+#define KMOBILITYSAMEDIRECTION_CACHESIZE_REP_EVENT   175
 
 #define PRIORITY_SAME_DIRECTION             1
 #define PRIORITY_OPPOSITE_DIRECTION         2

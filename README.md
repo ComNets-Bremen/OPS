@@ -331,6 +331,7 @@ who have done such contributions.
   - Jibin P. John
   - Karima Khandaker 
   - Kirishanth Chethuraja
-  - Zeynep Vatandas 
+  - Zeynep Vatandas
+  - Thenuka Karunathilake
 
 

@@ -25,11 +25,11 @@ void KMobilitySameDirection::initialize(int stage)
         maximumRandomBackoffDuration = par("maximumRandomBackoffDuration");
         useTTL = par("useTTL");
         usedRNG = par("usedRNG");
+        cacheSizeReportingFrequency = par("cacheSizeReportingFrequency");
         selectedPriorityList = par("selectedPriorityList").stringValue();
         numEventsHandled = 0;
 
         syncedNeighbourListIHasChanged = TRUE;
-        broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
 
         // parse the neighbour selection priority list
         cStringTokenizer tokenizer(selectedPriorityList);
@@ -67,6 +67,11 @@ void KMobilitySameDirection::initialize(int stage)
 
     } else if (stage == 2) {
 
+        // create and setup cache size reporting trigger
+        cacheSizeReportingTimeoutEvent = new cMessage("Cache Size Reporting Event");
+        cacheSizeReportingTimeoutEvent->setKind(KMOBILITYSAMEDIRECTION_CACHESIZE_REP_EVENT);
+        scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
+
         // setup statistics signals
         dataBytesReceivedSignal = registerSignal("fwdDataBytesReceived");
         sumVecBytesReceivedSignal = registerSignal("fwdSumVecBytesReceived");
@@ -80,14 +85,14 @@ void KMobilitySameDirection::initialize(int stage)
         cacheBytesUpdatedSignal = registerSignal("fwdCacheBytesUpdated");
         currentCacheSizeBytesSignal = registerSignal("fwdCurrentCacheSizeBytes");
         currentCacheSizeReportedCountSignal = registerSignal("fwdCurrentCacheSizeReportedCount");
+        currentCacheSizeBytesPeriodicSignal = registerSignal("fwdCurrentCacheSizeBytesPeriodic");
+
+        currentCacheSizeBytesSignal2 = registerSignal("fwdCurrentCacheSizeBytes2");
 
         dataBytesSentSignal = registerSignal("fwdDataBytesSent");
         sumVecBytesSentSignal = registerSignal("fwdSumVecBytesSent");
         dataReqBytesSentSignal = registerSignal("fwdDataReqBytesSent");
         totalBytesSentSignal = registerSignal("fwdTotalBytesSent");
-
-
-        //std::cout << "stage 2 " << "\n" ;
 
     } else {
         EV_FATAL << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "Something is radically wrong in initialisation \n";
@@ -101,13 +106,10 @@ int KMobilitySameDirection::numInitStages() const
 
 void KMobilitySameDirection::handleMessage(cMessage *msg)
 {
-
     cGate *gate;
     char gateName[64];
 
-
     numEventsHandled++;
-
 
     // age the data in the cache only if needed (e.g. a message arrived)
     if (useTTL)
@@ -115,10 +117,18 @@ void KMobilitySameDirection::handleMessage(cMessage *msg)
 
     // self messages
     if (msg->isSelfMessage()) {
+        if (msg->getKind() == KMOBILITYSAMEDIRECTION_CACHESIZE_REP_EVENT) {
 
-        EV_INFO << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "Received unexpected self message" << "\n";
-        delete msg;
+            // report cache size
+            emit(currentCacheSizeBytesPeriodicSignal, currentCacheSize);
 
+            // setup next cache size reporting trigger
+            scheduleAt(simTime() + cacheSizeReportingFrequency, cacheSizeReportingTimeoutEvent);
+
+        } else {
+            EV_INFO << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "Received unexpected self message" << "\n";
+            delete msg;
+        }
 
     // messages from other layers
     } else {
@@ -170,7 +180,6 @@ void KMobilitySameDirection::ageDataInCache()
 {
 
     // remove expired data items
-
     int expiredFound = TRUE;
     while (expiredFound) {
         expiredFound = FALSE;
@@ -193,6 +202,8 @@ void KMobilitySameDirection::ageDataInCache()
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+            emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
             cacheList.remove(cacheEntry);
             delete cacheEntry;
 
@@ -200,7 +211,6 @@ void KMobilitySameDirection::ageDataInCache()
     }
 
 }
-
 
 
 void KMobilitySameDirection::handleAppRegistrationMsg(cMessage *msg)
@@ -234,7 +244,6 @@ void KMobilitySameDirection::handleDataMsgFromUpperLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
-
     CacheEntry *cacheEntry;
     list<CacheEntry*>::iterator iteratorCache;
     int found = FALSE;
@@ -267,9 +276,11 @@ void KMobilitySameDirection::handleDataMsgFromUpperLayer(cMessage *msg)
             }
             currentCacheSize -= removingCacheEntry->realPayloadSize;
 
-            emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
+            emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+            emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
             cacheList.remove(removingCacheEntry);
             delete removingCacheEntry;
@@ -316,6 +327,8 @@ void KMobilitySameDirection::handleDataMsgFromUpperLayer(cMessage *msg)
     emit(currentCacheSizeBytesSignal, currentCacheSize);
     emit(currentCacheSizeReportedCountSignal, (int) 1);
 
+    emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
     delete msg;
 }
 
@@ -323,152 +336,156 @@ void KMobilitySameDirection::handleNeighbourListMsgFromLowerLayer(cMessage *msg)
 {
     KNeighbourListMsg *neighListMsg = dynamic_cast<KNeighbourListMsg*>(msg);
 
+    // if no neighbours or cache is empty, just return
+    if (neighListMsg->getNeighbourNameListArraySize() == 0 || cacheList.size() == 0) {
 
-
-
-        // if no neighbours or cache is empty, just return
-        if (neighListMsg->getNeighbourNameListArraySize() == 0 || cacheList.size() == 0) {
-
-            // setup sync neighbour list for the next time - only if there were some changes
-            if (syncedNeighbourListIHasChanged) {
-                setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
-                syncedNeighbourListIHasChanged = FALSE;
-            }
-
-            delete msg;
-            return;
+        // setup sync neighbour list for the next time - only if there were some changes
+        if (syncedNeighbourListIHasChanged) {
+            setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
+            syncedNeighbourListIHasChanged = FALSE;
         }
 
-
-        // send summary vector messages (if appropriate) to all nodes to sync in a loop
-        int i = 0;
-        vector<int> priorityList;
-        
-        //i  = rand() % (neighListMsg->getNeighbourNameListArraySize() + 1);
-        while (i < neighListMsg->getNeighbourNameListArraySize()) {
-            double speedDifference = neighListMsg->getMySpeed() - neighListMsg->getNeighbourSpeedList(i);
-            if (speedDifference < 0.0){
-                speedDifference = fabs(speedDifference);
-            }
-
-            double angleDifference = neighListMsg->getMyAngle() - neighListMsg->getNeighbourAngleList(i);
-            if (angleDifference < 0.0){
-                angleDifference = fabs(angleDifference);
-            }
-
-            if (neighListMsg->getMyAngle() == 0.0 && neighListMsg->getNeighbourAngleList(i) == 0.0) {
-                priorityList.push_back(PRIORITY_STATIONARY);
-
-            } else if (angleDifference > 0.0 && angleDifference <= 45.0) {
-                priorityList.push_back(PRIORITY_SAME_DIRECTION);
-
-            } else if (angleDifference > 45.0 && angleDifference <= 112.5) {
-                priorityList.push_back(PRIORITY_ADJACENT_RIGHT_TOP);
-
-            } else if (angleDifference > 112.5 && angleDifference <= 180.0) {
-                priorityList.push_back(PRIORITY_ADJACENT_RIGHT_BOTTOM);
-
-            } else if (angleDifference > 180.0 && angleDifference <= 225.0) {
-                priorityList.push_back(PRIORITY_OPPOSITE_DIRECTION);
-
-            } else if (angleDifference > 225.0 && angleDifference <= 292.5) {
-                priorityList.push_back(PRIORITY_ADJACENT_LEFT_BOTTOM);
-
-            } else if (angleDifference > 292.5 && angleDifference <= 360.0) {
-                priorityList.push_back(PRIORITY_ADJACENT_LEFT_TOP);
-
-            } else {
-                priorityList.push_back(PRIORITY_OTHER);
-            }
-
-            i++;
-        }
-
-        for (int x = 0; x < selectedPriorityCodeList.size(); x++) {
-
-            int j = 0;
-            while (j < neighListMsg->getNeighbourNameListArraySize()) {
-
-                if (priorityList[j] == selectedPriorityCodeList[x]) {
-
-                    string nodeMACAddress = neighListMsg->getNeighbourNameList(j);
-
-                    // get syncing info of neighbor
-                    SyncedNeighbour *syncedNeighbour = getSyncingNeighbourInfo(nodeMACAddress);
-
-                    // indicate that this node was considered this time
-                    syncedNeighbour->nodeConsidered = TRUE;
-
-                    bool syncWithNeighbour = FALSE;
-
-                    if (syncedNeighbour->syncCoolOffEndTime >= simTime().dbl()) {
-                        // if the sync was done recently, don't sync again until the anti-entropy interval
-                        // has elapsed
-                        syncWithNeighbour = FALSE;
-
-                    } else if (syncedNeighbour->randomBackoffStarted && syncedNeighbour->randomBackoffEndTime >= simTime().dbl()) {
-                        // if random backoff to sync is still active, then wait until time expires
-                        syncWithNeighbour = FALSE;
-
-                    } else if (syncedNeighbour->neighbourSyncing && syncedNeighbour->neighbourSyncEndTime >= simTime().dbl()) {
-                        // if this neighbour has started syncing with me, then wait until this neighbour finishes
-                        syncWithNeighbour = FALSE;
-
-                    } else if (syncedNeighbour->randomBackoffStarted && syncedNeighbour->randomBackoffEndTime < simTime().dbl()) {
-                        // has the random backoff just finished - if so, then my turn to start the syncing process
-                        syncWithNeighbour = TRUE;
-
-                    } else if (syncedNeighbour->neighbourSyncing && syncedNeighbour->neighbourSyncEndTime < simTime().dbl()) {
-                        // has the neighbours syncing period elapsed - if so, my turn to sync
-                        syncWithNeighbour = TRUE;
-
-                    } else {
-                        // neighbour seen for the first time (could also be after the cool off period)
-                        // then start the random backoff
-                        syncedNeighbour->randomBackoffStarted = TRUE;
-                        double randomBackoffDuration = uniform(1.0, maximumRandomBackoffDuration);
-                        syncedNeighbour->randomBackoffEndTime = simTime().dbl() + randomBackoffDuration;
-
-                        syncWithNeighbour = FALSE;
-
-                    }
-
-                    // from previous questions - if syncing required
-                    if (syncWithNeighbour) {
-
-                        //cout << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "neigh Mac" << nodeMACAddress << "\n";
-                        // set the cooloff period
-                        syncedNeighbour->syncCoolOffEndTime = simTime().dbl() + antiEntropyInterval;
-
-                        // initialize all other checks
-                        syncedNeighbour->randomBackoffStarted = FALSE;
-                        syncedNeighbour->randomBackoffEndTime = 0.0;
-                        syncedNeighbour->neighbourSyncing = FALSE;
-                        syncedNeighbour->neighbourSyncEndTime = 0.0;
-
-                        // send summary vector (to start syncing)
-                        KSummaryVectorMsg *summaryVectorMsg = makeSummaryVectorMessage();
-                        summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
-                        send(summaryVectorMsg, "lowerLayerOut");
-
-                        emit(sumVecBytesSentSignal, (long) summaryVectorMsg->getByteLength());
-                        emit(totalBytesSentSignal, (long) summaryVectorMsg->getByteLength());
-
-                    }
-                }
-                j++;
-            }
-        }
-
-        // setup sync neighbour list for the next time
-        setSyncingNeighbourInfoForNextRound();
-
-        // synched neighbour list must be updated in next round
-        // as there were changes
-        syncedNeighbourListIHasChanged = TRUE;
-
-        // delete the received neighbor list msg
         delete msg;
+        return;
+    }
+
+    // send summary vector messages (if appropriate) to all nodes to sync in a loop
+    int i = 0;
+    vector<int> priorityList;
+
+    //i  = rand() % (neighListMsg->getNeighbourNameListArraySize() + 1);
+    while (i < neighListMsg->getNeighbourNameListArraySize()) {
+//            double speedDifference = neighListMsg->getMySpeed() - neighListMsg->getNeighbourSpeedList(i);
+//            if (speedDifference < 0.0){
+//                speedDifference = fabs(speedDifference);
+//            }
+//
+//            double angleDifference = neighListMsg->getMyAngle() - neighListMsg->getNeighbourAngleList(i);
+//            if (angleDifference < 0.0){
+//                angleDifference = fabs(angleDifference);
+//            }
+
+        // compute checking boundaries
+        double leftTop = (neighListMsg->getMyAngle() - 22.5 < 0.0 ? (neighListMsg->getMyAngle() - 22.5) + 360.0 : neighListMsg->getMyAngle() - 22.5);
+        double rightTop = (neighListMsg->getMyAngle() + 22.5 > 360.0 ? (neighListMsg->getMyAngle() + 22.5) - 360.0 : neighListMsg->getMyAngle() + 22.5);
+        double leftMiddle = (neighListMsg->getMyAngle() - 90.0 < 0.0 ? (neighListMsg->getMyAngle() - 90.0) + 360.0 : neighListMsg->getMyAngle() - 90.0);
+        double rightMiddle = (neighListMsg->getMyAngle() + 90.0 > 360.0 ? (neighListMsg->getMyAngle() + 90.0) - 360.0 : neighListMsg->getMyAngle() + 90.0);
+        double leftBottom = (neighListMsg->getMyAngle() - 157.5 < 0.0 ? (neighListMsg->getMyAngle() - 157.5) + 360.0 : neighListMsg->getMyAngle() - 157.5);
+        double rightBottom = (neighListMsg->getMyAngle() + 157.5 > 360.0 ? (neighListMsg->getMyAngle() + 157.5) - 360.0 : neighListMsg->getMyAngle() + 157.5);
+
+        if (neighListMsg->getMyAngle() == 0.0 && neighListMsg->getNeighbourAngleList(i) == 0.0) {
+            priorityList.push_back(PRIORITY_STATIONARY);
+
+        } else if (isAngleBetween(neighListMsg->getNeighbourAngleList(i), leftTop, rightTop)) {
+            priorityList.push_back(PRIORITY_SAME_DIRECTION);
+
+        } else if (isAngleBetween(neighListMsg->getNeighbourAngleList(i), rightTop, rightMiddle)) {
+            priorityList.push_back(PRIORITY_ADJACENT_RIGHT_TOP);
+
+        } else if (isAngleBetween(neighListMsg->getNeighbourAngleList(i), rightMiddle, rightBottom)) {
+            priorityList.push_back(PRIORITY_ADJACENT_RIGHT_BOTTOM);
+
+        } else if (isAngleBetween(neighListMsg->getNeighbourAngleList(i), rightBottom, leftBottom)) {
+            priorityList.push_back(PRIORITY_OPPOSITE_DIRECTION);
+
+        } else if (isAngleBetween(neighListMsg->getNeighbourAngleList(i), leftBottom, leftMiddle)) {
+            priorityList.push_back(PRIORITY_ADJACENT_LEFT_BOTTOM);
+
+        } else if (isAngleBetween(neighListMsg->getNeighbourAngleList(i), leftMiddle, leftTop)) {
+            priorityList.push_back(PRIORITY_ADJACENT_LEFT_TOP);
+
+        } else {
+            priorityList.push_back(PRIORITY_OTHER);
+        }
+
+        i++;
+    }
+
+    for (int x = 0; x < selectedPriorityCodeList.size(); x++) {
+
+        int j = 0;
+        while (j < neighListMsg->getNeighbourNameListArraySize()) {
+
+            if (priorityList[j] == selectedPriorityCodeList[x]) {
+
+                string nodeMACAddress = neighListMsg->getNeighbourNameList(j);
+
+                // get syncing info of neighbor
+                SyncedNeighbour *syncedNeighbour = getSyncingNeighbourInfo(nodeMACAddress);
+
+                // indicate that this node was considered this time
+                syncedNeighbour->nodeConsidered = TRUE;
+
+                bool syncWithNeighbour = FALSE;
+
+                if (syncedNeighbour->syncCoolOffEndTime >= simTime().dbl()) {
+                    // if the sync was done recently, don't sync again until the anti-entropy interval
+                    // has elapsed
+                    syncWithNeighbour = FALSE;
+
+                } else if (syncedNeighbour->randomBackoffStarted && syncedNeighbour->randomBackoffEndTime >= simTime().dbl()) {
+                    // if random backoff to sync is still active, then wait until time expires
+                    syncWithNeighbour = FALSE;
+
+                } else if (syncedNeighbour->neighbourSyncing && syncedNeighbour->neighbourSyncEndTime >= simTime().dbl()) {
+                    // if this neighbour has started syncing with me, then wait until this neighbour finishes
+                    syncWithNeighbour = FALSE;
+
+                } else if (syncedNeighbour->randomBackoffStarted && syncedNeighbour->randomBackoffEndTime < simTime().dbl()) {
+                    // has the random backoff just finished - if so, then my turn to start the syncing process
+                    syncWithNeighbour = TRUE;
+
+                } else if (syncedNeighbour->neighbourSyncing && syncedNeighbour->neighbourSyncEndTime < simTime().dbl()) {
+                    // has the neighbours syncing period elapsed - if so, my turn to sync
+                    syncWithNeighbour = TRUE;
+
+                } else {
+                    // neighbour seen for the first time (could also be after the cool off period)
+                    // then start the random backoff
+                    syncedNeighbour->randomBackoffStarted = TRUE;
+                    double randomBackoffDuration = uniform(1.0, maximumRandomBackoffDuration);
+                    syncedNeighbour->randomBackoffEndTime = simTime().dbl() + randomBackoffDuration;
+
+                    syncWithNeighbour = FALSE;
+
+                }
+
+                // from previous questions - if syncing required
+                if (syncWithNeighbour) {
+
+                    //cout << KMOBILITYSAMEDIRECTION_SIMMODULEINFO << "neigh Mac" << nodeMACAddress << "\n";
+                    // set the cooloff period
+                    syncedNeighbour->syncCoolOffEndTime = simTime().dbl() + antiEntropyInterval;
+
+                    // initialize all other checks
+                    syncedNeighbour->randomBackoffStarted = FALSE;
+                    syncedNeighbour->randomBackoffEndTime = 0.0;
+                    syncedNeighbour->neighbourSyncing = FALSE;
+                    syncedNeighbour->neighbourSyncEndTime = 0.0;
+
+                    // send summary vector (to start syncing)
+                    KSummaryVectorMsg *summaryVectorMsg = makeSummaryVectorMessage();
+                    summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
+                    send(summaryVectorMsg, "lowerLayerOut");
+
+                    emit(sumVecBytesSentSignal, (long) summaryVectorMsg->getByteLength());
+                    emit(totalBytesSentSignal, (long) summaryVectorMsg->getByteLength());
+
+                }
+            }
+            j++;
+        }
+    }
+
+    // setup sync neighbour list for the next time
+    setSyncingNeighbourInfoForNextRound();
+
+    // synched neighbour list must be updated in next round
+    // as there were changes
+    syncedNeighbourListIHasChanged = TRUE;
+
+    // delete the received neighbor list msg
+    delete msg;
 }
 
 
@@ -480,7 +497,6 @@ void KMobilitySameDirection::handleDataMsgFromLowerLayer(cMessage *msg)
     // increment the travelled hop count
     omnetDataMsg->setHopsTravelled(omnetDataMsg->getHopsTravelled() + 1);
     omnetDataMsg->setHopCount(omnetDataMsg->getHopCount() + 1);
-
 
     emit(dataBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
     emit(totalBytesReceivedSignal, (long) omnetDataMsg->getByteLength());
@@ -529,11 +545,14 @@ void KMobilitySameDirection::handleDataMsgFromLowerLayer(cMessage *msg)
                     iteratorCache++;
                 }
                 currentCacheSize -= removingCacheEntry->realPayloadSize;
-                cacheList.remove(removingCacheEntry);
 
                 emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
                 emit(currentCacheSizeBytesSignal, currentCacheSize);
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+                emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
+                cacheList.remove(removingCacheEntry);
 
                 delete removingCacheEntry;
             }
@@ -577,6 +596,9 @@ void KMobilitySameDirection::handleDataMsgFromLowerLayer(cMessage *msg)
         }
         emit(currentCacheSizeBytesSignal, currentCacheSize);
         emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+        emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
     }
 
     // if registered app exist, send data msg to app
@@ -587,8 +609,8 @@ void KMobilitySameDirection::handleDataMsgFromLowerLayer(cMessage *msg)
         appInfo = *iteratorRegisteredApps;
         if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL
                 && ((omnetDataMsg->getDestinationOriented()
-                        && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)
-                        || (!omnetDataMsg->getDestinationOriented()))) {
+                      && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)
+                      || (!omnetDataMsg->getDestinationOriented()))) {
             found = TRUE;
             break;
         }
@@ -608,6 +630,7 @@ void KMobilitySameDirection::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 
     emit(sumVecBytesReceivedSignal, (long) summaryVectorMsg->getByteLength());
     emit(totalBytesReceivedSignal, (long) summaryVectorMsg->getByteLength());
+
     // when a summary vector is received, it means that the neighbour started the syncing
     // so send the data request message with the required data items
 
@@ -733,10 +756,8 @@ void KMobilitySameDirection::handleDataRequestMsgFromLowerLayer(cMessage *msg)
             dataMsg->setHopCount(cacheEntry->hopCount);
             dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
             dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
-
             dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
             dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
-
 
             send(dataMsg, "lowerLayerOut");
 
@@ -870,6 +891,24 @@ KSummaryVectorMsg* KMobilitySameDirection::makeSummaryVectorMessage()
     return summaryVectorMsg;
 }
 
+
+bool KMobilitySameDirection::isAngleBetween(double angle, double lowerBoundary, double upperBoundary)
+{
+    // adjust for zero degrees within range
+    float val = fmod((fmod((upperBoundary - lowerBoundary), 360) + 360), 360);
+    if (val >= 180.0) {
+        std::swap(lowerBoundary, upperBoundary);
+    }
+
+    // if it goes through zero
+    if (lowerBoundary <= upperBoundary)
+        return angle >= lowerBoundary && angle <= upperBoundary;
+
+    else
+        return angle >= lowerBoundary || angle <= upperBoundary;
+
+}
+
 void KMobilitySameDirection::finish()
 {
 
@@ -900,5 +939,9 @@ void KMobilitySameDirection::finish()
         syncedNeighbourList.remove(syncedNeighbour);
         delete syncedNeighbour;
     }
-}
 
+    // remove triggers
+    cancelEvent(cacheSizeReportingTimeoutEvent);
+    delete cacheSizeReportingTimeoutEvent;
+
+}

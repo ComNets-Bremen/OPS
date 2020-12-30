@@ -5,25 +5,40 @@
 // @date   : 15-aug-2016, updated 6-febr-2018
 //
 //
+// HeralApp extended to handle differentiate traffic based on
+// patterns, either based on random time frames or based
+// the original traffic pattern in the traces.
+//
+// @author: Thenuka Karunatilake (thenukaramesh@gmail.com)
+// @date: 01-06-2019
+//
 
 package ops;
 
-simple KHeraldApp like IOPSApplicationLayer
+simple KHeraldAppForDifferentiatedTraffic like IOPSApplicationLayer
 {
      parameters:
 
         // assigned ID for the node
         int nodeIndex;
-        
+
         // unique address of the node
         string ownMACAddress;
+
+        // Data generation mode - how traffic is generated
+        // random = random times based on groups
+        // trace = times of the original trace
+        string dataGenerationIntervalMode = default("trace");
+
+        // Path to traffic info files (to generate differentiated traffic)
+        string trafficInfoPath = default("./Scenario");
 
         // percentage of nodes from notificationCount to assign as being popularity
         double popularityAssignmentPercentage = default(25.0); // 25.0 = 25%
 
         // RNG to use
         int usedRNG = default(0);
-
+	
         // how often data is generated
         double dataGenerationInterval @unit(s) = default(15min);
 

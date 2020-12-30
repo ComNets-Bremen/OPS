@@ -163,13 +163,13 @@ void KEpidemicRoutingLayer::ageDataInCache()
         }
         if (expiredFound) {
             currentCacheSize -= cacheEntry->realPacketSize;
-            
+
             emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
             emit(currentCacheSizeBytesSignal2, currentCacheSize);
-            
+
             cacheList.remove(cacheEntry);
             delete cacheEntry;
 
@@ -457,7 +457,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
 
                 emit(currentCacheSizeBytesSignal2, currentCacheSize);
-                
+
                 cacheList.remove(removingCacheEntry);
 
                 delete removingCacheEntry;
@@ -515,7 +515,7 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
         if (strstr(omnetDataMsg->getDataName(), appInfo->prefixName.c_str()) != NULL
                 && ((omnetDataMsg->getDestinationOriented()
                       && strstr(omnetDataMsg->getFinalDestinationAddress(), ownMACAddress.c_str()) != NULL)
-                    || (!omnetDataMsg->getDestinationOriented()))) {
+                      || (!omnetDataMsg->getDestinationOriented()))) {
             found = TRUE;
             break;
         }
@@ -810,7 +810,7 @@ void KEpidemicRoutingLayer::finish()
         delete appInfo;
     }
 
-    // clear resgistered app list
+    // clear registered app list
     while (cacheList.size() > 0) {
         list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
         CacheEntry *cacheEntry= *iteratorCache;

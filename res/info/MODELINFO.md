@@ -91,7 +91,10 @@ means that these data items are expected by all the nodes in the network (not ju
 destination). They are injected in a round-robin manner by nodes. The following model 
 must be configured to use this type of application.
 
-   - `KHeraldApp` - Injects and receives destination-less data
+   - `KHeraldApp` - Injects and receives destination-less data based on a cyclic
+     configuration
+   - `KHeraldAppForDifferentiatedTraffic` - Injects and receives destination-less data generated
+     based on different patterns (random or traces)
 
 
 ### Forwarding Layer
@@ -125,7 +128,7 @@ oriented application.
 ###  Link Adaptation Layer
 
 This layer is tasked with converting packets sent by the forwarder to the specific 
-link technology used (at Link Layer). Currently implemented has a simple pass-through layer.
+link technology used (at Link Layer). Currently implemented is a simple pass-through layer.
 
    - `KLinkAdaptLayer` - Pass-through layer
 
@@ -137,7 +140,9 @@ between nodes. Currentl models are as follows.
 
    - `KWirelessInterface` - A simple wireless interface implementation (without the `INET
      framework`)
-
+   - `KWirelessInterfaceWithContactTraces` - A simple wireless interface implementation 
+     using contact traces for contact creation rather than INET mobility models
+ 
 
 ### Mobility Modelling
 
