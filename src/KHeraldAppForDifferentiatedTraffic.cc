@@ -343,7 +343,7 @@ void KHeraldAppForDifferentiatedTraffic::handleMessage(cMessage *msg)
 
         send(dataMsg, "lowerLayerOut");
 
-        cout<<nextGenerationNotification<<endl;
+        //cout<<nextGenerationNotification<<endl;
         nextGenerationNotification = nextGenerationNotification + 1;
 
         // generate receivable stat update to other nodes

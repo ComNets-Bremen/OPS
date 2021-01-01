@@ -30,7 +30,7 @@ void KWirelessInterfaceWithAngle::initialize(int stage)
         // get own module info
         ownNodeInfo = new KBaseNodeInfo();
         ownNodeInfo->nodeModule = getParentModule();
-        std::cout << "Nodemodule: " << ownNodeInfo->nodeModule << "\n";
+        //std::cout << "Nodemodule: " << ownNodeInfo->nodeModule << "\n";
         cModule *unknownModule = getParentModule()->getSubmodule("mobility");
         ownNodeInfo->nodeMobilityModule = check_and_cast<inet::IMobility*>(unknownModule);
         //ownNodeInfo->nodeWirelessIfcModule = this;
