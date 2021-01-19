@@ -217,15 +217,27 @@ An example results chart generated using 2 simulations (Epidemic and RRS) is sho
 ### Using Python and Matplotlib
 
 Another way is to create tables and graphs using the [Python](https://www.python.org) scripting 
-laguage and the [Matplotlib](https://matplotlib.org) library of Python. Have a look and adapt 
-the following files (in `res/python-results` folder) to plot graphs and dump a table of the results.
+laguage and the libraries [Matplotlib](https://matplotlib.org), [NumPy](https://numpy.org)
+and [SciPy](https://www.scipy.org) of Python. Have a look and adapt 
+the following files (in `res/python-results` folder) to plot graphs and show tables of the results.
 
-  1. [`plot-sca-results.py`](./res/python-results/plot-sca-results.py) - Plot a bar chart for each of the selected scalar results
-  2. [`show-sca-results.py`](./res/python-results/show-sca-results.py) - Show a single table of all the selected scalar results
-  3. [`plot-vec-results.py`](./res/python-results/plot-vec-results.py) - Plot a line chart of the selected vector results
-  4. [`datalist.csv`](./res/python-results/datalist.csv) - List of all the paths to the `.vec` and `.sca` files of simulations (given as a parameter to `1.`, `2.` and `3.`)
-  5. [`statlist.csv`](./res/python-results/statlist.csv) - List of the results to plot by the above scripts (given as a parameter to `1.`, `2.` and `3.`)
+  1. [`plot-sca-results.py`](./res/python-results/plot-sca-results.py) - Plots bar charts for selected scalar results
+  2. [`show-sca-results.py`](./res/python-results/show-sca-results.py) - Shows a single table of all the selected scalar results
+  3. [`plot-vec-results.py`](./res/python-results/plot-vec-results.py) - Plots line charts of the selected vector results
+  4. [`plot-vec-boxplots.py`](./res/python-results/plot-vec-boxplots.py) - Plots boxplots of the selected vector results
+  5. [`plot-vec-histograms.py`](./res/python-results/plot-vec-histograms.py) - Plots histograms of the selected vector results
+  6. [`show-confidence-intervals.py`](./res/python-results/show-confidence-intervals.py) - Shows a table of confidence intervals of the selected scalar results
 
+Each of the above Python scripts require the following 2 files as input. 
+
+  - [`datalist.csv`](./res/python-results/datalist.csv) - List of all the paths to the `.vec` and `.sca` files of simulations used in generating graphs and tables above
+  - [`statlist.csv`](./res/python-results/statlist.csv) - List of the statistics to plot or show in tables by the above Python scripts
+
+An example of running a scipt is as follows.
+
+    ```bash
+    ./show-confidence-intervals.py -d datalist.csv -s statlist.csv
+    ```
 
 
 ## Available Statistics
