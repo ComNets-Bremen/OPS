@@ -190,6 +190,8 @@ Based on the standard configuration, the raw results (vector and scalar) collect
 are located in the `simulation/results` folder. There are 2 ways of creating charts and tables of results. 
 Using the OMNeT++ IDE or using external tools/scripts. Here are examples of the 2 ways.
 
+
+
 ### Using the OMNeT++ IDE
 
 Below is a brief (high-level) procedure to create your charts using the OMNeT++ IDE. 
@@ -214,7 +216,7 @@ An example results chart generated using 2 simulations (Epidemic and RRS) is sho
 
 
 
-### Using Python and Matplotlib
+### Using Python Scripts (with Matplotlib, NumPy and SciPy)
 
 Another way is to create tables and graphs using the [Python](https://www.python.org) scripting 
 laguage and the libraries [Matplotlib](https://matplotlib.org), [NumPy](https://numpy.org)
@@ -230,14 +232,16 @@ the following files (in `res/python-results` folder) to plot graphs and show tab
 
 Each of the above Python scripts require the following 2 files as input. 
 
-  - [`datalist.csv`](./res/python-results/datalist.csv) - List of all the paths to the `.vec` and `.sca` files of simulations used in generating graphs and tables above
-  - [`statlist.csv`](./res/python-results/statlist.csv) - List of the statistics to plot or show in tables by the above Python scripts
+  - [`datalist.csv`](./res/python-results/datalist.csv) - Details of the .vec and .sca files of all 
+  simulation runs including the names, and other details
+  - [`statlist.csv`](./res/python-results/statlist.csv) - Details of all the statistics which are to 
+  be extracted from the files of the simulation runs
 
 An example of running a scipt is as follows.
 
-    ```bash
-    ./show-confidence-intervals.py -d datalist.csv -s statlist.csv
-    ```
+```bash
+  ./show-confidence-intervals.py -d datalist.csv -s statlist.csv
+```
 
 
 ## Available Statistics
@@ -264,26 +268,37 @@ opportunistic networks. A description of all the models is given in the
 
 ## Model Parameters
 
-All parameters are configurable using the `.ini` file used to run simulations. Some of these parameters
+Many model parameters are configurable using the `.ini` file used to run simulations. Some of these parameters
 have default values but all can be reconfigured in the `.ini` file. Here are some examples.
 
-### Network-level Parameters (e.g., in `OPSMessengerNetwork.ned`)
+
+### Network-level Parameters
+
+Following are examples from `OPSNetwork.ned`
 
 1. `numNodes` - The total number of nodes in the network
 2. `num-rngs` - Number of random number generators
 
-### Application Layer Parameters (e.g., in 'KHeraldApp.ned`)
+
+### Application Layer Parameters
+
+Following are examples from 'KHeraldApp.ned`
 
 1. `dataGenerationInterval` - How often are data messages injected into the network
 2. `dataSizeInBytes` - Payload size of a data message
 
-### Forwarding Layer Parameters (e.g., in `KEpidemicRoutingLayer.ned`)
+
+### Forwarding Layer Parameters
+
+Following are examples from  `KEpidemicRoutingLayer.ned`
 
 1. `maximumCacheSize` - The size of the cache maintained by each node in bytes
 2. `maximumHopCount` - The maximum hops that a data packet is allowed to travel (be forwarded) before being discarded
 
 
-### Link Layer Parameters (e.g., in `KWirelessLayer.ned`)
+### Link Layer Parameters
+
+Following are examples from  `KWirelessLayer.ned`
 
 1. `wirelessRange` - The wireless range of each node's wireless interface
 2. `bandwidthBitRate` - Communication bit rate of the wireless interface
