@@ -3,9 +3,11 @@
 """
 Show the confidence intervals for each statistics.
 
-As input, the files datalist.csv and statlist.csv 
-files are required. Check the accompanying samples
-to know what to be included in these files.
+As input, the files datalist.csv, statlist.csv
+the alpha value and whether samples are Student-t
+or Normally distributed are required. Check the 
+accompanying samples to know what to be included 
+in these files. 
 
 Check OPSNetwork.ned and KOPSNode.ned files to get 
 all statistics generated.
@@ -19,6 +21,7 @@ import argparse
 import subprocess
 import scipy.stats as st
 import numpy as np
+import sys
 
 # get params
 print("running script", __file__)
@@ -28,9 +31,12 @@ parser.add_argument('-d', '--datalist', help='List of the results files (.vec)',
                     required=True)
 parser.add_argument('-s', '--statlist', help='List of the statistics to plot',
                     required=True)
+parser.add_argument('-a', '--alpha', type=float, help='Alpha value to use - 0.99, 0.95',
+                    required=True)
+parser.add_argument('-t', '--tdist', action='store_true', help='Assume t-distributed instead of normaly distributed')
 args = parser.parse_args()
 
-print('parameters', '-d', args.datalist, '-s', args.statlist)
+print('parameters', '-d', args.datalist, '-s', args.statlist, '-a', args.alpha, ('-t' if args.tdist else ''))
 
 all_data = []
 
@@ -84,13 +90,20 @@ with open(args.statlist, 'r') as statlistfp:
                                     else float(trow[4].strip())
 
                         stat_val_list.append(val)
-                        print('added val' + str(val))
                         break
-                                 
+
         # compute the confidence intervals
-        mean_val = np.mean(stat_val_list)
-        std_err_val = st.sem(stat_val_list)
-        ci_range = st.norm.interval(alpha=0.95, loc=mean_val, scale=std_err_val)
+        if not all(v == 0.0 for v in stat_val_list):
+            mean_val = np.mean(stat_val_list)
+            std_err_val = st.sem(stat_val_list)
+            if args.tdist:
+                ci_range = st.t.interval(args.alpha, len(stat_val_list)-1, loc=mean_val, scale=std_err_val)
+            else:
+                ci_range = st.norm.interval(alpha=args.alpha, loc=mean_val, scale=std_err_val)
+        else:
+            mean_val = 0.0
+            std_err_val = 0.0
+            ci_range = [0.0, 0.0]
 
         # make and append to info line to list 
         val_str = long_name + '\t\t' + '{:,.4f}'.format(mean_val) + '\t\t' + unit_name + '\t\t' + '{:,.4f}'.format(ci_range[0]) + ' - ' + '{:,.4f}'.format(ci_range[1])
@@ -103,3 +116,4 @@ if len(all_data) > 0:
         print(line)
 else:
     print('No data found to compute confidence intervals')
+
