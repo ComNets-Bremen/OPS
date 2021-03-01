@@ -30,7 +30,7 @@ void KWirelessInterfaceWithAngle::initialize(int stage)
         // get own module info
         ownNodeInfo = new KBaseNodeInfo();
         ownNodeInfo->nodeModule = getParentModule();
-        //std::cout << "Nodemodule: " << ownNodeInfo->nodeModule << "\n";
+        std::cout << "Nodemodule: " << ownNodeInfo->nodeModule << "\n";
         cModule *unknownModule = getParentModule()->getSubmodule("mobility");
         ownNodeInfo->nodeMobilityModule = check_and_cast<inet::IMobility*>(unknownModule);
         //ownNodeInfo->nodeWirelessIfcModule = this;
@@ -128,12 +128,13 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
     // find and send neighbour list to upper layer
     if (msg->isSelfMessage() && msg->getKind() == KWIRELESSINTERFACEWITHANGLE_NEIGH_EVENT_CODE) {
 
-        // init current neighbor list
+        // init current neighbor list and neighbor range category list
         while (currentNeighbourNodeInfoList.size() > 0) {
             list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
             KBaseNodeInfo *nodeInfo = *iteratorCurrentNeighbourNodeInfo;
             currentNeighbourNodeInfoList.remove(nodeInfo);
         }
+        currentNeighbourRangeCatList.clear();
 
         // get current position of self
         inet::Coord ownCoord = ownNodeInfo->nodeMobilityModule->getCurrentPosition();
@@ -152,6 +153,20 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
 
             if (l <= r) {
                 currentNeighbourNodeInfoList.push_back(nodeInfo);
+
+                // add range category of neighbour to list
+                bool found = false;
+                for (int i = 0; i < catVals.totalCats; i++) {
+                    if (l >= (catVals.rangeStart[i] * catVals.rangeStart[i]) && l <= (catVals.rangeEnd[i] * catVals.rangeEnd[i])) {
+                        currentNeighbourRangeCatList.push_back(catVals.rangeCatNum[i]);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    currentNeighbourRangeCatList.push_back(999);
+                }
+
             }
 #else
             // check using chebyshev and euclidean distances
@@ -162,6 +177,19 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
                 double r = wirelessRange * wirelessRange;
                 if (l <= r) {
                     currentNeighbourNodeInfoList.push_back(nodeInfo);
+
+                    // add range category of neighbour to list
+                    bool found = false;
+                    for (int i = 0; i < catVals.totalCats; i++) {
+                        if (l >= (catVals.rangeStart[i] * catVals.rangeStart[i]) && l <= (catVals.rangeEnd[i] * catVals.rangeEnd[i])) {
+                            currentNeighbourRangeCatList.push_back(catVals.rangeCatNum[i]);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        currentNeighbourRangeCatList.push_back(999);
+                    }
                 }
             }
 #endif
@@ -183,6 +211,7 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
             neighListMsg->setNeighbourNameCount(currentNeighbourNodeInfoList.size());
             neighListMsg->setNeighbourSpeedListArraySize(currentNeighbourNodeInfoList.size());
             neighListMsg->setNeighbourAngleListArraySize(currentNeighbourNodeInfoList.size());
+            neighListMsg->setNeighbourRangeCatListArraySize(currentNeighbourNodeInfoList.size());
 
             list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
             while (iteratorCurrentNeighbourNodeInfo != currentNeighbourNodeInfoList.end()) {
@@ -192,8 +221,12 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
                 neighListMsg->setNeighbourNameList(neighCount, nodeAddress.c_str());
                 neighListMsg->setNeighbourSpeedList(neighCount, nodeInfo->nodeSpeed);
                 neighListMsg->setNeighbourAngleList(neighCount, nodeInfo->nodeAngle);
-                //edited Vishnu
 
+                list<int>::iterator itRangeCat = currentNeighbourRangeCatList.begin();
+                advance(itRangeCat, neighCount);
+                neighListMsg->setNeighbourRangeCatList(neighCount, *itRangeCat);
+
+                //edited Vishnu
 
                 neighCount++;
                 iteratorCurrentNeighbourNodeInfo++;
@@ -430,6 +463,8 @@ void KWirelessInterfaceWithAngle::sendPendingMsg()
         string atTxNeighbourNodeAddress = atTxNeighbourNodeInfo->nodeModule->par("ownAddress").stringValue();
 
         bool nodeStillInNeighbourhood = false;
+        bool badConnectivity = false;
+        int i = 0;
         list<KBaseNodeInfo*>::iterator iteratorCurrentNeighbourNodeInfo = currentNeighbourNodeInfoList.begin();
         while (iteratorCurrentNeighbourNodeInfo != currentNeighbourNodeInfoList.end()) {
             KBaseNodeInfo *currentNeighbourNodeInfo = *iteratorCurrentNeighbourNodeInfo;
@@ -440,25 +475,47 @@ void KWirelessInterfaceWithAngle::sendPendingMsg()
 
                 nodeStillInNeighbourhood = true;
 
-                // make duplicate of packet
-                cPacket *outPktCopy =  dynamic_cast<cPacket*>(currentPendingMsg->dup());
+                // get range cat and corresponding PER
+                list<int>::iterator itRangeCat = currentNeighbourRangeCatList.begin();
+                advance(itRangeCat, i);
+                int rangeCatNum = *itRangeCat;
+                double rangePER = 0.0;
+                for (int j = 0; j < catVals.totalCats; j++) {
+                    if (catVals.rangeCatNum[j] == rangeCatNum) {
+                        rangePER = catVals.rangePER[j];
+                        break;
+                    }
+                }
 
-                // send to node
-                sendDirect(outPktCopy, currentNeighbourNodeInfo->nodeModule, "radioIn");
+                // drop based on PER
+                double rndVal = uniform(0.0, 1.0);
+                if (rndVal < rangePER) {
+                    badConnectivity = true;
+                }
 
-                // update delivered packets stats
-                emit(packetsDeliveredSignal, 1);
-                cPacket *currentPendingPkt = dynamic_cast<cPacket*>(currentPendingMsg);
-                emit(packetsDeliveredBytesSignal, (long) currentPendingPkt->getByteLength());
+                if (!badConnectivity) {
+
+                    // make duplicate of packet
+                    cPacket *outPktCopy =  dynamic_cast<cPacket*>(currentPendingMsg->dup());
+
+                    // send to node
+                    sendDirect(outPktCopy, currentNeighbourNodeInfo->nodeModule, "radioIn");
+
+                    // update delivered packets stats
+                    emit(packetsDeliveredSignal, 1);
+                    cPacket *currentPendingPkt = dynamic_cast<cPacket*>(currentPendingMsg);
+                    emit(packetsDeliveredBytesSignal, (long) currentPendingPkt->getByteLength());
+                }
 
                 break;
             }
 
             iteratorCurrentNeighbourNodeInfo++;
+            i++;
         }
 
         // update dropped packets stats
-        if (!nodeStillInNeighbourhood) {
+        if (!nodeStillInNeighbourhood || badConnectivity) {
             emit(packetsDroppedSignal, 1);
             cPacket *currentPendingPkt = dynamic_cast<cPacket*>(currentPendingMsg);
             emit(packetsDroppedBytesSignal, (long) currentPendingPkt->getByteLength());

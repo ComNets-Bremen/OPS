@@ -17,6 +17,7 @@ packet KNeighbourListMsg {
     string neighbourNameList[];
     double neighbourSpeedList[];
     double neighbourAngleList[];
+    double neighbourRangeCatList[];
     int neighbourNameCount;
     double mySpeed;
     double myAngle;

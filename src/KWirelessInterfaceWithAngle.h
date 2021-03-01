@@ -67,6 +67,7 @@ class KWirelessInterfaceWithAngle: public cSimpleModule
         list<KBaseNodeInfo*> currentNeighbourNodeInfoList;
         list<KBaseNodeInfo*> previousNeighbourNodeInfoList;
         list<KBaseNodeInfo*> atTxNeighbourNodeInfoList;
+        list<int> currentNeighbourRangeCatList;
         cMessage *currentPendingMsg;
 
         void setupSendingMsg(cMessage *msg);
@@ -92,6 +93,21 @@ class KWirelessInterfaceWithAngle: public cSimpleModule
         simsignal_t packetsReceivedSignal;
         simsignal_t packetsReceivedBytesSignal;
 
+        struct WirelessRangeCat {
+            int totalCats;
+            double rangeStart[10];
+            double rangeEnd[10];
+            int rangeCatNum[10];
+            double rangePER[10];
+        };
+
+        struct WirelessRangeCat catVals = {
+                5,
+                {0.0,    6.0,     11.0,     16.0,      21.0},
+                {5.0,    10.0,    15.0,     20.0,      99.0},
+                {1,      2,       3,        4,         5},
+                {0.0,    0.001,   0.002,    0.010,     0.020}
+        };
 };
 
 #define KWIRELESSINTERFACEWITHANGLE_SIMMODULEINFO            " KWirelessInterfaceWithAngle>!<" << simTime() << ">!<" << getParentModule()->getFullName()
