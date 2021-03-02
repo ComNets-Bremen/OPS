@@ -54,6 +54,7 @@ class KWirelessInterfaceWithAngle: public cSimpleModule
         double neighbourScanInterval;
         double bandwidthBitRate;
         int wirelessHeaderSize;
+        int usedRNG;
         int calculateSpeedInterval;
 
         string broadcastMACAddress;

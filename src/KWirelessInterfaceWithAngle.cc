@@ -21,6 +21,7 @@ void KWirelessInterfaceWithAngle::initialize(int stage)
         neighbourScanInterval = par("neighbourScanInterval");
         bandwidthBitRate = par("bandwidthBitRate");
         wirelessHeaderSize = par("wirelessHeaderSize");
+        usedRNG = par("usedRNG");
 
         // set other parameters
         broadcastMACAddress = "FF:FF:FF:FF:FF:FF";
@@ -488,7 +489,7 @@ void KWirelessInterfaceWithAngle::sendPendingMsg()
                 }
 
                 // drop based on PER
-                double rndVal = uniform(0.0, 1.0);
+                double rndVal = uniform(0.0, 1.0, usedRNG);
                 if (rndVal < rangePER) {
                     badConnectivity = true;
                 }
