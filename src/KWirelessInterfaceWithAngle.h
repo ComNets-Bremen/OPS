@@ -104,7 +104,7 @@ class KWirelessInterfaceWithAngle: public cSimpleModule
 
         struct WirelessRangeCat catVals = {
                 5,
-                {0.0,    6.0,     11.0,     16.0,      21.0},
+                {0.0,    5.0,     10.0,     15.0,      20.0},
                 {5.0,    10.0,    15.0,     20.0,      99.0},
                 {1,      2,       3,        4,         5},
                 {0.0,    0.001,   0.002,    0.010,     0.020}
