@@ -266,7 +266,7 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
                 (myOwnCoord.x - ownNodeInfo->lastPosition.x) 
                     + (myOwnCoord.y - ownNodeInfo->lastPosition.y) *
                         (myOwnCoord.y - ownNodeInfo->lastPosition.y));
-            double speed = sqrt(distance/calculateSpeedInterval);
+            double speed = sqrt(distance)/calculateSpeedInterval;
             double angle = 0.0;
 
             if (speed <= 0.0) {
@@ -314,7 +314,7 @@ void KWirelessInterfaceWithAngle::handleMessage(cMessage *msg)
                 double distance = ((neighCoord.x - nodeInfo->lastPosition.x) 
                     * (neighCoord.x - nodeInfo->lastPosition.x) + (neighCoord.y - nodeInfo->lastPosition.y) *
                             (neighCoord.y - nodeInfo->lastPosition.y));
-                double speed = sqrt(distance/calculateSpeedInterval);
+                double speed = sqrt(distance)/calculateSpeedInterval;
                 double angle = 0;
 
                 if (speed <= 0){

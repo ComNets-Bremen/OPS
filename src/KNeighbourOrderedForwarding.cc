@@ -413,7 +413,7 @@ void KNeighbourOrderedForwarding::handleNeighbourListMsgFromLowerLayer(cMessage 
     }
 
     // show list
-    cout << "Own Angle: " << neighListMsg->getMyAngle() << ", Speed: " << neighListMsg->getMySpeed() << endl;
+    cout << "Own Info: Address: " << ownMACAddress << ", Angle: "<< neighListMsg->getMyAngle() << ", Speed: " << neighListMsg->getMySpeed() << endl;
     for (int i = 0; i < angleAndRSSIAndSpeedOrderList.size(); i++) {
         cout << "Address: " << neighListMsg->getNeighbourNameList(angleAndRSSIAndSpeedOrderList[i]->neighIndex)
                 << ", Angle:  " << neighListMsg->getNeighbourAngleList(angleAndRSSIAndSpeedOrderList[i]->neighIndex)
