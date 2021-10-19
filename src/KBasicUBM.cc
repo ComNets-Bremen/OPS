@@ -32,7 +32,7 @@ void KBasicUBM::initialize(int stage)
         reactToEventThreshold = par("reactToEventThreshold");
         appPrefix = par("appPrefix").stringValue();
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
-        logging = par("logging");
+//        logging = par("logging");
         keywordsFilePath = par("keywordsFilePath").stringValue();
         eventsFilePath = par("eventsFilePath").stringValue();
         
@@ -55,12 +55,12 @@ void KBasicUBM::initialize(int stage)
 		// Calculate the reactions based on keyword matching
 		computePreReactions();
 		notificationCount = notifications.size();
-		
+
 		int likeness = 0, goodness = 0;
 		std::string eventLogName;
-		
+
 		 // dump the notification list with given popularity, likeness and goodness value
-        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
+//        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NLB>!<C>!<" << notificationCount << "\n";}
         for (int i = 0; i < notificationCount; i++) {
 			likeness = goodness = 0;
 			if(notifications[i].reaction == reactionType::save){
@@ -69,16 +69,16 @@ void KBasicUBM::initialize(int stage)
 			if(likeness >= 90){
 				goodness = 100;
 			}
-			
+
 			eventLogName = "/basicubm-" + notifications[i].rawDescription;
-			
-			if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NE>!<" << eventLogName << ">!<"
-                << notifications[i].popularity << ">!<" << likeness << ">!<"
-                << goodness << ">!<"
-                << (goodness == 100 ? "L" : "I") << ">!<"
-                << notifications[i].endTime << "\n";}
+
+//			if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NE>!<" << eventLogName << ">!<"
+//                << notifications[i].popularity << ">!<" << likeness << ">!<"
+//                << goodness << ">!<"
+//                << (goodness == 100 ? "L" : "I") << ">!<"
+//                << notifications[i].endTime << "\n";}
         }
-        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
+//        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<NLE>!<C>!<" << notificationCount << "\n";}
 		
     } else {
         EV << KBASICUBM_SIMMODULEINFO << "Something is radically wrong\n";
@@ -208,7 +208,7 @@ void KBasicUBM::handleMessage(cMessage *msg)
 				lowerLayerMsg->setDestinationOriented(false);
 				send(lowerLayerMsg, "lowerLayerOut");
 				
-                if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<GD>!<" << lowerLayerMsg->getDataName() << "\n";}
+//                if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<GD>!<" << lowerLayerMsg->getDataName() << "\n";}
 				
 				/*      MSG SENT TO NEIGHBORS       */
 				//////////////////////////////////////
@@ -271,8 +271,8 @@ void KBasicUBM::handleMessage(cMessage *msg)
 			 * only react to it accordingly
 			 */
 			else if(dataMsg->getMsgType() == 31){
-				
-		        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
+
+//		        if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<RD>!<" << dataMsg->getDataName() << "\n";}
 			
 				/////////////////////////
 				// REACTING TO NORMAL MSG
@@ -562,7 +562,7 @@ void KBasicUBM::sendReactionMsg(reactionType response, std::string eventName){
 
 	send(reactionMsg, "lowerLayerOut");
 	
-	if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<GF>!<" << reactionMsg->getDataName() << ">!<T-Pre\n";}
+//	if (logging) {EV_INFO << KBASICUBM_SIMMODULEINFO << ">!<GF>!<" << reactionMsg->getDataName() << ">!<T-Pre\n";}
 
 	
 }

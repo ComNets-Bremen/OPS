@@ -34,8 +34,8 @@ simple KBasicNotificationGenerator like INotificationGenerator
 	    // OMNeT RNG which is used for generation of random numbers
 	    int usedRNG = default(0);
 	    
-	    // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
+//	    // logging at layer - 0 = disabled, 1 = enabled
+//        int logging = default(1);
 	    
 	    // prefix assigned to the app
     	string appPrefix = default("/notifGen");
@@ -52,6 +52,12 @@ simple KBasicNotificationGenerator like INotificationGenerator
     	
         // icon
         @display("i=misc/globe");
-        
+
+        // statistics and signals
+        @signal[genTotalReceivable](type=long);
+
+
+
+
 }
 

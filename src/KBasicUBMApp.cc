@@ -21,7 +21,7 @@ void KBasicUBMApp::initialize(int stage)
         // get parameters
         appPrefix = par("appPrefix").stringValue();
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
-        logging = par("logging");
+//        logging = par("logging");
         dataSizeInBytes = par("dataSizeInBytes");
 
     } else if (stage == 1) {
@@ -60,7 +60,7 @@ void KBasicUBMApp::handleMessage(cMessage *msg)
         
         send(regAppMsg, "lowerLayerOut");
         
-        if (logging) {EV_INFO << KBASICUBMAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
+//        if (logging) {EV_INFO << KBASICUBMAPP_SIMMODULEINFO << ">!<GAR" << "\n";}
         
 	}
 	

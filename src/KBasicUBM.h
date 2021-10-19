@@ -73,12 +73,12 @@ class KBasicUBM : public cSimpleModule, public IUBM
 		std::vector <std::string> properties;			//Priorities of a user
 		
         simsignal_t angryBitSignal;
-        
-        int logging;
-        
+
+//        int logging;
+
         string keywordsFilePath;               // path of the keywords file
         string eventsFilePath;                 // path of the events file
-        
+
 };
 
 #define KBASICUBM_SIMMODULEINFO       " KBasicUBM>!<" << simTime() << ">!<" << this->getParentModule()->getFullName()

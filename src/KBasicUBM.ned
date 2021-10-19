@@ -37,8 +37,8 @@ simple KBasicUBM like IUBM
 		// prefix used to generate names appended with a number, e.g., message-000328     	
     	string appNameGenPrefix = default("/event-");
 		
-		// logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
+//		// logging at layer - 0 = disabled, 1 = enabled
+//        int logging = default(1);
         
         // file paths of keywords and events files
         string keywordsFilePath = default("properties.txt");

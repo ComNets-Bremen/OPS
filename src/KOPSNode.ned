@@ -48,6 +48,9 @@ module KOPSNode
         @display("i=device/palm2;bgb=271.78,317.5");
 
         // statistics
+        // notification generator
+        @statistic[genTotalReceivable](source=sum(genTotalReceivable); record=last,vector);
+        
         // from application layer
         @statistic[appLikedDataBytesReceived](source=sum(appLikedDataBytesReceived); record=last,vector);
         @statistic[appNonLikedDataBytesReceived](source=sum(appNonLikedDataBytesReceived); record=last,vector);
@@ -131,11 +134,13 @@ module KOPSNode
 
     gates:
         input radioIn @directIn;
+        input notificationGenIn @directIn;
 
     submodules:
 
         // user behavior model
         ubm: <userBahaviourModel> like IUBM if ubmEnabled {
+            nodeIndex = nodeID;
             @display("p=200.65999,29.633333;t=User\nBehaviour\nModel,r");
         }
 
@@ -191,4 +196,6 @@ module KOPSNode
         // directly to other nodes
         link.lowerLayerIn <-- radioIn;
 
+        // gate used by UBM to send direct messages
+        ubm.notificationGeneratorIn <-- notificationGenIn if ubmEnabled;
 }

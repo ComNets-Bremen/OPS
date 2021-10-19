@@ -49,7 +49,7 @@ void KBasicNotificationGenerator::initialize(int stage)
         notificationGenDistribution = par("notificationGenDistribution");
         appPrefix = par("appPrefix").stringValue();
         appNameGenPrefix = par("appNameGenPrefix").stringValue();
-        logging = par("logging");
+//        logging = par("logging");
         locationsFilePath = par("locationsFilePath").stringValue();
         eventsFilePath = par("eventsFilePath").stringValue();
         dataSizeInBytes = par("dataSizeInBytes");
@@ -148,13 +148,17 @@ void KBasicNotificationGenerator::initialize(int stage)
 		}
         
         scheduleAt(firstEventSendTime, sendEvent);
-		
-		if (logging) {EV_INFO << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << ">!<SUTG "<< allEvents.size() << " DI" << "\n";}
+
+        // setup statistics signals
+        genTotalReceivableSignal = registerSignal("genTotalReceivable");
+
+//		if (logging) {EV_INFO << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << ">!<SUTG "<< allEvents.size() << " DI" << "\n";}
+        emit(genTotalReceivableSignal, allEvents.size());
         
     } else if (stage == 3){
 		
 	} else {
-        EV << "Something is radically wrong\n";
+	    EV_FATAL << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "Something is radically wrong\n";
     }
 }
 
@@ -420,8 +424,8 @@ void KBasicNotificationGenerator::handleMessage(cMessage *msg)
 				scheduleAt(nextNotificationGenTime, sendEvent);
 			}
 		} else {
-			EV << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "Notifications cant be Generated; Verify the events file" <<endl;
-			EV << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "           \\_('-')_/           " <<endl;
+		    EV_FATAL << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "Notifications cant be Generated; Verify the events file" <<endl;
+		    EV_FATAL << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << "           \\_('-')_/           " <<endl;
 		}
 		
 		

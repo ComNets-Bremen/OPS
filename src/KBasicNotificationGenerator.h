@@ -42,7 +42,7 @@ class KBasicNotificationGenerator : public cSimpleModule, public INotificationGe
         int usedRNG;                                  // RNG used for Random number generation
         int notificationGenDistribution;              // Random number distribution to use
 
-        int logging;
+//        int logging;
 
         bool eventsRead;                              // Boolean; whether events have been read from file
         
@@ -66,7 +66,7 @@ class KBasicNotificationGenerator : public cSimpleModule, public INotificationGe
 		
 		bool readEvents();                           // Function which read events from file and stores in a vector
 
-    public:
+        simsignal_t genTotalReceivableSignal;
 		
 };
 

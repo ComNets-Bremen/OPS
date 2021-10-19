@@ -28,8 +28,8 @@ simple KBasicUBMApp like IOPSApplicationLayer
 		// prefix used to generate names appended with a number, e.g., /event-000328     	
     	string appNameGenPrefix = default("/event-");
 
-        // logging at layer - 0 = disabled, 1 = enabled
-        int logging = default(1);
+//        // logging at layer - 0 = disabled, 1 = enabled
+//        int logging = default(1);
 		 
         // data size
         int dataSizeInBytes = default(10000);

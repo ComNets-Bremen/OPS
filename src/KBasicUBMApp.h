@@ -48,7 +48,7 @@ class KBasicUBMApp : public cSimpleModule
         //KDataMsg *neighborDataMsg;
         
         int dataSizeInBytes;
-        int logging;
+//        int logging;
 };
 
 #endif /* KBASICUBMAPP_H_ */
