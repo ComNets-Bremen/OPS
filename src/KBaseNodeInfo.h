@@ -9,6 +9,7 @@
 
 
 #include "KMessengerApp.h"
+#include "KMessengerAppForDifferentiatedTraffic.h"
 #include "KHeraldApp.h"
 #include "KHeraldAppForDifferentiatedTraffic.h"
 
@@ -34,6 +35,7 @@ class KBaseNodeInfo
 
 		// messenger app related info
         KMessengerApp *nodeMessengerAppModule;
+	KMessengerAppForDifferentiatedTraffic *nodeMessengerAppForDifferentiatedTrafficModule;
 
         // herald app related info
         KHeraldApp *nodeHeraldAppModule;
