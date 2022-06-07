@@ -1,8 +1,9 @@
 //
 // The model implementation for the Epidemic Routing layer
 //
-// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
-// @date   : 02-may-2017
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de),
+//           Hai Thien Long Thai (fix 1, 2) (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : 07-june-2022
 //
 //
 
@@ -413,7 +414,11 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     // or if maximum hop count is reached
     // then cache or else don't cache
     bool cacheData = TRUE;
-    if (omnetDataMsg->getHopCount() >= maximumHopCount) {
+
+    ///Fix 1: if this node is the destination, no caching, data passed directly to app layer
+    if ((omnetDataMsg->getDestinationOriented() && strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL) || omnetDataMsg->getHopCount() >= maximumHopCount) {
+    //if (omnetDataMsg->getHopCount() >= maximumHopCount) {
+
         cacheData = FALSE;
     }
 
@@ -668,6 +673,24 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
             emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
             emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
+
+
+            ///Fix 2: remove cache entry after sending to destination
+            if (strstr(cacheEntry->finalDestinationAddress.c_str(), dataRequestMsg->getSourceAddress()) != NULL
+                    && cacheEntry->destinationOriented) {
+
+                currentCacheSize -= cacheEntry->realPacketSize;
+
+                emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
+                emit(currentCacheSizeBytesSignal, currentCacheSize);
+                emit(currentCacheSizeReportedCountSignal, (int) 1);
+
+                emit(currentCacheSizeBytesSignal2, currentCacheSize);
+
+                cacheList.remove(cacheEntry);
+                delete cacheEntry;
+            }
+
 
         }
 
