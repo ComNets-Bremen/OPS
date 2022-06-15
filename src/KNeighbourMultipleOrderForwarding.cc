@@ -998,17 +998,112 @@ vector<NeighPrioEntry *> KNeighbourMultipleOrderForwarding::prioritizeSpeedRSSIA
 
 vector<NeighPrioEntry *> KNeighbourMultipleOrderForwarding::prioritizeAngleSpeedRSSI(neighListMsg)
 {
-    
+
 }
 
 vector<NeighPrioEntry *> KNeighbourMultipleOrderForwarding::prioritizeAngleSpeed(neighListMsg)
 {
+
+    // compute angle checking boundaries
+    double leftTop = (neighListMsg->getMyAngle() - 22.5 < 0.0 ? (neighListMsg->getMyAngle() - 22.5) + 360.0 : neighListMsg->getMyAngle() - 22.5);
+    double rightTop = (neighListMsg->getMyAngle() + 22.5 > 360.0 ? (neighListMsg->getMyAngle() + 22.5) - 360.0 : neighListMsg->getMyAngle() + 22.5);
+    double leftMiddle = (neighListMsg->getMyAngle() - 90.0 < 0.0 ? (neighListMsg->getMyAngle() - 90.0) + 360.0 : neighListMsg->getMyAngle() - 90.0);
+    double rightMiddle = (neighListMsg->getMyAngle() + 90.0 > 360.0 ? (neighListMsg->getMyAngle() + 90.0) - 360.0 : neighListMsg->getMyAngle() + 90.0);
+    double leftBottom = (neighListMsg->getMyAngle() - 157.5 < 0.0 ? (neighListMsg->getMyAngle() - 157.5) + 360.0 : neighListMsg->getMyAngle() - 157.5);
+    double rightBottom = (neighListMsg->getMyAngle() + 157.5 > 360.0 ? (neighListMsg->getMyAngle() + 157.5) - 360.0 : neighListMsg->getMyAngle() + 157.5);
     
+    // create working list
+    vector<NeighPrioEntry *> baseOrderList;
+    int i = 0;
+    while (i < neighListMsg->getNeighbourNameListArraySize()) {
+        NeighPrioEntry *neighPrioEntry = new NeighPrioEntry;
+        
+        neighPrioEntry->nodeMACAddress = neighListMsg->getNeighbourNameList(i);
+        neighPrioEntry->neighIndex = i;
+        neighPrioEntry->priority1 = 0;
+        neighPrioEntry->priority2 = 0;
+        neighPrioEntry->priority3 = 0;
+        baseOrderList.push_back(neighPrioEntry);
+
+        i++;
+    }    
+    
+    // order priority1 by angle
+    vector<NeighPrioEntry *> angleOrderList;
+    for (int i = 1; i < 5; i++) {
+        for (int j = 0; j < baseOrderList.size(); j++) {
+            
+            if (i == 1 && isAngleBetween(neighListMsg->getNeighbourAngleList(baseOrderList[j]->neighIndex), leftTop, rightTop)) {
+                // same direction selection
+                baseOrderList[j]->priority1 = i;
+                angleOrderList.push_back(baseOrderList[j]);
+                
+            } else if (i == 2 && isAngleBetween(neighListMsg->getNeighbourAngleList(baseOrderList[j]->neighIndex), rightBottom, leftBottom)) {
+                // opposite direction selection
+                baseOrderList[j]->priority1 = i;
+                angleOrderList.push_back(baseOrderList[j]);
+             
+            } else if (i == 3 && neighListMsg->getMyAngle() == 0.0 && neighListMsg->getNeighbourAngleList(j) == 0.0) {
+                // stationary selection
+                baseOrderList[j]->priority1 = i;
+                angleOrderList.push_back(baseOrderList[j]);
+                
+            } else if (i == 4 && !(isAngleBetween(neighListMsg->getNeighbourAngleList(baseOrderList[j]->neighIndex), leftTop, rightTop)
+                                   || isAngleBetween(neighListMsg->getNeighbourAngleList(baseOrderList[j]->neighIndex), rightBottom, leftBottom)
+                                   || (neighListMsg->getMyAngle() == 0.0 && neighListMsg->getNeighbourAngleList(j) == 0.0))) {
+                // other directions
+                baseOrderList[j]->priority1 = i;
+                angleOrderList.push_back(baseOrderList[j]);
+            }
+        }
+    }
+
+    // order priority2 by speed
+    vector<NeighPrioEntry *> angleAndSpeedOrderList;
+    for (int i = 1; i < 5; i++) {
+        vector<NeighPrioEntry *> tempList;
+        for (int k = 0; k < angleOrderList.size(); k++) {
+            if (angleOrderList[k]->priority1 == i) {
+                tempList.push_back(angleOrderList[k]);
+            }
+        }
+
+        // sort by speed
+        for (int p = 0; p < tempList.size(); p++) {
+            for (int q = (p + 1); q < tempList.size(); q++) {
+                if (neighListMsg->getNeighbourSpeedList(tempList[p]->neighIndex) > neighListMsg->getNeighbourSpeedList(tempList[q]->neighIndex)) {
+                    NeighPrioEntry *temp = tempList[p];
+                    tempList[p] = tempList[q];
+                    tempList[q] = temp;
+                }
+            }
+        }
+
+        for (int p = 0; p < tempList.size(); p++) {
+            angleAndSpeedOrderList.push_back(tempList[p]);
+        }
+    }
+
+    // show list
+    cout << "Own Angle: " << neighListMsg->getMyAngle() << ", Speed: " << neighListMsg->getMySpeed() << endl;
+    for (int i = 0; i < angleAndSpeedOrderList.size(); i++) {
+        cout << "Address: " << neighListMsg->getNeighbourNameList(angleAndSpeedOrderList[i]->neighIndex)
+                << ", Angle:  " << neighListMsg->getNeighbourAngleList(angleAndSpeedOrderList[i]->neighIndex)
+                << ", RangeCat: " << neighListMsg->getNeighbourRangeCatList(angleAndSpeedOrderList[i]->neighIndex)
+                << ", Speed: " << neighListMsg->getNeighbourSpeedList(angleAndSpeedOrderList[i]->neighIndex)
+                << endl;
+    }
+
+    return angleAndSpeedOrderList;
 }
 
 vector<NeighPrioEntry *> KNeighbourMultipleOrderForwarding::prioritizeSpeedAngle(neighListMsg)
 {
-    
+
+	// this is not a pissible case because of the unlikeliness of the following 2 conditions
+	// - have to travel at the same speed
+	// - have to be in the same neighbourhood
+
 }
 
 vector<NeighPrioEntry *> KNeighbourMultipleOrderForwarding::prioritizeSpeedRSSI(neighListMsg)
