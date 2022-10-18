@@ -7,6 +7,10 @@
 //
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de)
 // @date   : 25-apr-2020
+//
+// Cache Modification - C++ vector
+// @author : Hai Thien Long Thai (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : sept-2022
 
 #ifndef KOPTIMUMDELAYROUTINGLAYER_H_
 #define KOPTIMUMDELAYROUTINGLAYER_H_
@@ -18,6 +22,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
@@ -33,7 +38,7 @@ class KOptimumDelayRoutingLayer : public cSimpleModule
     public:
         struct CacheEntry;
         string ownMACAddress;
-        list<CacheEntry*> cacheList;
+        vector<CacheEntry> cacheList;
 
         struct CacheEntry {
             string messageID;

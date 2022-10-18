@@ -7,6 +7,10 @@
 //
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de)
 // @date   : 25-apr-2020
+//
+// Cache Modification - C++ vector
+// @author : Hai Thien Long Thai (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : sept-2022
 
 #include "KOptimumDelayRoutingLayer.h"
 
@@ -181,9 +185,10 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
-    CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
+    //CacheEntry *cacheEntry;
+    vector<CacheEntry>::iterator iteratorCache;
     bool found = FALSE;
+    /*
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
         cacheEntry = *iteratorCache;
@@ -194,45 +199,55 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
         iteratorCache++;
     }
+    */
+    iteratorCache = lower_bound(cacheList.begin(), cacheList.end(), omnetDataMsg->getDataName(), [](const CacheEntry& a, string b) {return (a.dataName < b);});
+    if (iteratorCache != cacheList.end() && (*iteratorCache).dataName == omnetDataMsg->getDataName()) {
+        found = TRUE;
+        //////std::cout << "5, found";
+        //cacheEntry = *iteratorCache;
+    }
 
     if (!found) {
 
-        cacheEntry = new CacheEntry;
+        CacheEntry cacheEntry;
 
-        cacheEntry->messageID = omnetDataMsg->getDataName();
-        cacheEntry->hopCount = 0;
-        cacheEntry->dataName = omnetDataMsg->getDataName();
-        cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
-        cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
-        cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
-        cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-        cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
-        cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
+        cacheEntry.messageID = omnetDataMsg->getDataName();
+        cacheEntry.hopCount = 0;
+        cacheEntry.dataName = omnetDataMsg->getDataName();
+        cacheEntry.realPayloadSize = omnetDataMsg->getRealPayloadSize();
+        cacheEntry.dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
+        cacheEntry.validUntilTime = omnetDataMsg->getValidUntilTime();
+        cacheEntry.realPacketSize = omnetDataMsg->getRealPacketSize();
+        cacheEntry.initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
+        cacheEntry.destinationOriented = omnetDataMsg->getDestinationOriented();
         if (omnetDataMsg->getDestinationOriented()) {
-            cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+            cacheEntry.finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
         }
-        cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
-        cacheEntry->hopsTravelled = 0;
+        cacheEntry.goodnessValue = omnetDataMsg->getGoodnessValue();
+        cacheEntry.hopsTravelled = 0;
 
-        cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
-        cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
+        cacheEntry.msgUniqueID = omnetDataMsg->getMsgUniqueID();
+        cacheEntry.initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
 
-        cacheEntry->createdTime = simTime().dbl();
-        cacheEntry->updatedTime = simTime().dbl();
+        cacheEntry.createdTime = simTime().dbl();
+        cacheEntry.updatedTime = simTime().dbl();
 
-        cacheList.push_back(cacheEntry);
+        //cacheList.push_back(cacheEntry);
+        //sort(cacheList.begin(), cacheList.end(), [](const CacheEntry& a, const CacheEntry& b) {return (a.messageID < b.messageID);});
+        iteratorCache = lower_bound(cacheList.begin(), cacheList.end(), cacheEntry.messageID, [](const CacheEntry& a, string b) {return (a.dataName < b);});
+        iteratorCache = cacheList.insert(iteratorCache, cacheEntry);
 
-        currentCacheSize += cacheEntry->realPayloadSize;
+        currentCacheSize += cacheEntry.realPayloadSize;
 
     }
 
-    cacheEntry->lastAccessedTime = simTime().dbl();
+    (*iteratorCache).lastAccessedTime = simTime().dbl();
 
     // log cache update or add
     if (found) {
-        emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+        emit(cacheBytesUpdatedSignal, (*iteratorCache).realPayloadSize);
     } else {
-        emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+        emit(cacheBytesAddedSignal, (*iteratorCache).realPayloadSize);
     }
     emit(currentCacheSizeBytesSignal, currentCacheSize);
     emit(currentCacheSizeReportedCountSignal, (int) 1);
@@ -314,9 +329,10 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromLowerLayerDirect(cMessage *msg)
     emit(hopsTravelledCountSignal, 1);
 
     // insert/update cache
-    CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
+    ///CacheEntry *cacheEntry;
+    vector<CacheEntry>::iterator iteratorCache;
     found = FALSE;
+    /*
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
         cacheEntry = *iteratorCache;
@@ -327,44 +343,54 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromLowerLayerDirect(cMessage *msg)
 
         iteratorCache++;
     }
+    */
+    iteratorCache = lower_bound(cacheList.begin(), cacheList.end(), omnetDataMsg->getDataName(), [](const CacheEntry& a, string b) {return (a.dataName < b);});
+    if (iteratorCache != cacheList.end() && (*iteratorCache).dataName == omnetDataMsg->getDataName()) {
+        found = TRUE;
+        //////std::cout << "5, found";
+        //cacheEntry = *iteratorCache;
+    }
 
     if (!found) {
-        cacheEntry = new CacheEntry;
+        CacheEntry cacheEntry;
 
-        cacheEntry->messageID = omnetDataMsg->getMessageID();
-        cacheEntry->dataName = omnetDataMsg->getDataName();
-        cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
-        cacheEntry->dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
-        cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
-        cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-        cacheEntry->initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
-        cacheEntry->destinationOriented = omnetDataMsg->getDestinationOriented();
+        cacheEntry.messageID = omnetDataMsg->getMessageID();
+        cacheEntry.dataName = omnetDataMsg->getDataName();
+        cacheEntry.realPayloadSize = omnetDataMsg->getRealPayloadSize();
+        cacheEntry.dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
+        cacheEntry.validUntilTime = omnetDataMsg->getValidUntilTime();
+        cacheEntry.realPacketSize = omnetDataMsg->getRealPacketSize();
+        cacheEntry.initialOriginatorAddress = omnetDataMsg->getInitialOriginatorAddress();
+        cacheEntry.destinationOriented = omnetDataMsg->getDestinationOriented();
         if (omnetDataMsg->getDestinationOriented()) {
-            cacheEntry->finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
+            cacheEntry.finalDestinationAddress = omnetDataMsg->getFinalDestinationAddress();
         }
-        cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
+        cacheEntry.goodnessValue = omnetDataMsg->getGoodnessValue();
 
-        cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
-        cacheEntry->initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
+        cacheEntry.msgUniqueID = omnetDataMsg->getMsgUniqueID();
+        cacheEntry.initialInjectionTime = omnetDataMsg->getInitialInjectionTime();
 
-        cacheEntry->createdTime = simTime().dbl();
-        cacheEntry->updatedTime = simTime().dbl();
+        cacheEntry.createdTime = simTime().dbl();
+        cacheEntry.updatedTime = simTime().dbl();
 
-        cacheList.push_back(cacheEntry);
+        //cacheList.push_back(cacheEntry);
+        //sort(cacheList.begin(), cacheList.end(), [](const CacheEntry& a, const CacheEntry& b) {return (a.messageID < b.messageID);});
+        iteratorCache = lower_bound(cacheList.begin(), cacheList.end(), cacheEntry.messageID, [](const CacheEntry& a, string b) {return (a.dataName < b);});
+        iteratorCache = cacheList.insert(iteratorCache, cacheEntry);
 
-        currentCacheSize += cacheEntry->realPayloadSize;
+        currentCacheSize += cacheEntry.realPayloadSize;
 
     }
 
-    cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
-    cacheEntry->hopCount = omnetDataMsg->getHopCount();
-    cacheEntry->lastAccessedTime = simTime().dbl();
+    (*iteratorCache).hopsTravelled = omnetDataMsg->getHopsTravelled();
+    (*iteratorCache).hopCount = omnetDataMsg->getHopCount();
+    (*iteratorCache).lastAccessedTime = simTime().dbl();
 
     // log cache update or add
     if (found) {
-        emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+        emit(cacheBytesUpdatedSignal, (*iteratorCache).realPayloadSize);
     } else {
-        emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+        emit(cacheBytesAddedSignal, (*iteratorCache).realPayloadSize);
     }
     emit(currentCacheSizeBytesSignal, currentCacheSize);
     emit(currentCacheSizeReportedCountSignal, (int) 1);
@@ -418,21 +444,27 @@ void KOptimumDelayRoutingLayer::sendDataMessageDirect(string nodeMACAddress)
     // entries and send only ones not available
     if (found) {
 
-        list<CacheEntry*>::iterator iteratorOwnCache = cacheList.begin();
+        vector<CacheEntry>::iterator iteratorOwnCache = cacheList.begin();
         while (iteratorOwnCache != cacheList.end()) {
-            CacheEntry *ownCacheEntry = *iteratorOwnCache;
+            //CacheEntry ownCacheEntry = *iteratorOwnCache;
             found = FALSE;
-            CacheEntry *othersCacheEntry;
-            list<CacheEntry*>::iterator iteratorOtherCache = optimumDelayRoutingLayerModule->cacheList.begin();
+            //CacheEntry *othersCacheEntry;
+            vector<CacheEntry>::iterator iteratorOtherCache;
+            iteratorOtherCache = lower_bound(optimumDelayRoutingLayerModule->cacheList.begin(), optimumDelayRoutingLayerModule->cacheList.end(), (*iteratorOwnCache).dataName, [](const CacheEntry& a, string b) {return (a.dataName < b);});
+            if ((iteratorOtherCache != optimumDelayRoutingLayerModule->cacheList.end()) && (*iteratorOwnCache).dataName == (*iteratorOtherCache).dataName ){
+                found = TRUE;
+            }
+            /*
             while (iteratorOtherCache != optimumDelayRoutingLayerModule->cacheList.end()) {
-                othersCacheEntry = *iteratorOtherCache;
+                othersCacheEntry = (*iteratorOtherCache).second;
 
                 if (ownCacheEntry->dataName == othersCacheEntry->dataName) {
                     found = TRUE;
                     break;
                 }
                 iteratorOtherCache++;
-            }
+            }*/
+
 
             if (!found) {
 
@@ -440,25 +472,25 @@ void KOptimumDelayRoutingLayer::sendDataMessageDirect(string nodeMACAddress)
                 KDataMsg *dataMsg = new KDataMsg();
                 dataMsg->setSourceAddress(ownMACAddress.c_str());
                 dataMsg->setDestinationAddress(nodeMACAddress.c_str());
-                dataMsg->setDataName(ownCacheEntry->dataName.c_str());
-                dataMsg->setDummyPayloadContent(ownCacheEntry->dummyPayloadContent.c_str());
-                dataMsg->setValidUntilTime(ownCacheEntry->validUntilTime);
-                dataMsg->setRealPayloadSize(ownCacheEntry->realPayloadSize);
+                dataMsg->setDataName((*iteratorOwnCache).dataName.c_str());
+                dataMsg->setDummyPayloadContent((*iteratorOwnCache).dummyPayloadContent.c_str());
+                dataMsg->setValidUntilTime((*iteratorOwnCache).validUntilTime);
+                dataMsg->setRealPayloadSize((*iteratorOwnCache).realPayloadSize);
                 // check KOPSMsg.msg on sizing mssages
-                int realPacketSize = 6 + 6 + 2 + ownCacheEntry->realPayloadSize + 4 + 6 + 1;
+                int realPacketSize = 6 + 6 + 2 + (*iteratorOwnCache).realPayloadSize + 4 + 6 + 1;
                 dataMsg->setRealPacketSize(realPacketSize);
                 dataMsg->setByteLength(realPacketSize);
-                dataMsg->setInitialOriginatorAddress(ownCacheEntry->initialOriginatorAddress.c_str());
-                dataMsg->setDestinationOriented(ownCacheEntry->destinationOriented);
-                if (ownCacheEntry->destinationOriented) {
-                    dataMsg->setFinalDestinationAddress(ownCacheEntry->finalDestinationAddress.c_str());
+                dataMsg->setInitialOriginatorAddress((*iteratorOwnCache).initialOriginatorAddress.c_str());
+                dataMsg->setDestinationOriented((*iteratorOwnCache).destinationOriented);
+                if ((*iteratorOwnCache).destinationOriented) {
+                    dataMsg->setFinalDestinationAddress((*iteratorOwnCache).finalDestinationAddress.c_str());
                 }
-                dataMsg->setMessageID(ownCacheEntry->messageID.c_str());
-                dataMsg->setHopCount(ownCacheEntry->hopCount);
-                dataMsg->setGoodnessValue(ownCacheEntry->goodnessValue);
-                dataMsg->setHopsTravelled(ownCacheEntry->hopsTravelled);
-                dataMsg->setMsgUniqueID(ownCacheEntry->msgUniqueID);
-                dataMsg->setInitialInjectionTime(ownCacheEntry->initialInjectionTime);
+                dataMsg->setMessageID((*iteratorOwnCache).messageID.c_str());
+                dataMsg->setHopCount((*iteratorOwnCache).hopCount);
+                dataMsg->setGoodnessValue((*iteratorOwnCache).goodnessValue);
+                dataMsg->setHopsTravelled((*iteratorOwnCache).hopsTravelled);
+                dataMsg->setMsgUniqueID((*iteratorOwnCache).msgUniqueID);
+                dataMsg->setInitialInjectionTime((*iteratorOwnCache).initialInjectionTime);
 
                 // send message directly
                 sendDirect(dataMsg, optimumDelayRoutingLayerModule, "lowerLayerDirectIn");
@@ -488,12 +520,7 @@ void KOptimumDelayRoutingLayer::finish()
     }
 
     // clear  cache list
-    while (cacheList.size() > 0) {
-        list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
-        CacheEntry *cacheEntry= *iteratorCache;
-        cacheList.remove(cacheEntry);
-        delete cacheEntry;
-    }
+    cacheList.clear();
 
     // remove triggers
     cancelEvent(cacheSizeReportingTimeoutEvent);
