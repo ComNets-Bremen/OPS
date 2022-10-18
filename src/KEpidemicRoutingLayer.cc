@@ -1,10 +1,17 @@
 //
 // The model implementation for the Epidemic Routing layer
 //
-// @author : Asanga Udugama (adu@comnets.uni-bremen.de),
-//           Hai Thien Long Thai (fix 1, 2) (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
-// @date   : 07-june-2022
+// @author : Asanga Udugama (adu@comnets.uni-bremen.de)
+// @date   : 02-may-2017
 //
+//
+// Cache Modification - C++ map
+// @author : Hai Thien Long Thai (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : jan-2022
+//
+// Fixing delivery of destination-oriented data (fix 1, 2)
+// @author : Hai Thien Long Thai (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : june-2022
 //
 
 #include "KEpidemicRoutingLayer.h"
@@ -152,10 +159,10 @@ void KEpidemicRoutingLayer::ageDataInCache()
         expiredFound = FALSE;
 
         CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        map<string, CacheEntry*>::iterator iteratorCache;
         iteratorCache = cacheList.begin();
         while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
+            cacheEntry = (*iteratorCache).second;
             if (cacheEntry->validUntilTime < simTime().dbl()) {
                 expiredFound = TRUE;
                 break;
@@ -171,7 +178,8 @@ void KEpidemicRoutingLayer::ageDataInCache()
 
             emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-            cacheList.remove(cacheEntry);
+            cacheList.erase(cacheEntry->messageID);/////////////MODIFIED
+            ////////std::cout << "1, erased";
             delete cacheEntry;
 
         }
@@ -212,17 +220,24 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
     CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
-    int found = FALSE;
+    map<string, CacheEntry*>::iterator iteratorCache;
+    bool found = FALSE;
+    /*
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
-        cacheEntry = *iteratorCache;
+        cacheEntry = (*iteratorCache).second;
         if (cacheEntry->dataName == omnetDataMsg->getDataName()) {
             found = TRUE;
             break;
         }
 
         iteratorCache++;
+    }*/
+    iteratorCache = cacheList.find(omnetDataMsg->getDataName());
+    if (iteratorCache != cacheList.end()) {
+        found = TRUE;
+        //////std::cout << "2, found";
+        cacheEntry = (*iteratorCache).second;
     }
 
     if (!found) {
@@ -232,10 +247,10 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
                 && (currentCacheSize + omnetDataMsg->getRealPayloadSize()) > maximumCacheSize
                 && cacheList.size() > 0) {
             iteratorCache = cacheList.begin();
-            CacheEntry *removingCacheEntry = *iteratorCache;
+            CacheEntry *removingCacheEntry = (*iteratorCache).second;
             iteratorCache = cacheList.begin();
             while (iteratorCache != cacheList.end()) {
-                cacheEntry = *iteratorCache;
+                cacheEntry = (*iteratorCache).second;
                 if (cacheEntry->validUntilTime < removingCacheEntry->validUntilTime) {
                     removingCacheEntry = cacheEntry;
                 }
@@ -249,7 +264,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
 
             emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-            cacheList.remove(removingCacheEntry);
+            cacheList.erase(removingCacheEntry->messageID);
+            //////std::cout << "3, erased";
             delete removingCacheEntry;
 
         }
@@ -277,7 +293,9 @@ void KEpidemicRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
 
-        cacheList.push_back(cacheEntry);
+        string key = cacheEntry->messageID;
+        cacheList.insert(make_pair(key, cacheEntry));////////////MODIFIED cacheList.push_back(cacheEntry);
+        //////std::cout << "4, inserted";
 
         currentCacheSize += cacheEntry->realPayloadSize;
 
@@ -414,8 +432,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
     // or if maximum hop count is reached
     // then cache or else don't cache
     bool cacheData = TRUE;
-
-    ///Fix 1: if this node is the destination, no caching, data passed directly to app layer
+    
+	///Fix 1: if this node is the destination, no caching, data passed directly to app layer
     if ((omnetDataMsg->getDestinationOriented() && strstr(ownMACAddress.c_str(), omnetDataMsg->getFinalDestinationAddress()) != NULL) || omnetDataMsg->getHopCount() >= maximumHopCount) {
     //if (omnetDataMsg->getHopCount() >= maximumHopCount) {
 
@@ -426,17 +444,25 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
         // insert/update cache
         CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        map<string, CacheEntry*>::iterator iteratorCache;
         found = FALSE;
+        /*
         iteratorCache = cacheList.begin();
         while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
+            cacheEntry = (*iteratorCache).second;
             if (cacheEntry->dataName == omnetDataMsg->getDataName()) {
                 found = TRUE;
                 break;
             }
 
             iteratorCache++;
+        }
+        */
+        iteratorCache = cacheList.find(omnetDataMsg->getDataName());
+        if (iteratorCache != cacheList.end()) {
+            found = TRUE;
+            //////std::cout << "5, found";
+            cacheEntry = (*iteratorCache).second;
         }
 
         if (!found) {
@@ -446,10 +472,10 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
                 && (currentCacheSize + omnetDataMsg->getRealPayloadSize()) > maximumCacheSize
                 && cacheList.size() > 0) {
                 iteratorCache = cacheList.begin();
-                CacheEntry *removingCacheEntry = *iteratorCache;
+                CacheEntry *removingCacheEntry = (*iteratorCache).second;
                 iteratorCache = cacheList.begin();
                 while (iteratorCache != cacheList.end()) {
-                    cacheEntry = *iteratorCache;
+                    cacheEntry = (*iteratorCache).second;
                     if (cacheEntry->validUntilTime < removingCacheEntry->validUntilTime) {
                         removingCacheEntry = cacheEntry;
                     }
@@ -463,7 +489,8 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
 
                 emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-                cacheList.remove(removingCacheEntry);
+                cacheList.erase(removingCacheEntry->messageID);
+                //////std::cout << "6, erased";
 
                 delete removingCacheEntry;
             }
@@ -489,7 +516,9 @@ void KEpidemicRoutingLayer::handleDataMsgFromLowerLayer(cMessage *msg)
             cacheEntry->createdTime = simTime().dbl();
             cacheEntry->updatedTime = simTime().dbl();
 
-            cacheList.push_back(cacheEntry);
+            string key = cacheEntry->messageID;
+            cacheList.insert(make_pair(key, cacheEntry));////////////MODIFIED cacheList.push_back(cacheEntry);
+            //////std::cout << "7, inserted";
 
             currentCacheSize += cacheEntry->realPayloadSize;
 
@@ -554,17 +583,25 @@ void KEpidemicRoutingLayer::handleSummaryVectorMsgFromLowerLayer(cMessage *msg)
 
         // see if data item exist in cache
         CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        map<string, CacheEntry*>::iterator iteratorCache;
         bool found = FALSE;
-        iteratorCache = cacheList.begin();
+
+        /*iteratorCache = cacheList.begin();
         while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
+            cacheEntry = (*iteratorCache).second;
             if (cacheEntry->messageID == messageID) {
                 found = TRUE;
                 break;
             }
 
             iteratorCache++;
+        }
+        */
+        iteratorCache = cacheList.find(messageID);
+        if (iteratorCache != cacheList.end()) {
+            found = TRUE;
+            //////std::cout << "8, found";
+            cacheEntry = (*iteratorCache).second;
         }
 
         if (!found) {
@@ -630,17 +667,25 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
         string messageID = dataRequestMsg->getMessageIDHashVector(i);
 
         CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        map<string, CacheEntry*>::iterator iteratorCache;
         bool found = FALSE;
+        /*
         iteratorCache = cacheList.begin();
         while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
+            cacheEntry = (*iteratorCache).second;
             if (cacheEntry->messageID == messageID) {
                 found = TRUE;
                 break;
             }
 
             iteratorCache++;
+        }
+        */
+        iteratorCache = cacheList.find(messageID);
+        if (iteratorCache != cacheList.end()) {
+            found = TRUE;
+            //////std::cout << "9, found";
+            cacheEntry = (*iteratorCache).second;
         }
 
         if (found) {
@@ -673,9 +718,8 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
             emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
             emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
-
-
-            ///Fix 2: remove cache entry after sending to destination
+			
+			///Fix 2: remove cache entry after sending to destination
             if (strstr(cacheEntry->finalDestinationAddress.c_str(), dataRequestMsg->getSourceAddress()) != NULL
                     && cacheEntry->destinationOriented) {
 
@@ -687,10 +731,9 @@ void KEpidemicRoutingLayer::handleDataRequestMsgFromLowerLayer(cMessage *msg)
 
                 emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-                cacheList.remove(cacheEntry);
+                cacheList.erase(cacheEntry->messageID);
                 delete cacheEntry;
             }
-
 
         }
 
@@ -786,10 +829,10 @@ KSummaryVectorMsg* KEpidemicRoutingLayer::makeSummaryVectorMessage()
     // identify the entries of the summary vector
     vector<string> selectedMessageIDList;
     CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
+    map<string, CacheEntry*>::iterator iteratorCache;
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
-        cacheEntry = *iteratorCache;
+        cacheEntry = (*iteratorCache).second;
         if ((cacheEntry->hopCount + 1) < maximumHopCount) {
             selectedMessageIDList.push_back(cacheEntry->messageID);
         }
@@ -835,10 +878,11 @@ void KEpidemicRoutingLayer::finish()
 
     // clear registered app list
     while (cacheList.size() > 0) {
-        list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
-        CacheEntry *cacheEntry= *iteratorCache;
-        cacheList.remove(cacheEntry);
-        delete cacheEntry;
+        map<string, CacheEntry*>::iterator iteratorCache = cacheList.begin();
+        delete (*iteratorCache).second;
+        cacheList.erase(iteratorCache);
+        //CacheEntry *cacheEntry= *iteratorCache;
+        //delete cacheEntry;
     }
 
     // clear synced neighbour info list

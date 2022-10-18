@@ -5,6 +5,15 @@
 // @date   : 02-may-2017
 //
 //
+// Cache Modification - C++ map
+// @author : Hai Thien Long Thai (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : jan-2022
+//
+//
+// Fixing delivery of destination-oriented data (fix 1, 2)
+// @author : Hai Thien Long Thai (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : june-2022
+//
 
 #ifndef KEPIDEMICROUTINGLAYER_H_
 #define KEPIDEMICROUTINGLAYER_H_
@@ -16,6 +25,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <string>
+#include <map>
 
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
@@ -96,7 +106,7 @@ class KEpidemicRoutingLayer : public cSimpleModule
         };
 
         list<AppInfo*> registeredAppList;
-        list<CacheEntry*> cacheList;
+        map<string, CacheEntry*> cacheList;
         list<SyncedNeighbour*> syncedNeighbourList;
         bool syncedNeighbourListIHasChanged;
 
