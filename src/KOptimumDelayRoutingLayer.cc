@@ -7,6 +7,10 @@
 //
 // @author : Asanga Udugama (adu@comnets.uni-bremen.de)
 // @date   : 25-apr-2020
+//
+// Cache Modification - C++ map
+// @author : Hai Thien Long Thai (hthai@uni-bremen.de, thaihaithienlong@yahoo.com)
+// @date   : sept-2022
 
 #include "KOptimumDelayRoutingLayer.h"
 
@@ -182,8 +186,9 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
     CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
+    map<string, CacheEntry*>::iterator iteratorCache;
     bool found = FALSE;
+    /*
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
         cacheEntry = *iteratorCache;
@@ -193,6 +198,13 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         }
 
         iteratorCache++;
+    }
+    */
+    iteratorCache = cacheList.find(omnetDataMsg->getDataName());
+    if (iteratorCache != cacheList.end()) {
+        found = TRUE;
+        //////std::cout << "2, found";
+        cacheEntry = (*iteratorCache).second;
     }
 
     if (!found) {
@@ -220,7 +232,9 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromUpperLayer(cMessage *msg)
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
 
-        cacheList.push_back(cacheEntry);
+        //cacheList.push_back(cacheEntry);
+        string key = cacheEntry->messageID;
+        cacheList.insert(make_pair(key, cacheEntry));
 
         currentCacheSize += cacheEntry->realPayloadSize;
 
@@ -315,8 +329,9 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromLowerLayerDirect(cMessage *msg)
 
     // insert/update cache
     CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
+    map<string, CacheEntry*>::iterator iteratorCache;
     found = FALSE;
+    /*
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
         cacheEntry = *iteratorCache;
@@ -326,6 +341,13 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromLowerLayerDirect(cMessage *msg)
         }
 
         iteratorCache++;
+    }
+    */
+    iteratorCache = cacheList.find(omnetDataMsg->getDataName());
+    if (iteratorCache != cacheList.end()) {
+        found = TRUE;
+        //////std::cout << "2, found";
+        cacheEntry = (*iteratorCache).second;
     }
 
     if (!found) {
@@ -350,7 +372,9 @@ void KOptimumDelayRoutingLayer::handleDataMsgFromLowerLayerDirect(cMessage *msg)
         cacheEntry->createdTime = simTime().dbl();
         cacheEntry->updatedTime = simTime().dbl();
 
-        cacheList.push_back(cacheEntry);
+        //cacheList.push_back(cacheEntry);
+        string key = cacheEntry->messageID;
+        cacheList.insert(make_pair(key, cacheEntry));
 
         currentCacheSize += cacheEntry->realPayloadSize;
 
@@ -418,21 +442,27 @@ void KOptimumDelayRoutingLayer::sendDataMessageDirect(string nodeMACAddress)
     // entries and send only ones not available
     if (found) {
 
-        list<CacheEntry*>::iterator iteratorOwnCache = cacheList.begin();
+        map<string, CacheEntry*>::iterator iteratorOwnCache = cacheList.begin();
         while (iteratorOwnCache != cacheList.end()) {
-            CacheEntry *ownCacheEntry = *iteratorOwnCache;
+            CacheEntry *ownCacheEntry = (*iteratorOwnCache).second;
             found = FALSE;
-            CacheEntry *othersCacheEntry;
-            list<CacheEntry*>::iterator iteratorOtherCache = optimumDelayRoutingLayerModule->cacheList.begin();
+            //CacheEntry *othersCacheEntry;
+            map<string, CacheEntry*>::iterator iteratorOtherCache;
+            iteratorOtherCache = optimumDelayRoutingLayerModule->cacheList.find(ownCacheEntry->dataName);
+            if (iteratorOtherCache != optimumDelayRoutingLayerModule->cacheList.end()){
+                found = TRUE;
+            }
+            /*
             while (iteratorOtherCache != optimumDelayRoutingLayerModule->cacheList.end()) {
-                othersCacheEntry = *iteratorOtherCache;
+                othersCacheEntry = (*iteratorOtherCache).second;
 
                 if (ownCacheEntry->dataName == othersCacheEntry->dataName) {
                     found = TRUE;
                     break;
                 }
                 iteratorOtherCache++;
-            }
+            }*/
+
 
             if (!found) {
 
@@ -488,11 +518,18 @@ void KOptimumDelayRoutingLayer::finish()
     }
 
     // clear  cache list
+    /*
     while (cacheList.size() > 0) {
-        list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
+        map<string, CacheEntry*>::iterator iteratorCache = cacheList.begin();
         CacheEntry *cacheEntry= *iteratorCache;
         cacheList.remove(cacheEntry);
         delete cacheEntry;
+    }
+    */
+    while (cacheList.size() > 0) {
+        map<string, CacheEntry*>::iterator iteratorCache = cacheList.begin();
+        delete (*iteratorCache).second;
+        cacheList.erase(iteratorCache);
     }
 
     // remove triggers
