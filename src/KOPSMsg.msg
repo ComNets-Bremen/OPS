@@ -46,6 +46,12 @@ packet KDataMsg {
 
     // spray & wait specific fields
     int duplicates;
+    
+    // BubbleRAP fields
+    int globalRank;
+    int localRank;
+    int communityID;
+    
 }
 
 //
@@ -68,9 +74,13 @@ packet KFeedbackMsg {
     string sourceAddress;
     string destinationAddress;
     string dataName;
-
+    ///// CHANGES - AKHIL//////
+	string global_rank;
+	string local_rank;
+	string community;
+	//// CHANGES END HERE - AKHIL ////
     int realPacketSize;
-
+	
     // keetchi specific fields
     int goodnessValue;
     int feedbackType;

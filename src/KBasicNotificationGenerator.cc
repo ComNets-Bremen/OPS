@@ -153,7 +153,7 @@ void KBasicNotificationGenerator::initialize(int stage)
         genTotalReceivableSignal = registerSignal("genTotalReceivable");
 
 //		if (logging) {EV_INFO << KBASICNOTIFICATIONGENERATOR_SIMMODULEINFO << ">!<SUTG "<< allEvents.size() << " DI" << "\n";}
-        emit(genTotalReceivableSignal, allEvents.size());
+        emit(genTotalReceivableSignal, (long)allEvents.size());
         
     } else if (stage == 3){
 		
