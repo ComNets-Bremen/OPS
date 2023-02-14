@@ -1,6 +1,6 @@
 //
 // The model is the implementation of a basic Notification Generator
-// for OPS Simulator
+//  for OPS Simulator
 //
 // @date   : 10-07-2016
 // @author : Anas bin Muslim (anas1@uni-bremen.de)

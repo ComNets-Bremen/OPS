@@ -72,8 +72,6 @@ void KBubbleRAPForwarding::initialize(int stage) {
             sub = s.substr(0, pos);
             s = s.erase(0, pos);
             s = s.erase(0, 1);
-            // prints the result
-            //cout << "Trimmed String is: " << sub << "\n";
             arr[i] = stoi(sub);
         }
         cout << "Node ID:" << nodeIndex;

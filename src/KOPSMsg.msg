@@ -47,7 +47,7 @@ packet KDataMsg {
     // spray & wait specific fields
     int duplicates;
     
-    // BubbleRAP fields
+    // BubbleRAP fields 
     int globalRank;
     int localRank;
     int communityID;

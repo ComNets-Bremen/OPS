@@ -1,5 +1,5 @@
 //
-// The model implementation for the BubbleRAP Forwarding.
+// The model implementation for the BubbleRAP Forwarding .
 //
 // @author : Akhil Simha Neela (neela@uni-bremen.de)
 // @date   : 24-jan-2023
