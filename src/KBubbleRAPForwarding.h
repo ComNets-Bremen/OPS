@@ -1,5 +1,5 @@
 //
-// The model implementation for the BubbleRAP Forwarding .
+// The model implementation for the BubbleRAP Forwarding.
 //
 // @author : Akhil Simha Neela (neela@uni-bremen.de)
 // @date   : 24-jan-2023
@@ -39,13 +39,12 @@ class KBubbleRAPForwarding: public cSimpleModule
         virtual void finish();
 
     private:
-        int l_rank, g_rank, comm;
+
         vector<vector<string>> content;
         string ownMACAddress;
         int nodeIndex;
         int nextAppID;
         int maximumCacheSize;
-        bool broadcastRRS;
         int usedRNG;
         bool ageCache;
         double cacheSizeReportingFrequency;
@@ -54,11 +53,6 @@ class KBubbleRAPForwarding: public cSimpleModule
 
         int currentCacheSize;
         simtime_t nextDataSendTime;
-
-        int myGlobalRank;
-        int myLocalRank;
-        int myCommunityID;
-        int destinationCommunity;
 
         struct AppInfo {
             int appID;
@@ -79,8 +73,8 @@ class KBubbleRAPForwarding: public cSimpleModule
 
             int realPacketSize;
 
-            bool destinationOriented;
-            // string finalDestinationNodeName;
+            bool destinationOriented ;
+            string finalDestinationNodeName;
             string initialOriginatorAddress;
             string finalDestinationAddress;
 
@@ -96,7 +90,6 @@ class KBubbleRAPForwarding: public cSimpleModule
 
         };
 
-        string broadcastMACAddress;
 
         list<AppInfo*> registeredAppList;
         list<CacheEntry*> cacheList;
@@ -121,6 +114,7 @@ class KBubbleRAPForwarding: public cSimpleModule
         simsignal_t totalBytesSentSignal;
 
         bool isDataMsgAccepted(int msgGlobalRank,int msgLocalRank, int msgCommunityID, string destinationMAC);
+        bool isMsgSent(string destinationMAC, string neighbourMAC);
 
 };
 #define KBUBBLERAPFORWARDING_SIMMODULEINFO         " KBubbleRAPForwarding>!<" << simTime() << ">!<" << getParentModule()->getFullName()
