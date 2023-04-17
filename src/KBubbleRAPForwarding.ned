@@ -8,45 +8,44 @@ package ops;
 
 simple KBubbleRAPForwarding like IOPSForwardingLayer
 {
-     parameters:
-
+    parameters:
         // node index
         int nodeIndex;
 
-		// unique address of the node         
-		string ownMACAddress;
-        
-        // size of cache in bytes - zero means unlimited caching
-        int maximumCacheSize @unit(byte) = default(5000000 byte);
-        
-        // unicast (selects one neighbour) or broadcast RRS (broadcasts to all)
-        bool broadcastRRS = default(true);
+        // unique address of the node
+        string ownMACAddress;
 
-        // RNG used for random numbers
+        // size of cache in bytes - zero means unlimited caching
+        int maximumCacheSize @unit(byte) = default(5000000byte);
+
+        // duration after which the next anti-entropy session must be started for a given host
+        double antiEntropyInterval @unit(s) = default(300s);
+
+        // maximum amount of hops to forward for a data
+        int maximumHopCount = default(25);
+
+        // maximum duration to use when obtaining a random backoff duration
+        double maximumRandomBackoffDuration @unit(s) = default(5s);
+
+        // switch on and off the TTL handling (expensive procedure)
+        bool useTTL = default(false);
+
+        // OMNeT RNG which is used for generation of random numbers
         int usedRNG = default(0);
 
-        // enable/disable aging cache
-        bool ageCache = default(false);
+        // current cache size stat reporting frequency
+        double cacheSizeReportingFrequency @unit(s) = default(100s);
 
-	    // current cache size stat reporting frequency
-	    double cacheSizeReportingFrequency @unit(s) = default(100s);
-
-        // is data sending frequency sync'ed with neighbour list reporting frequency?
-        bool  sendOnNeighReportingFrequency = default(true);
-        
-        // if sendOnNeighReportingFrequency is false, then how many seconds after
-        // data is sent, BUT this value has to be greater than and in multiples
-        // of the neigh reporting frequency of the WirelessInterface module
-        double sendFrequencyWhenNotOnNeighFrequency @unit(s) = default(1s);
-        
         // icon used
-      	@display("i=block/transport");
+        @display("i=block/transport");
 
         // statistics and signals
         @signal[fwdDataBytesReceived](type=long);
+        @signal[fwdSumVecBytesReceived](type=long);
+        @signal[fwdDataReqBytesReceived](type=long);
         @signal[fwdTotalBytesReceived](type=long);
         @signal[fwdHopsTravelled](type=long);
-        @signal[fwdHopsTravelledCount](type=long);        
+        @signal[fwdHopsTravelledCount](type=long);
         @signal[fwdCacheBytesRemoved](type=long);
         @signal[fwdCacheBytesAdded](type=long);
         @signal[fwdCacheBytesUpdated](type=long);
@@ -57,17 +56,18 @@ simple KBubbleRAPForwarding like IOPSForwardingLayer
         @signal[fwdCurrentCacheSizeBytes2](type=long);
 
         @signal[fwdDataBytesSent](type=long);
+        @signal[fwdSumVecBytesSent](type=long);
+        @signal[fwdDataReqBytesSent](type=long);
         @signal[fwdTotalBytesSent](type=long);
 
-	gates:
-	    
-	    // interface to the upper layer (which may be the application)
-	    input upperLayerIn;
-	    output upperLayerOut;
-	    
-	    // interface to the lower layer (which may be the link adaptation layer)
-	    input lowerLayerIn;
-	    output lowerLayerOut;
-	    
-}
+    gates:
 
+        // interface to the upper layer (which may be the application)
+        input upperLayerIn;
+        output upperLayerOut;
+
+        // interface to the lower layer (which may be the link adaptation layer)
+        input lowerLayerIn;
+        output lowerLayerOut;
+
+}

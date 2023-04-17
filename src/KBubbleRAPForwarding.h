@@ -14,6 +14,8 @@
 
 #include <omnetpp.h>
 #include <cstdlib>
+#include <sstream>
+#include <string>
 
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
@@ -21,38 +23,36 @@
 ////// BubbleRAP Inclusion //////
 #include <iostream>
 #include <fstream>
-#include <string>
 
-
-#if OMNETPP_VERSION >= 0x500
 using namespace omnetpp;
-#endif
 
 using namespace std;
 
+
 class KBubbleRAPForwarding: public cSimpleModule
 {
-    protected:
+protected:
         virtual void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
         virtual int numInitStages() const;
         virtual void finish();
 
-    private:
 
-        vector<vector<string>> content;
+    private:
         string ownMACAddress;
-        int nodeIndex;
         int nextAppID;
         int maximumCacheSize;
+        double antiEntropyInterval;
+        int maximumHopCount;
+        double maximumRandomBackoffDuration;
+        bool useTTL;
         int usedRNG;
-        bool ageCache;
         double cacheSizeReportingFrequency;
-        bool  sendOnNeighReportingFrequency;
-        double sendFrequencyWhenNotOnNeighFrequency;
 
+        int numEventsHandled;
         int currentCacheSize;
-        simtime_t nextDataSendTime;
+
+        cMessage *cacheSizeReportingTimeoutEvent;
 
         struct AppInfo {
             int appID;
@@ -68,13 +68,11 @@ class KBubbleRAPForwarding: public cSimpleModule
             int realPayloadSize;
             string dummyPayloadContent;
 
-            int msgType;
             simtime_t validUntilTime;
 
             int realPacketSize;
 
-            bool destinationOriented ;
-            string finalDestinationNodeName;
+            bool destinationOriented;
             string initialOriginatorAddress;
             string finalDestinationAddress;
 
@@ -87,20 +85,49 @@ class KBubbleRAPForwarding: public cSimpleModule
             double createdTime;
             double updatedTime;
             double lastAccessedTime;
+        };
+
+        struct SyncedNeighbour {
+            string nodeMACAddress;
+            double syncCoolOffEndTime;
+
+            bool randomBackoffStarted;
+            double randomBackoffEndTime;
+
+            bool neighbourSyncing;
+            double neighbourSyncEndTime;
+
+            bool nodeConsidered;
 
         };
 
-
         list<AppInfo*> registeredAppList;
         list<CacheEntry*> cacheList;
-        cMessage *ageDataTimeoutEvent;
-        cMessage *cacheSizeReportingTimeoutEvent;
+        list<SyncedNeighbour*> syncedNeighbourList;
+        bool syncedNeighbourListIHasChanged;
+
+        void ageDataInCache();
+        void handleAppRegistrationMsg(cMessage *msg);
+        void handleDataMsgFromUpperLayer(cMessage *msg);
+        void handleNeighbourListMsgFromLowerLayer(cMessage *msg);
+        void handleDataMsgFromLowerLayer(cMessage *msg);
+        void handleSummaryVectorMsgFromLowerLayer(cMessage *msg);
+        void handleDataRequestMsgFromLowerLayer(cMessage *msg);
+
+        SyncedNeighbour* getSyncingNeighbourInfo(string nodeMACAddress);
+        void setSyncingNeighbourInfoForNextRound();
+        void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
+        KSummaryVectorMsg* makeSummaryVectorMessage();
 
         // stats related variables
         simsignal_t dataBytesReceivedSignal;
+        simsignal_t sumVecBytesReceivedSignal;
+        simsignal_t dataReqBytesReceivedSignal;
         simsignal_t totalBytesReceivedSignal;
+
         simsignal_t hopsTravelledSignal;
         simsignal_t hopsTravelledCountSignal;
+
         simsignal_t cacheBytesRemovedSignal;
         simsignal_t cacheBytesAddedSignal;
         simsignal_t cacheBytesUpdatedSignal;
@@ -111,14 +138,19 @@ class KBubbleRAPForwarding: public cSimpleModule
         simsignal_t currentCacheSizeBytesSignal2;
 
         simsignal_t dataBytesSentSignal;
+        simsignal_t sumVecBytesSentSignal;
+        simsignal_t dataReqBytesSentSignal;
         simsignal_t totalBytesSentSignal;
 
-        bool isDataMsgAccepted(int msgGlobalRank,int msgLocalRank, int msgCommunityID, string destinationMAC);
         bool isMsgSent(string destinationMAC, string neighbourMAC);
+
 
 };
 #define KBUBBLERAPFORWARDING_SIMMODULEINFO         " KBubbleRAPForwarding>!<" << simTime() << ">!<" << getParentModule()->getFullName()
 #define KBUBBLERAPFORWARDING_EVENTTYPE_AGEDATA     108
 #define KBUBBLERAPFORWARDING_CACHESIZE_REP_EVENT   175
+#define KBUBBLERAPFORWARDING_MSG_ID_HASH_SIZE      4 // in bytes
+#define KBUBBLERAPFORWARDING_CACHESIZE_REP_EVENT   175
+
 
 #endif /* KBUBBLERAPFORWARDING_H_ */
