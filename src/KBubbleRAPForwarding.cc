@@ -5,8 +5,6 @@
 // @date   : 24-jan-2023
 //
 
-
-
 #include "KBubbleRAPForwarding.h"
 
 Define_Module(KBubbleRAPForwarding);
@@ -679,6 +677,8 @@ void KBubbleRAPForwarding::handleDataRequestMsgFromLowerLayer(cMessage *msg) {
         }
 
         if (found) {
+            if (isMsgSent(cacheEntry->finalDestinationAddress.c_str(),
+                    dataRequestMsg->getSourceAddress())) {
 
             KDataMsg *dataMsg = new KDataMsg();
 
@@ -698,8 +698,8 @@ void KBubbleRAPForwarding::handleDataRequestMsgFromLowerLayer(cMessage *msg) {
                     cacheEntry->initialOriginatorAddress.c_str());
             dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
             if (cacheEntry->destinationOriented) {
-                cout << "Destination: "
-                        << cacheEntry->finalDestinationAddress.c_str() << endl;
+                //cout << "Destination: "
+                        //<< cacheEntry->finalDestinationAddress.c_str() << endl;
                 dataMsg->setFinalDestinationAddress(
                         cacheEntry->finalDestinationAddress.c_str());
             }
@@ -709,14 +709,14 @@ void KBubbleRAPForwarding::handleDataRequestMsgFromLowerLayer(cMessage *msg) {
             dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
             dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
             dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
-            if (isMsgSent(cacheEntry->finalDestinationAddress.c_str(),
-                    dataRequestMsg->getSourceAddress())) {
-                cout << "Success ------" << endl;
+
+                //cout << "Success ------" << endl;
 
                 send(dataMsg, "lowerLayerOut");
 
                 emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
                 emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
+                //delete dataMsg;
             }
             ///Fix 2: remove cache entry after sending to destination
             if (strstr(cacheEntry->finalDestinationAddress.c_str(),
@@ -904,8 +904,8 @@ bool KBubbleRAPForwarding::isMsgSent(string destinationMAC,
         string NeigbourMAC) {
 
     // Output the MAC addresses of the destination, neighbor, and own device.
-    cout << "Destination:" << destinationMAC << " Neighbor:" << NeigbourMAC
-            << " Own:" << ownMACAddress << endl;
+    EV_INFO << "Destination:" << destinationMAC << " Neighbor:" << NeigbourMAC
+                   << " Own:" << ownMACAddress << endl;
 
     // Copy the MAC addresses to local variables.
     string MACAddress = destinationMAC;
@@ -924,7 +924,7 @@ bool KBubbleRAPForwarding::isMsgSent(string destinationMAC,
 
         // If the line contains the destination MAC address, extract the rank values.
         if (line.find(MACAddress) != std::string::npos) {
-            cout << "Destination MAC:" << line << endl;
+            //cout << "Destination MAC:" << line << endl;
             // Parse the line using a stringstream and add each rank value to the destRanks vector.
             stringstream ss(line);
             string destination;
@@ -934,7 +934,7 @@ bool KBubbleRAPForwarding::isMsgSent(string destinationMAC,
         }
         // If the line contains the neighbor MAC address, extract the rank values.
         if (line.find(MACAddress2) != std::string::npos) {
-            cout << "Neighbor MAC   :" << line << endl;
+            //cout << "Neighbor MAC   :" << line << endl;
             stringstream ss2(line);
             string neighbour;
             while (getline(ss2, neighbour, ',')) {
@@ -943,7 +943,7 @@ bool KBubbleRAPForwarding::isMsgSent(string destinationMAC,
         }
         // If the line contains the own MAC address, extract the rank values.
         if (line.find(ownMACAddress) != std::string::npos) {
-            cout << "Own MAC        :" << line << endl;
+            //cout << "Own MAC        :" << line << endl;
             stringstream ss3(line);
             string own;
             while (getline(ss3, own, ',')) {
@@ -959,24 +959,36 @@ bool KBubbleRAPForwarding::isMsgSent(string destinationMAC,
 //    // [4] = MAC Address
 //    // Lower the Rank more famous the node.
     if (neighRanks[0] == destRanks[0]) {
-        cout << "Destination Found" << endl;
+        EV_INFO << "Destination Found" << endl;
         return true;
     } else if (ownRanks[1] == destRanks[1]) {
         if (neighRanks[1] == destRanks[1] && neighRanks[3] < ownRanks[3]) {
-            cout << "Success at Local Rank Level" << endl;
+            EV_INFO << "Success at Local Rank Level" << endl;
+            destRanks.clear();
+            neighRanks.clear();
+            ownRanks.clear();
             return true;
         }
     } else if (destRanks[1] == neighRanks[1] || neighRanks[2] < ownRanks[2]) {
         if (destRanks[1] == neighRanks[1]) {
-            cout << "Success as in Same Community" << endl;
+            EV_INFO << "Success as in Same Community" << endl;
+            destRanks.clear();
+            neighRanks.clear();
+            ownRanks.clear();
             return true;
         } else if (neighRanks[2] < ownRanks[2]) {
-            cout << "Success at Global Rank Level" << endl;
+            EV_INFO << "Success at Global Rank Level" << endl;
+            destRanks.clear();
+            neighRanks.clear();
+            ownRanks.clear();
             return true;
         }
 
     } else {
-        cout << "Not in Same Community" << endl;
-        return false;
+        EV_INFO << "Not in Same Community" << endl;
     }
+    destRanks.clear();
+    neighRanks.clear();
+    ownRanks.clear();
+    return false;
 }
