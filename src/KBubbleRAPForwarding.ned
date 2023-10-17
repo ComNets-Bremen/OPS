@@ -1,7 +1,8 @@
 //
-// The model for the BubbleRAP forwarder
+// The model implementation for the BubbleRAP Forwarding with Epidemic Routing layer foundation
+//
 // @author : Akhil Simha Neela (neela@uni-bremen.de)
-// @date   : 24.01.2023
+// @date   : 17-10-2023
 //
 
 package ops;

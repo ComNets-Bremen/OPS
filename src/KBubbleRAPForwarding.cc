@@ -1,9 +1,10 @@
 //
-// The model implementation for the BubbleRAP Forwarding.
+// The model implementation for the BubbleRAP Forwarding with Epidemic Routing layer foundation
 //
 // @author : Akhil Simha Neela (neela@uni-bremen.de)
-// @date   : 24-jan-2023
+// @date   : 17-10-2023
 //
+
 
 #include "KBubbleRAPForwarding.h"
 
@@ -34,7 +35,7 @@ void KBubbleRAPForwarding::initialize(int stage) {
         cacheSizeReportingTimeoutEvent = new cMessage(
                 "Cache Size Reporting Event");
         cacheSizeReportingTimeoutEvent->setKind(
-        KBUBBLERAPFORWARDING_CACHESIZE_REP_EVENT);
+                KBUBBLERAPFORWARDING_CACHESIZE_REP_EVENT);
         scheduleAt(simTime() + cacheSizeReportingFrequency,
                 cacheSizeReportingTimeoutEvent);
 
@@ -161,30 +162,37 @@ void KBubbleRAPForwarding::ageDataInCache() {
     while (expiredFound) {
         expiredFound = FALSE;
 
-        CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        // MODIFIED
+        //CacheEntry cacheEntry;
+        vector<CacheEntry>::iterator iteratorCache;
         iteratorCache = cacheList.begin();
         while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
-            if (cacheEntry->validUntilTime < simTime().dbl()) {
+            //cacheEntry = *iteratorCache;
+            if ((*iteratorCache).validUntilTime < simTime().dbl()) {
                 expiredFound = TRUE;
                 break;
             }
             iteratorCache++;
         }
         if (expiredFound) {
-            currentCacheSize -= cacheEntry->realPacketSize;
+            currentCacheSize -= (*iteratorCache).realPacketSize;
 
-            emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
+            emit(cacheBytesRemovedSignal, (*iteratorCache).realPayloadSize);
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
             emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-            cacheList.remove(cacheEntry);
-            delete cacheEntry;
+            //int range = iteratorCache - cacheList.begin();
+            //swap(*iteratorCache, cacheList.back());
+            //cacheList.pop_back();
+            //sort(cacheList.begin() + range, cacheList.end(), [](const CacheEntry& a, const CacheEntry& b) {return (a.messageID < b.messageID);});
+            cacheList.erase(iteratorCache);
+
+            //delete cacheEntry;
 
         }
+        ///////////////////////////////////////
     }
 
 }
@@ -218,91 +226,119 @@ void KBubbleRAPForwarding::handleAppRegistrationMsg(cMessage *msg) {
 void KBubbleRAPForwarding::handleDataMsgFromUpperLayer(cMessage *msg) {
     KDataMsg *omnetDataMsg = dynamic_cast<KDataMsg*>(msg);
 
-    CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
+    //CacheEntry cacheEntry;
+    vector<CacheEntry>::iterator iteratorCache;
     int found = FALSE;
-    iteratorCache = cacheList.begin();
-    while (iteratorCache != cacheList.end()) {
-        cacheEntry = *iteratorCache;
-        if (cacheEntry->dataName == omnetDataMsg->getDataName()) {
-            found = TRUE;
-            break;
-        }
+    /*
+     iteratorCache = cacheList.begin();
+     while (iteratorCache != cacheList.end()) {
+     cacheEntry = *iteratorCache;
+     if (cacheEntry.dataName == omnetDataMsg->getDataName()) {
+     found = TRUE;
+     break;
+     }
 
-        iteratorCache++;
+     iteratorCache++;
+     }
+     */
+    iteratorCache = lower_bound(cacheList.begin(), cacheList.end(),
+            omnetDataMsg->getDataName(), [](const CacheEntry &a, string b) {
+                return (a.dataName < b);
+            });
+    if (iteratorCache != cacheList.end()
+            && (*iteratorCache).dataName == omnetDataMsg->getDataName()) {
+        found = TRUE;
+        //////std::cout << "5, found";
+        //cacheEntry = *iteratorCache;
     }
 
     if (!found) {
 
+        // MODIFIED
         // apply caching policy if limited cache and cache is full
+
         if (maximumCacheSize != 0
                 && (currentCacheSize + omnetDataMsg->getRealPayloadSize())
                         > maximumCacheSize && cacheList.size() > 0) {
             iteratorCache = cacheList.begin();
-            CacheEntry *removingCacheEntry = *iteratorCache;
-            iteratorCache = cacheList.begin();
+            //CacheEntry removingCacheEntry;
+            //removingCacheEntry = *iteratorCache;
+            vector<CacheEntry>::iterator iteratorRemovingCacheEntry;
+            iteratorRemovingCacheEntry = iteratorCache;
             while (iteratorCache != cacheList.end()) {
-                cacheEntry = *iteratorCache;
-                if (cacheEntry->validUntilTime
-                        < removingCacheEntry->validUntilTime) {
-                    removingCacheEntry = cacheEntry;
+                //cacheEntry = *iteratorCache;
+                if ((*iteratorCache).validUntilTime
+                        < (*iteratorRemovingCacheEntry).validUntilTime) {
+                    //removingCacheEntry = cacheEntry;
+                    iteratorRemovingCacheEntry = iteratorCache;
                 }
                 iteratorCache++;
             }
-            currentCacheSize -= removingCacheEntry->realPayloadSize;
+            currentCacheSize -= (*iteratorRemovingCacheEntry).realPayloadSize;
 
-            emit(cacheBytesRemovedSignal, removingCacheEntry->realPayloadSize);
+            emit(cacheBytesRemovedSignal,
+                    (*iteratorRemovingCacheEntry).realPayloadSize);
             emit(currentCacheSizeBytesSignal, currentCacheSize);
             emit(currentCacheSizeReportedCountSignal, (int) 1);
 
             emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-            cacheList.remove(removingCacheEntry);
-            delete removingCacheEntry;
+            //int range = iteratorRemovingCacheEntry - cacheList.begin();
+            //swap(*iteratorRemovingCacheEntry, cacheList.back());
+            //cacheList.pop_back();
+            //sort(cacheList.begin() + range, cacheList.end(), [](const CacheEntry& a, const CacheEntry& b) {return (a.messageID < b.messageID);});
+            cacheList.erase(iteratorRemovingCacheEntry);
+
+            //delete removingCacheEntry;
 
         }
+        ///////////////////////////////////
 
-        cacheEntry = new CacheEntry;
+        CacheEntry cacheEntry;
 
-        cacheEntry->messageID = omnetDataMsg->getDataName();
-        cacheEntry->hopCount = 0;
-        cacheEntry->dataName = omnetDataMsg->getDataName();
-        cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
-        cacheEntry->dummyPayloadContent =
-                omnetDataMsg->getDummyPayloadContent();
-        cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
-        cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-        cacheEntry->initialOriginatorAddress =
+        cacheEntry.messageID = omnetDataMsg->getDataName();
+        cacheEntry.hopCount = 0;
+        cacheEntry.dataName = omnetDataMsg->getDataName();
+        cacheEntry.realPayloadSize = omnetDataMsg->getRealPayloadSize();
+        cacheEntry.dummyPayloadContent = omnetDataMsg->getDummyPayloadContent();
+        cacheEntry.validUntilTime = omnetDataMsg->getValidUntilTime();
+        cacheEntry.realPacketSize = omnetDataMsg->getRealPacketSize();
+        cacheEntry.initialOriginatorAddress =
                 omnetDataMsg->getInitialOriginatorAddress();
-        cacheEntry->destinationOriented =
-                omnetDataMsg->getDestinationOriented();
+        cacheEntry.destinationOriented = omnetDataMsg->getDestinationOriented();
         if (omnetDataMsg->getDestinationOriented()) {
-            cacheEntry->finalDestinationAddress =
+            cacheEntry.finalDestinationAddress =
                     omnetDataMsg->getFinalDestinationAddress();
         }
-        cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
-        cacheEntry->hopsTravelled = 0;
+        cacheEntry.goodnessValue = omnetDataMsg->getGoodnessValue();
+        cacheEntry.hopsTravelled = 0;
 
-        cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
-        cacheEntry->initialInjectionTime =
+        cacheEntry.msgUniqueID = omnetDataMsg->getMsgUniqueID();
+        cacheEntry.initialInjectionTime =
                 omnetDataMsg->getInitialInjectionTime();
 
-        cacheEntry->createdTime = simTime().dbl();
-        cacheEntry->updatedTime = simTime().dbl();
+        cacheEntry.createdTime = simTime().dbl();
+        cacheEntry.updatedTime = simTime().dbl();
 
-        cacheList.push_back(cacheEntry);
+        //cacheList.push_back(cacheEntry);
+        //sort(cacheList.begin(), cacheList.end(), [](const CacheEntry& a, const CacheEntry& b) {return (a.messageID < b.messageID);});
+        iteratorCache = lower_bound(cacheList.begin(), cacheList.end(),
+                cacheEntry.messageID, [](const CacheEntry &a, string b) {
+                    return (a.dataName < b);
+                });
+        iteratorCache = cacheList.insert(iteratorCache, cacheEntry);
 
-        currentCacheSize += cacheEntry->realPayloadSize;
+        currentCacheSize += cacheEntry.realPayloadSize;
 
     }
 
-    cacheEntry->lastAccessedTime = simTime().dbl();
+    (*iteratorCache).lastAccessedTime = simTime().dbl();
 
     // log cache update or add
     if (found) {
-        emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+        emit(cacheBytesUpdatedSignal, (*iteratorCache).realPayloadSize);
     } else {
-        emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+        emit(cacheBytesAddedSignal, (*iteratorCache).realPayloadSize);
     }
     emit(currentCacheSizeBytesSignal, currentCacheSize);
     emit(currentCacheSizeReportedCountSignal, (int) 1);
@@ -395,7 +431,7 @@ void KBubbleRAPForwarding::handleNeighbourListMsgFromLowerLayer(cMessage *msg) {
             syncedNeighbour->neighbourSyncEndTime = 0.0;
 
             // send summary vector (to start syncing)
-            KSummaryVectorMsg *summaryVectorMsg = makeSummaryVectorMessage();
+            KSummaryVectorMsg *summaryVectorMsg = makeSummaryVectorMessage(nodeMACAddress.c_str());
             summaryVectorMsg->setDestinationAddress(nodeMACAddress.c_str());
             send(summaryVectorMsg, "lowerLayerOut");
 
@@ -450,92 +486,121 @@ void KBubbleRAPForwarding::handleDataMsgFromLowerLayer(cMessage *msg) {
     if (cacheData) {
 
         // insert/update cache
-        CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        //CacheEntry cacheEntry;
+        vector<CacheEntry>::iterator iteratorCache;
         found = FALSE;
-        iteratorCache = cacheList.begin();
-        while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
-            if (cacheEntry->dataName == omnetDataMsg->getDataName()) {
-                found = TRUE;
-                break;
-            }
+        /*
+         iteratorCache = cacheList.begin();
+         while (iteratorCache != cacheList.end()) {
+         cacheEntry = *iteratorCache;
+         if (cacheEntry.dataName == omnetDataMsg->getDataName()) {
+         found = TRUE;
+         break;
+         }
 
-            iteratorCache++;
+         iteratorCache++;
+         }
+         */
+        iteratorCache = lower_bound(cacheList.begin(), cacheList.end(),
+                omnetDataMsg->getDataName(), [](const CacheEntry &a, string b) {
+                    return (a.dataName < b);
+                });
+        if (iteratorCache != cacheList.end()
+                && (*iteratorCache).dataName == omnetDataMsg->getDataName()) {
+            found = TRUE;
+            //////std::cout << "5, found";
+            //cacheEntry = *iteratorCache;
         }
 
         if (!found) {
 
+            // MODIFIED
             // apply caching policy if limited cache and cache is full
+
             if (maximumCacheSize != 0
                     && (currentCacheSize + omnetDataMsg->getRealPayloadSize())
                             > maximumCacheSize && cacheList.size() > 0) {
                 iteratorCache = cacheList.begin();
-                CacheEntry *removingCacheEntry = *iteratorCache;
-                iteratorCache = cacheList.begin();
+                //CacheEntry removingCacheEntry;
+                //removingCacheEntry = *iteratorCache;
+                vector<CacheEntry>::iterator iteratorRemovingCacheEntry;
+                iteratorRemovingCacheEntry = iteratorCache;
                 while (iteratorCache != cacheList.end()) {
-                    cacheEntry = *iteratorCache;
-                    if (cacheEntry->validUntilTime
-                            < removingCacheEntry->validUntilTime) {
-                        removingCacheEntry = cacheEntry;
+                    //cacheEntry = *iteratorCache;
+                    if ((*iteratorCache).validUntilTime
+                            < (*iteratorRemovingCacheEntry).validUntilTime) {
+                        //removingCacheEntry = cacheEntry;
+                        iteratorRemovingCacheEntry = iteratorCache;
                     }
                     iteratorCache++;
                 }
-                currentCacheSize -= removingCacheEntry->realPayloadSize;
+                currentCacheSize -=
+                        (*iteratorRemovingCacheEntry).realPayloadSize;
 
                 emit(cacheBytesRemovedSignal,
-                        removingCacheEntry->realPayloadSize);
+                        (*iteratorRemovingCacheEntry).realPayloadSize);
                 emit(currentCacheSizeBytesSignal, currentCacheSize);
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
 
                 emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-                cacheList.remove(removingCacheEntry);
+                //int range = iteratorRemovingCacheEntry - cacheList.begin();
+                //swap(*iteratorRemovingCacheEntry, cacheList.back());
+                //cacheList.pop_back();
+                //sort(cacheList.begin() + range, cacheList.end(), [](const CacheEntry& a, const CacheEntry& b) {return (a.messageID < b.messageID);});
+                cacheList.erase(iteratorRemovingCacheEntry);
 
-                delete removingCacheEntry;
+                //delete removingCacheEntry;
             }
+            ////////////////////////////////
 
-            cacheEntry = new CacheEntry;
+            CacheEntry cacheEntry;
 
-            cacheEntry->messageID = omnetDataMsg->getMessageID();
-            cacheEntry->dataName = omnetDataMsg->getDataName();
-            cacheEntry->realPayloadSize = omnetDataMsg->getRealPayloadSize();
-            cacheEntry->dummyPayloadContent =
+            cacheEntry.messageID = omnetDataMsg->getMessageID();
+            cacheEntry.dataName = omnetDataMsg->getDataName();
+            cacheEntry.realPayloadSize = omnetDataMsg->getRealPayloadSize();
+            cacheEntry.dummyPayloadContent =
                     omnetDataMsg->getDummyPayloadContent();
-            cacheEntry->validUntilTime = omnetDataMsg->getValidUntilTime();
-            cacheEntry->realPacketSize = omnetDataMsg->getRealPacketSize();
-            cacheEntry->initialOriginatorAddress =
+            cacheEntry.validUntilTime = omnetDataMsg->getValidUntilTime();
+            cacheEntry.realPacketSize = omnetDataMsg->getRealPacketSize();
+            cacheEntry.initialOriginatorAddress =
                     omnetDataMsg->getInitialOriginatorAddress();
-            cacheEntry->destinationOriented =
+            cacheEntry.destinationOriented =
                     omnetDataMsg->getDestinationOriented();
             if (omnetDataMsg->getDestinationOriented()) {
-                cacheEntry->finalDestinationAddress =
+                cacheEntry.finalDestinationAddress =
                         omnetDataMsg->getFinalDestinationAddress();
             }
-            cacheEntry->goodnessValue = omnetDataMsg->getGoodnessValue();
+            cacheEntry.goodnessValue = omnetDataMsg->getGoodnessValue();
 
-            cacheEntry->msgUniqueID = omnetDataMsg->getMsgUniqueID();
-            cacheEntry->initialInjectionTime =
+            cacheEntry.msgUniqueID = omnetDataMsg->getMsgUniqueID();
+            cacheEntry.initialInjectionTime =
                     omnetDataMsg->getInitialInjectionTime();
 
-            cacheEntry->createdTime = simTime().dbl();
-            cacheEntry->updatedTime = simTime().dbl();
+            cacheEntry.createdTime = simTime().dbl();
+            cacheEntry.updatedTime = simTime().dbl();
 
-            cacheList.push_back(cacheEntry);
+            //cacheList.push_back(cacheEntry);
+            //sort(cacheList.begin(), cacheList.end(), [](const CacheEntry& a, const CacheEntry& b) {return (a.messageID < b.messageID);});
+            iteratorCache = lower_bound(cacheList.begin(), cacheList.end(),
+                    cacheEntry.messageID, [](const CacheEntry &a, string b) {
+                        return (a.dataName < b);
+                    });
+            iteratorCache = cacheList.insert(iteratorCache, cacheEntry);
 
-            currentCacheSize += cacheEntry->realPayloadSize;
+            currentCacheSize += cacheEntry.realPayloadSize;
 
         }
 
-        cacheEntry->hopsTravelled = omnetDataMsg->getHopsTravelled();
-        cacheEntry->hopCount = omnetDataMsg->getHopCount();
-        cacheEntry->lastAccessedTime = simTime().dbl();
+        (*iteratorCache).hopsTravelled = omnetDataMsg->getHopsTravelled();
+        (*iteratorCache).hopCount = omnetDataMsg->getHopCount();
+        (*iteratorCache).lastAccessedTime = simTime().dbl();
 
         // log cache update or add
         if (found) {
-            emit(cacheBytesUpdatedSignal, cacheEntry->realPayloadSize);
+            emit(cacheBytesUpdatedSignal, (*iteratorCache).realPayloadSize);
         } else {
-            emit(cacheBytesAddedSignal, cacheEntry->realPayloadSize);
+            emit(cacheBytesAddedSignal, (*iteratorCache).realPayloadSize);
         }
         emit(currentCacheSizeBytesSignal, currentCacheSize);
         emit(currentCacheSizeReportedCountSignal, (int) 1);
@@ -585,18 +650,30 @@ void KBubbleRAPForwarding::handleSummaryVectorMsgFromLowerLayer(cMessage *msg) {
         messageID = summaryVectorMsg->getMessageIDHashVector(i);
 
         // see if data item exist in cache
-        CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        //CacheEntry cacheEntry;
+        vector<CacheEntry>::iterator iteratorCache;
         bool found = FALSE;
-        iteratorCache = cacheList.begin();
-        while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
-            if (cacheEntry->messageID == messageID) {
-                found = TRUE;
-                break;
-            }
+        /*
+         iteratorCache = cacheList.begin();
+         while (iteratorCache != cacheList.end()) {
+         cacheEntry = *iteratorCache;
+         if (cacheEntry.messageID == messageID) {
+         found = TRUE;
+         break;
+         }
 
-            iteratorCache++;
+         iteratorCache++;
+         }
+         */
+        iteratorCache = lower_bound(cacheList.begin(), cacheList.end(),
+                messageID, [](const CacheEntry &a, string b) {
+                    return (a.messageID < b);
+                });
+        if (iteratorCache != cacheList.end()
+                && (*iteratorCache).messageID == messageID) {
+            found = TRUE;
+            //////std::cout << "5, found";
+            //cacheEntry = *iteratorCache;
         }
 
         if (!found) {
@@ -662,77 +739,84 @@ void KBubbleRAPForwarding::handleDataRequestMsgFromLowerLayer(cMessage *msg) {
     while (i < dataRequestMsg->getMessageIDHashVectorArraySize()) {
         string messageID = dataRequestMsg->getMessageIDHashVector(i);
 
-        CacheEntry *cacheEntry;
-        list<CacheEntry*>::iterator iteratorCache;
+        //CacheEntry cacheEntry;
+        vector<CacheEntry>::iterator iteratorCache;
         bool found = FALSE;
-        iteratorCache = cacheList.begin();
-        while (iteratorCache != cacheList.end()) {
-            cacheEntry = *iteratorCache;
-            if (cacheEntry->messageID == messageID) {
-                found = TRUE;
-                break;
-            }
+        /*
+         iteratorCache = cacheList.begin();
+         while (iteratorCache != cacheList.end()) {
+         cacheEntry = *iteratorCache;
+         if (cacheEntry.messageID == messageID) {
+         found = TRUE;
+         break;
+         }
 
-            iteratorCache++;
+         iteratorCache++;
+         }
+         */
+        iteratorCache = lower_bound(cacheList.begin(), cacheList.end(),
+                messageID, [](const CacheEntry &a, string b) {
+                    return (a.messageID < b);
+                });
+        if (iteratorCache != cacheList.end()
+                && (*iteratorCache).messageID == messageID) {
+            found = TRUE;
+            ////std::cout << "5, found"
+            //cacheEntry = *iteratorCache;
         }
 
         if (found) {
-            if (isMsgSent(cacheEntry->finalDestinationAddress.c_str(),
-                    dataRequestMsg->getSourceAddress())) {
 
             KDataMsg *dataMsg = new KDataMsg();
 
             dataMsg->setSourceAddress(ownMACAddress.c_str());
             dataMsg->setDestinationAddress(dataRequestMsg->getSourceAddress());
-            dataMsg->setDataName(cacheEntry->dataName.c_str());
+            dataMsg->setDataName((*iteratorCache).dataName.c_str());
             dataMsg->setDummyPayloadContent(
-                    cacheEntry->dummyPayloadContent.c_str());
-            dataMsg->setValidUntilTime(cacheEntry->validUntilTime);
-            dataMsg->setRealPayloadSize(cacheEntry->realPayloadSize);
+                    (*iteratorCache).dummyPayloadContent.c_str());
+            dataMsg->setValidUntilTime((*iteratorCache).validUntilTime);
+            dataMsg->setRealPayloadSize((*iteratorCache).realPayloadSize);
             // check KOPSMsg.msg on sizing mssages
-            int realPacketSize = 6 + 6 + 2 + cacheEntry->realPayloadSize + 4 + 6
-                    + 1;
+            int realPacketSize = 6 + 6 + 2 + (*iteratorCache).realPayloadSize
+                    + 4 + 6 + 1;
             dataMsg->setRealPacketSize(realPacketSize);
             dataMsg->setByteLength(realPacketSize);
             dataMsg->setInitialOriginatorAddress(
-                    cacheEntry->initialOriginatorAddress.c_str());
-            dataMsg->setDestinationOriented(cacheEntry->destinationOriented);
-            if (cacheEntry->destinationOriented) {
-                //cout << "Destination: "
-                        //<< cacheEntry->finalDestinationAddress.c_str() << endl;
+                    (*iteratorCache).initialOriginatorAddress.c_str());
+            dataMsg->setDestinationOriented(
+                    (*iteratorCache).destinationOriented);
+            if ((*iteratorCache).destinationOriented) {
                 dataMsg->setFinalDestinationAddress(
-                        cacheEntry->finalDestinationAddress.c_str());
+                        (*iteratorCache).finalDestinationAddress.c_str());
             }
-            dataMsg->setMessageID(cacheEntry->messageID.c_str());
-            dataMsg->setHopCount(cacheEntry->hopCount);
-            dataMsg->setGoodnessValue(cacheEntry->goodnessValue);
-            dataMsg->setHopsTravelled(cacheEntry->hopsTravelled);
-            dataMsg->setMsgUniqueID(cacheEntry->msgUniqueID);
-            dataMsg->setInitialInjectionTime(cacheEntry->initialInjectionTime);
+            dataMsg->setMessageID((*iteratorCache).messageID.c_str());
+            dataMsg->setHopCount((*iteratorCache).hopCount);
+            dataMsg->setGoodnessValue((*iteratorCache).goodnessValue);
+            dataMsg->setHopsTravelled((*iteratorCache).hopsTravelled);
+            dataMsg->setMsgUniqueID((*iteratorCache).msgUniqueID);
+            dataMsg->setInitialInjectionTime(
+                    (*iteratorCache).initialInjectionTime);
 
-                //cout << "Success ------" << endl;
+            send(dataMsg, "lowerLayerOut");
 
-                send(dataMsg, "lowerLayerOut");
+            emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
+            emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
 
-                emit(dataBytesSentSignal, (long) dataMsg->getByteLength());
-                emit(totalBytesSentSignal, (long) dataMsg->getByteLength());
-                //delete dataMsg;
-            }
             ///Fix 2: remove cache entry after sending to destination
-            if (strstr(cacheEntry->finalDestinationAddress.c_str(),
+            if (strstr((*iteratorCache).finalDestinationAddress.c_str(),
                     dataRequestMsg->getSourceAddress()) != NULL
-                    && cacheEntry->destinationOriented) {
+                    && (*iteratorCache).destinationOriented) {
 
-                currentCacheSize -= cacheEntry->realPacketSize;
+                currentCacheSize -= (*iteratorCache).realPacketSize;
 
-                emit(cacheBytesRemovedSignal, cacheEntry->realPayloadSize);
+                emit(cacheBytesRemovedSignal, (*iteratorCache).realPayloadSize);
                 emit(currentCacheSizeBytesSignal, currentCacheSize);
                 emit(currentCacheSizeReportedCountSignal, (int) 1);
 
                 emit(currentCacheSizeBytesSignal2, currentCacheSize);
 
-                cacheList.remove(cacheEntry);
-                delete cacheEntry;
+                cacheList.erase(iteratorCache);
+                //delete cacheEntry;
             }
 
         }
@@ -821,19 +905,24 @@ void KBubbleRAPForwarding::setSyncingNeighbourInfoForNoNeighboursOrEmptyCache() 
     }
 }
 
-KSummaryVectorMsg* KBubbleRAPForwarding::makeSummaryVectorMessage() {
+KSummaryVectorMsg* KBubbleRAPForwarding::makeSummaryVectorMessage(
+        string nodeMACAddress) {
 
     // identify the entries of the summary vector
     vector<string> selectedMessageIDList;
-    CacheEntry *cacheEntry;
-    list<CacheEntry*>::iterator iteratorCache;
+    //CacheEntry cacheEntry;
+    vector<CacheEntry>::iterator iteratorCache;
     iteratorCache = cacheList.begin();
     while (iteratorCache != cacheList.end()) {
-        cacheEntry = *iteratorCache;
-        if ((cacheEntry->hopCount + 1) < maximumHopCount) {
-            selectedMessageIDList.push_back(cacheEntry->messageID);
-        }
+        //cacheEntry = *iteratorCache;
+        string destination = iteratorCache->finalDestinationAddress.c_str();
+        bool share = isMsgSent(destination, nodeMACAddress);
+        if (share == true) {
 
+            if (((*iteratorCache).hopCount + 1) < maximumHopCount) {
+                selectedMessageIDList.push_back((*iteratorCache).messageID);
+            }
+        } //Close this for isMsgSent
         iteratorCache++;
     }
 
@@ -875,13 +964,10 @@ void KBubbleRAPForwarding::finish() {
         delete appInfo;
     }
 
-    // clear registered app list
-    while (cacheList.size() > 0) {
-        list<CacheEntry*>::iterator iteratorCache = cacheList.begin();
-        CacheEntry *cacheEntry = *iteratorCache;
-        cacheList.remove(cacheEntry);
-        delete cacheEntry;
-    }
+    // MODIFIED
+    // clear data cache
+    cacheList.clear();
+    ///////////////////////
 
     // clear synced neighbour info list
     list<SyncedNeighbour*> syncedNeighbourList;
@@ -899,96 +985,51 @@ void KBubbleRAPForwarding::finish() {
 
 }
 
-// Check if Message needs to be sent or not
 bool KBubbleRAPForwarding::isMsgSent(string destinationMAC,
         string NeigbourMAC) {
-
-    // Output the MAC addresses of the destination, neighbor, and own device.
-    EV_INFO << "Destination:" << destinationMAC << " Neighbor:" << NeigbourMAC
-                   << " Own:" << ownMACAddress << endl;
-
-    // Copy the MAC addresses to local variables.
-    string MACAddress = destinationMAC;
-    string MACAddress2 = NeigbourMAC;
-    std::string line, line2;
-
-    // Open the file "outMAC.csv" for reading.
     std::ifstream input("output_py.csv");
 
-    // Create empty vectors to store the rank values for each device.
+    if (!input.is_open()) {
+        // Handle file open failure, e.g., by returning false or throwing an exception.
+        return false;
+    }
+
     vector<string> destRanks;
     vector<string> neighRanks;
     vector<string> ownRanks;
 
-    for (std::string line; getline(input, line);) {
-
-        // If the line contains the destination MAC address, extract the rank values.
-        if (line.find(MACAddress) != std::string::npos) {
-            //cout << "Destination MAC:" << line << endl;
-            // Parse the line using a stringstream and add each rank value to the destRanks vector.
-            stringstream ss(line);
-            string destination;
-            while (getline(ss, destination, ',')) {
-                destRanks.push_back(destination);
+    string line;
+    while (getline(input, line)) {
+        stringstream ss(line);
+        string field;
+        while (getline(ss, field, ',')) {
+            if (line.find(destinationMAC) != std::string::npos) {
+                destRanks.push_back(field);
             }
-        }
-        // If the line contains the neighbor MAC address, extract the rank values.
-        if (line.find(MACAddress2) != std::string::npos) {
-            //cout << "Neighbor MAC   :" << line << endl;
-            stringstream ss2(line);
-            string neighbour;
-            while (getline(ss2, neighbour, ',')) {
-                neighRanks.push_back(neighbour);
+            if (line.find(NeigbourMAC) != std::string::npos) {
+                neighRanks.push_back(field);
             }
-        }
-        // If the line contains the own MAC address, extract the rank values.
-        if (line.find(ownMACAddress) != std::string::npos) {
-            //cout << "Own MAC        :" << line << endl;
-            stringstream ss3(line);
-            string own;
-            while (getline(ss3, own, ',')) {
-                ownRanks.push_back(own);
+            if (line.find(ownMACAddress) != std::string::npos) {
+                ownRanks.push_back(field);
             }
         }
     }
 
-//    // [0] = nodeID
-//    // [1] = Community
-//    // [2] = Global Rank
-//    // [3] = Local Rank
-//    // [4] = MAC Address
-//    // Lower the Rank more famous the node.
+    input.close(); // Close the file.
+
     if (neighRanks[0] == destRanks[0]) {
-        EV_INFO << "Destination Found" << endl;
         return true;
     } else if (ownRanks[1] == destRanks[1]) {
         if (neighRanks[1] == destRanks[1] && neighRanks[3] < ownRanks[3]) {
-            EV_INFO << "Success at Local Rank Level" << endl;
-            destRanks.clear();
-            neighRanks.clear();
-            ownRanks.clear();
             return true;
         }
     } else if (destRanks[1] == neighRanks[1] || neighRanks[2] < ownRanks[2]) {
         if (destRanks[1] == neighRanks[1]) {
-            EV_INFO << "Success as in Same Community" << endl;
-            destRanks.clear();
-            neighRanks.clear();
-            ownRanks.clear();
             return true;
         } else if (neighRanks[2] < ownRanks[2]) {
-            EV_INFO << "Success at Global Rank Level" << endl;
-            destRanks.clear();
-            neighRanks.clear();
-            ownRanks.clear();
             return true;
         }
-
-    } else {
-        EV_INFO << "Not in Same Community" << endl;
     }
-    destRanks.clear();
-    neighRanks.clear();
-    ownRanks.clear();
+
     return false;
 }

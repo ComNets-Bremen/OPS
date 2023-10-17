@@ -1,8 +1,8 @@
 //
-// The model implementation for the BubbleRAP Forwarding.
+// The model implementation for the BubbleRAP Forwarding with Epidemic Routing layer foundation
 //
 // @author : Akhil Simha Neela (neela@uni-bremen.de)
-// @date   : 24-jan-2023
+// @date   : 17-10-2023
 //
 
 
@@ -16,27 +16,24 @@
 #include <cstdlib>
 #include <sstream>
 #include <string>
+#include <algorithm>
+#include <fstream>
+
 
 #include "KOPSMsg_m.h"
 #include "KInternalMsg_m.h"
-
-////// BubbleRAP Inclusion //////
-#include <iostream>
-#include <fstream>
 
 using namespace omnetpp;
 
 using namespace std;
 
-
-class KBubbleRAPForwarding: public cSimpleModule
+class KBubbleRAPForwarding : public cSimpleModule
 {
-protected:
+    protected:
         virtual void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
         virtual int numInitStages() const;
         virtual void finish();
-
 
     private:
         string ownMACAddress;
@@ -102,7 +99,7 @@ protected:
         };
 
         list<AppInfo*> registeredAppList;
-        list<CacheEntry*> cacheList;
+        vector<CacheEntry> cacheList;
         list<SyncedNeighbour*> syncedNeighbourList;
         bool syncedNeighbourListIHasChanged;
 
@@ -117,7 +114,10 @@ protected:
         SyncedNeighbour* getSyncingNeighbourInfo(string nodeMACAddress);
         void setSyncingNeighbourInfoForNextRound();
         void setSyncingNeighbourInfoForNoNeighboursOrEmptyCache();
-        KSummaryVectorMsg* makeSummaryVectorMessage();
+        KSummaryVectorMsg* makeSummaryVectorMessage(string);
+        bool isMsgSent(string, string);
+
+        //bool compareMessageID(CacheEntry a, CacheEntry b);
 
         // stats related variables
         simsignal_t dataBytesReceivedSignal;
@@ -142,15 +142,11 @@ protected:
         simsignal_t dataReqBytesSentSignal;
         simsignal_t totalBytesSentSignal;
 
-        bool isMsgSent(string destinationMAC, string neighbourMAC);
-
-
 };
+
 #define KBUBBLERAPFORWARDING_SIMMODULEINFO         " KBubbleRAPForwarding>!<" << simTime() << ">!<" << getParentModule()->getFullName()
-#define KBUBBLERAPFORWARDING_EVENTTYPE_AGEDATA     108
-#define KBUBBLERAPFORWARDING_CACHESIZE_REP_EVENT   175
+
 #define KBUBBLERAPFORWARDING_MSG_ID_HASH_SIZE      4 // in bytes
 #define KBUBBLERAPFORWARDING_CACHESIZE_REP_EVENT   175
-
 
 #endif /* KBUBBLERAPFORWARDING_H_ */
